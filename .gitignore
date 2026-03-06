@@ -39,3 +39,30 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# Cloudflare Wrangler
+.wrangler/
+wrangler.toml.bak
+
+# Firebase
+firebase-debug.log
+.firebase/
+*-firebase-adminsdk-*.json
+
+# OS
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Temp
+tmp/
+temp/
