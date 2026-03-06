@@ -65,14 +65,14 @@ jobs:
             let duplicates = 0;
 
             for (const row of rows) {
-              const { player_id, offer_id, payout } = row;
+              const { player_id, program_id, payout } = row;
 
               // Check for existing completion
               const { data: existing, error: checkError } = await supabase
                 .from("completions")
                 .select("id")
                 .eq("player_id", player_id)
-                .eq("offer_id", offer_id)
+                .eq("program_id", program_id)
                 .limit(1);
 
               if (checkError) {
@@ -94,7 +94,7 @@ jobs:
 
               const { error: insertError } = await supabase
                 .from("completions")
-                .insert({ player_id, offer_id, payout, coins });
+                .insert({ player_id, program_id, payout, coins });
 
               if (insertError) {
                 throw new Error(`Insert completion failed for queue row ${row.id}: ${insertError.message}`);
