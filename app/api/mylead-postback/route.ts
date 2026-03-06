@@ -22,7 +22,7 @@ async function handlePostback(request: NextRequest) {
     if (!secret || sig !== secret) {
       return NextResponse.json(
         { error: 'invalid_signature', received: sig, secretSet: !!secret },
-        { status: 401 }
+        { status: 200 }
       );
     }
 
@@ -33,7 +33,7 @@ async function handlePostback(request: NextRequest) {
     if (!player_id || payout <= 0) {
       return NextResponse.json(
         { error: 'invalid_params', player_id, payout },
-        { status: 400 }
+        { status: 200 }
       );
     }
 
@@ -51,7 +51,7 @@ async function handlePostback(request: NextRequest) {
     if (checkError) {
       return NextResponse.json(
         { error: 'duplicate_check_failed', details: checkError.message },
-        { status: 500 }
+        { status: 200 }
       );
     }
 
@@ -73,7 +73,7 @@ async function handlePostback(request: NextRequest) {
     if (completionError) {
       return NextResponse.json(
         { error: 'completion_insert_failed', details: completionError.message, code: completionError.code },
-        { status: 500 }
+        { status: 200 }
       );
     }
 
@@ -86,7 +86,7 @@ async function handlePostback(request: NextRequest) {
     if (rpcError) {
       return NextResponse.json(
         { error: 'credit_failed', details: rpcError.message, code: rpcError.code },
-        { status: 500 }
+        { status: 200 }
       );
     }
 
@@ -99,7 +99,7 @@ async function handlePostback(request: NextRequest) {
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: 'unexpected', details: message }, { status: 500 });
+    return NextResponse.json({ error: 'unexpected', details: message }, { status: 200 });
   }
 }
 
