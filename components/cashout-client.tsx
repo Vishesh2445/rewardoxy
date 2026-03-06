@@ -3,16 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import {
-  Coins,
-  DollarSign,
-  Wallet,
-  ArrowRight,
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-} from "lucide-react";
+import { Box, Button, Paper, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from "@mui/material";
+import { Coins, DollarSign, Wallet, ArrowRight, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import Typography from "@/components/ui/Typography";
+import colors from "@/theme/colors";
 
 const NETWORKS = ["TRC-20", "BEP-20", "SOL"] as const;
 const MIN_COINS = 2000;
@@ -25,11 +19,11 @@ const EXPLORER_URLS: Record<string, string> = {
   SOL: "https://solscan.io/tx/",
 };
 
-const STATUS_STYLES: Record<string, string> = {
-  pending: "bg-amber-500/10 text-amber-400",
-  processing: "bg-sky-500/10 text-sky-400",
-  paid: "bg-emerald-500/10 text-emerald-400",
-  failed: "bg-red-500/10 text-red-400",
+const STATUS_COLORS: Record<string, { bg: string; color: string; border: string }> = {
+  pending: { bg: "rgba(245,158,11,0.1)", color: "#fbbf24", border: "rgba(245,158,11,0.2)" },
+  processing: { bg: "rgba(56,189,248,0.1)", color: "#38bdf8", border: "rgba(56,189,248,0.2)" },
+  paid: { bg: "rgba(34,197,94,0.1)", color: "#22c55e", border: "rgba(34,197,94,0.2)" },
+  failed: { bg: "rgba(239,68,68,0.1)", color: "#f87171", border: "rgba(239,68,68,0.2)" },
 };
 
 interface Withdrawal {
@@ -49,21 +43,14 @@ interface CashoutClientProps {
   initialTotal: number;
 }
 
-export default function CashoutClient({
-  userId,
-  initialCoins,
-  initialWithdrawals,
-  initialTotal,
-}: CashoutClientProps) {
+export default function CashoutClient({ userId, initialCoins, initialWithdrawals, initialTotal }: CashoutClientProps) {
   const router = useRouter();
-
   const [coins, setCoins] = useState(initialCoins);
   const [address, setAddress] = useState("");
   const [network, setNetwork] = useState<string>(NETWORKS[0]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>(initialWithdrawals);
   const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(0);
@@ -75,16 +62,7 @@ export default function CashoutClient({
     const supabase = createClient();
     const from = newPage * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
-
-    const { data, count } = await supabase
-      .from("withdrawals")
-      .select("id, created_at, coins, amount_usd, network, status, tx_hash", {
-        count: "exact",
-      })
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .range(from, to);
-
+    const { data, count } = await supabase.from("withdrawals").select("id, created_at, coins, amount_usd, network, status, tx_hash", { count: "exact" }).eq("user_id", userId).order("created_at", { ascending: false }).range(from, to);
     if (data) setWithdrawals(data);
     if (count !== null) setTotal(count);
     setPage(newPage);
@@ -94,325 +72,207 @@ export default function CashoutClient({
     e.preventDefault();
     setError(null);
     setSuccess(null);
-
-    if (coins < MIN_COINS) {
-      setError(`Minimum withdrawal is ${MIN_COINS} coins ($${(MIN_COINS / COINS_PER_USD).toFixed(2)})`);
-      return;
-    }
-
-    if (!address.trim() || address.trim().length < 10) {
-      setError("Enter a valid crypto address");
-      return;
-    }
-
+    if (coins < MIN_COINS) { setError(`Minimum withdrawal is ${MIN_COINS} coins ($${(MIN_COINS / COINS_PER_USD).toFixed(2)})`); return; }
+    if (!address.trim() || address.trim().length < 10) { setError("Enter a valid crypto address"); return; }
     setLoading(true);
-
-    const res = await fetch("/api/withdraw", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ network }),
-    });
-
+    const res = await fetch("/api/withdraw", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ network }) });
     const body = await res.json();
-
-    if (!res.ok) {
-      setError(body.error || "Withdrawal failed");
-      setLoading(false);
-      return;
-    }
-
+    if (!res.ok) { setError(body.error || "Withdrawal failed"); setLoading(false); return; }
     setSuccess(`Withdrawal of $${body.amount_usd.toFixed(2)} submitted`);
     setCoins(0);
     setAddress("");
     setLoading(false);
-
-    // Refresh history
     await fetchPage(0);
     router.refresh();
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">Cash Out</h1>
-        <p className="text-sm text-zinc-500">Withdraw your earnings as crypto</p>
-      </div>
+    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" isBold>Cash Out</Typography>
+        <Typography variant="body2" color="textSecondary">Withdraw your earnings as crypto</Typography>
+      </Box>
 
-        {/* Balance cards */}
-        <div className="mb-8 grid grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
-                <Coins className="h-5 w-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-                  Balance
-                </p>
-                <p className="text-2xl font-bold text-emerald-400">
-                  {coins.toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </div>
+      {/* Balance cards */}
+      <Box sx={{ mb: 4, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+        <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 3, bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)" }}>
+              <Coins size={20} color="#01D676" />
+            </Box>
+            <Box>
+              <Typography sx={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: colors.text.secondary }}>Balance</Typography>
+              <Typography sx={{ fontSize: "1.5rem", fontWeight: 700, color: "#01D676" }}>{coins.toLocaleString()}</Typography>
+            </Box>
+          </Box>
+        </Paper>
+        <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 3, bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)" }}>
+              <DollarSign size={20} color="#01D676" />
+            </Box>
+            <Box>
+              <Typography sx={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: colors.text.secondary }}>USD Value</Typography>
+              <Typography sx={{ fontSize: "1.5rem", fontWeight: 700 }}>${usd.toFixed(2)}</Typography>
+            </Box>
+          </Box>
+        </Paper>
+      </Box>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
-                <DollarSign className="h-5 w-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-                  USD Value
-                </p>
-                <p className="text-2xl font-bold">${usd.toFixed(2)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Withdrawal form */}
+      <Paper sx={{ mb: 4, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 3 }}>
+        <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <Wallet size={20} color="#01D676" />
+          Withdraw
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box>
+            <Typography variant="body2" sx={{ mb: 0.75, fontWeight: 500, color: colors.text.secondary }}>Network</Typography>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              {NETWORKS.map((n) => (
+                <Button key={n} variant="outlined" onClick={() => setNetwork(n)}
+                  sx={{
+                    borderRadius: 2, px: 2, py: 1.25, fontSize: "0.875rem", fontWeight: 500, textTransform: "none",
+                    ...(network === n
+                      ? { borderColor: "rgba(1,214,118,0.5)", bgcolor: colors.background.secondary, color: "#01D676", "&:hover": { borderColor: "rgba(1,214,118,0.5)", bgcolor: colors.background.secondary } }
+                      : { borderColor: colors.divider, bgcolor: colors.background.primary, color: colors.text.secondary, "&:hover": { color: "#fff", borderColor: colors.divider, bgcolor: colors.background.primary } }),
+                  }}
+                >
+                  {n}
+                </Button>
+              ))}
+            </Box>
+          </Box>
 
-        {/* Withdrawal form */}
-        <div className="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-            <Wallet className="h-5 w-5 text-emerald-400" />
-            Withdraw
-          </h2>
+          <Box>
+            <Typography variant="body2" sx={{ mb: 0.75, fontWeight: 500, color: colors.text.secondary }}>
+              {network === "SOL" ? "SOL" : "USDT"} Address
+            </Typography>
+            <TextField fullWidth required value={address} onChange={(e) => setAddress(e.target.value)}
+              placeholder={`Your ${network} address`}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  bgcolor: colors.background.ternary, borderRadius: 2, fontSize: "0.875rem", color: "#fff",
+                  "& fieldset": { borderColor: colors.divider },
+                  "&:hover fieldset": { borderColor: colors.divider },
+                  "&.Mui-focused fieldset": { borderColor: colors.secondary, borderWidth: "1px" },
+                  "& input::placeholder": { color: `${colors.text.secondary}80`, opacity: 1 },
+                },
+              }}
+            />
+          </Box>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Network selector */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-300">
-                Network
-              </label>
-              <div className="flex gap-2">
-                {NETWORKS.map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setNetwork(n)}
-                    className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                      network === n
-                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-400"
-                        : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600"
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Address input */}
-            <div>
-              <label
-                htmlFor="address"
-                className="mb-1.5 block text-sm font-medium text-zinc-300"
-              >
-                {network === "SOL" ? "SOL" : "USDT"} Address
-              </label>
-              <input
-                id="address"
-                type="text"
-                required
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder={`Your ${network} address`}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition-colors focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-              />
-            </div>
-
-            {/* Amount info */}
-            <div className="rounded-lg bg-zinc-800/50 px-4 py-3 text-sm text-zinc-400">
-              You will receive{" "}
-              <span className="font-semibold text-zinc-100">
-                ${usd.toFixed(2)}
-              </span>{" "}
-              for{" "}
-              <span className="font-semibold text-emerald-400">
-                {coins.toLocaleString()} coins
-              </span>
-              {coins < MIN_COINS && (
-                <span className="mt-1 block text-xs text-red-400">
-                  Minimum {MIN_COINS} coins (${(MIN_COINS / COINS_PER_USD).toFixed(2)}) required
-                </span>
-              )}
-            </div>
-
-            {error && (
-              <p className="rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400">
-                {error}
-              </p>
+          <Box sx={{ borderRadius: 2, bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}`, px: 2, py: 1.5, fontSize: "0.875rem", color: colors.text.secondary }}>
+            You will receive <Box component="span" sx={{ fontWeight: 600, color: "#fff" }}>${usd.toFixed(2)}</Box> for <Box component="span" sx={{ fontWeight: 600, color: "#01D676" }}>{coins.toLocaleString()} coins</Box>
+            {coins < MIN_COINS && (
+              <Box component="span" sx={{ display: "block", mt: 0.5, fontSize: "0.75rem", color: "#f87171" }}>
+                Minimum {MIN_COINS} coins (${(MIN_COINS / COINS_PER_USD).toFixed(2)}) required
+              </Box>
             )}
+          </Box>
 
-            {success && (
-              <p className="rounded-lg bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">
-                {success}
-              </p>
-            )}
+          {error && <Box sx={{ borderRadius: 2, bgcolor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: "#f87171" }}>{error}</Box>}
+          {success && <Box sx={{ borderRadius: 2, bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: "#01D676" }}>{success}</Box>}
 
-            <button
-              type="submit"
-              disabled={loading || coins < MIN_COINS}
-              className="group flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 py-3 text-sm font-semibold text-zinc-950 transition-colors hover:bg-emerald-400 disabled:opacity-50"
-            >
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  Withdraw
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </>
-              )}
-            </button>
-          </form>
-        </div>
+          <Button type="submit" variant="contained" fullWidth disabled={loading || coins < MIN_COINS}
+            endIcon={!loading ? <ArrowRight size={16} /> : undefined}
+            sx={{ py: 1.25, borderRadius: 2, background: colors.background.gradient, fontWeight: 600, fontSize: "0.875rem", textTransform: "none", "&:hover": { filter: "brightness(1.1)" }, "&.Mui-disabled": { opacity: 0.5, color: "#fff" } }}>
+            {loading ? <CircularProgress size={18} color="inherit" /> : "Withdraw"}
+          </Button>
+        </Box>
+      </Paper>
 
-        {/* Withdrawal history */}
-        <div>
-          <h2 className="mb-4 text-lg font-semibold">Withdrawal History</h2>
-
-          {withdrawals.length === 0 ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-8 text-center">
-              <p className="text-sm text-zinc-500">No withdrawals yet.</p>
-            </div>
-          ) : (
-            <>
-              {/* Mobile cards */}
-              <div className="space-y-3 sm:hidden">
-                {withdrawals.map((w) => (
-                  <div
-                    key={w.id}
-                    className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4"
-                  >
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-xs text-zinc-500">
-                        {new Date(w.created_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </span>
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase ${
-                          STATUS_STYLES[w.status] ?? STATUS_STYLES.pending
-                        }`}
-                      >
-                        {w.status}
-                      </span>
-                    </div>
-                    <div className="flex items-end justify-between">
-                      <div>
-                        <p className="text-sm font-medium">
-                          {w.coins.toLocaleString()} coins
-                        </p>
-                        <p className="text-xs text-zinc-500">
-                          ${w.amount_usd.toFixed(2)} via {w.network}
-                        </p>
-                      </div>
+      {/* Withdrawal history */}
+      <Box>
+        <Typography variant="subtitle1" isBold sx={{ mb: 2 }}>Withdrawal History</Typography>
+        {withdrawals.length === 0 ? (
+          <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 4, textAlign: "center" }}>
+            <Typography variant="body2" color="textSecondary">No withdrawals yet.</Typography>
+          </Paper>
+        ) : (
+          <>
+            {/* Mobile cards */}
+            <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1 }}>
+              {withdrawals.map((w) => {
+                const st = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
+                return (
+                  <Paper key={w.id} sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 2 }}>
+                    <Box sx={{ mb: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
+                        {new Date(w.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </Typography>
+                      <Box sx={{ borderRadius: 50, border: `1px solid ${st.border}`, bgcolor: st.bg, color: st.color, px: 1.25, py: 0.25, fontSize: "10px", fontWeight: 600, textTransform: "uppercase" }}>{w.status}</Box>
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>{w.coins.toLocaleString()} coins</Typography>
+                        <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>${w.amount_usd.toFixed(2)} via {w.network}</Typography>
+                      </Box>
                       {w.tx_hash && (
-                        <a
-                          href={`${EXPLORER_URLS[w.network] ?? ""}${w.tx_hash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300"
-                        >
-                          Tx
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
+                        <Box component="a" href={`${EXPLORER_URLS[w.network] ?? ""}${w.tx_hash}`} target="_blank" rel="noopener noreferrer"
+                          sx={{ display: "flex", alignItems: "center", gap: 0.5, fontSize: "0.75rem", color: "#01D676", textDecoration: "none", "&:hover": { opacity: 0.8 } }}>
+                          Tx <ExternalLink size={12} />
+                        </Box>
                       )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    </Box>
+                  </Paper>
+                );
+              })}
+            </Box>
 
-              {/* Desktop table */}
-              <div className="hidden overflow-x-auto rounded-xl border border-zinc-800 sm:block">
-                <table className="w-full text-left text-sm">
-                  <thead className="border-b border-zinc-800 bg-zinc-900/80 text-xs uppercase text-zinc-500">
-                    <tr>
-                      <th className="px-4 py-3 font-medium">Date</th>
-                      <th className="px-4 py-3 font-medium">Coins</th>
-                      <th className="px-4 py-3 font-medium">USD</th>
-                      <th className="px-4 py-3 font-medium">Network</th>
-                      <th className="px-4 py-3 font-medium">Status</th>
-                      <th className="px-4 py-3 font-medium">Tx</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-800/60">
-                    {withdrawals.map((w) => (
-                      <tr key={w.id} className="bg-zinc-900/40">
-                        <td className="whitespace-nowrap px-4 py-3 text-zinc-400">
-                          {new Date(w.created_at).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </td>
-                        <td className="px-4 py-3 font-medium">
-                          {w.coins.toLocaleString()}
-                        </td>
-                        <td className="px-4 py-3">${w.amount_usd.toFixed(2)}</td>
-                        <td className="px-4 py-3 text-zinc-400">{w.network}</td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase ${
-                              STATUS_STYLES[w.status] ?? STATUS_STYLES.pending
-                            }`}
-                          >
-                            {w.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          {w.tx_hash ? (
-                            <a
-                              href={`${EXPLORER_URLS[w.network] ?? ""}${w.tx_hash}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300"
-                            >
-                              {w.tx_hash.slice(0, 8)}...
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
-                          ) : (
-                            <span className="text-zinc-600">--</span>
-                          )}
-                        </td>
-                      </tr>
+            {/* Desktop table */}
+            <TableContainer component={Paper} sx={{ display: { xs: "none", sm: "block" }, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: "transparent" }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: "rgba(29,30,48,0.8)" }}>
+                    {["Date", "Coins", "USD", "Network", "Status", "Tx"].map((h) => (
+                      <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 500, borderColor: colors.divider }}>{h}</TableCell>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {withdrawals.map((w) => {
+                    const st = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
+                    return (
+                      <TableRow key={w.id} sx={{ bgcolor: "rgba(29,30,48,0.4)", "&:hover": { bgcolor: "rgba(29,30,48,0.6)" } }}>
+                        <TableCell sx={{ color: colors.text.secondary, borderColor: colors.divider, whiteSpace: "nowrap" }}>
+                          {new Date(w.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 500, color: "#fff", borderColor: colors.divider }}>{w.coins.toLocaleString()}</TableCell>
+                        <TableCell sx={{ color: "#fff", borderColor: colors.divider }}>${w.amount_usd.toFixed(2)}</TableCell>
+                        <TableCell sx={{ color: colors.text.secondary, borderColor: colors.divider }}>{w.network}</TableCell>
+                        <TableCell sx={{ borderColor: colors.divider }}>
+                          <Box component="span" sx={{ borderRadius: 50, border: `1px solid ${st.border}`, bgcolor: st.bg, color: st.color, px: 1.25, py: 0.25, fontSize: "10px", fontWeight: 600, textTransform: "uppercase" }}>{w.status}</Box>
+                        </TableCell>
+                        <TableCell sx={{ borderColor: colors.divider }}>
+                          {w.tx_hash ? (
+                            <Box component="a" href={`${EXPLORER_URLS[w.network] ?? ""}${w.tx_hash}`} target="_blank" rel="noopener noreferrer"
+                              sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#01D676", textDecoration: "none", "&:hover": { opacity: 0.8 } }}>
+                              {w.tx_hash.slice(0, 8)}... <ExternalLink size={12} />
+                            </Box>
+                          ) : (
+                            <Box component="span" sx={{ color: "rgba(169,169,202,0.4)" }}>--</Box>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-4 flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => fetchPage(page - 1)}
-                    disabled={page === 0}
-                    className="flex items-center gap-1 rounded-lg border border-zinc-800 px-3 py-2 text-xs font-medium text-zinc-400 transition-colors hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-30"
-                  >
-                    <ChevronLeft className="h-3.5 w-3.5" />
-                    Prev
-                  </button>
-                  <span className="text-xs text-zinc-500">
-                    Page {page + 1} of {totalPages}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => fetchPage(page + 1)}
-                    disabled={page >= totalPages - 1}
-                    className="flex items-center gap-1 rounded-lg border border-zinc-800 px-3 py-2 text-xs font-medium text-zinc-400 transition-colors hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-30"
-                  >
-                    Next
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+            {totalPages > 1 && (
+              <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Button size="small" onClick={() => fetchPage(page - 1)} disabled={page === 0} startIcon={<ChevronLeft size={14} />}
+                  sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>Prev</Button>
+                <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>Page {page + 1} of {totalPages}</Typography>
+                <Button size="small" onClick={() => fetchPage(page + 1)} disabled={page >= totalPages - 1} endIcon={<ChevronRight size={14} />}
+                  sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>Next</Button>
+              </Box>
+            )}
+          </>
+        )}
+      </Box>
+    </Box>
   );
 }

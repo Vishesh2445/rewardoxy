@@ -1,37 +1,33 @@
 import { createClient } from "@/lib/supabase/server";
 import AppShell from "@/components/app-shell";
+import { Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import { Clock, Trophy, Medal } from "lucide-react";
+import Typography from "@/components/ui/Typography";
+import colors from "@/theme/colors";
 
 export const dynamic = "force-dynamic";
 
-const MEDALS = ["", "gold", "silver", "bronze"] as const;
-
 function RankCell({ rank }: { rank: number }) {
-  if (rank === 1) {
+  if (rank <= 3) {
+    const emoji = rank === 1 ? "\u{1F947}" : rank === 2 ? "\u{1F948}" : "\u{1F949}";
     return (
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500/10 text-lg" role="img" aria-label="1st place">
-        🥇
-      </span>
-    );
-  }
-  if (rank === 2) {
-    return (
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-400/10 text-lg" role="img" aria-label="2nd place">
-        🥈
-      </span>
-    );
-  }
-  if (rank === 3) {
-    return (
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-700/10 text-lg" role="img" aria-label="3rd place">
-        🥉
-      </span>
+      <Box
+        sx={{
+          display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: "50%", fontSize: "1.125rem",
+          bgcolor: rank === 1 ? colors.background.secondary : colors.primary,
+          border: `1px solid ${rank === 1 ? "rgba(1,214,118,0.2)" : colors.divider}`,
+        }}
+        role="img"
+        aria-label={`${rank}${rank === 1 ? "st" : rank === 2 ? "nd" : "rd"} place`}
+      >
+        {emoji}
+      </Box>
     );
   }
   return (
-    <span className="flex h-8 w-8 items-center justify-center text-sm font-medium text-zinc-500">
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, fontSize: "0.875rem", fontWeight: 500, color: colors.text.secondary }}>
       {rank}
-    </span>
+    </Box>
   );
 }
 
@@ -61,110 +57,109 @@ export default async function LeaderboardPage() {
 
   return (
     <AppShell coins={user ? coins : undefined}>
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-bold">
-              <Trophy className="h-6 w-6 text-amber-400" />
+      <Box sx={{ maxWidth: 768, mx: "auto", px: { xs: 2, sm: 3, lg: 4 }, py: 4 }}>
+        <Box sx={{ mb: 4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Box>
+            <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Trophy size={24} color="#01D676" />
               Leaderboard
-            </h1>
-            <p className="text-sm text-zinc-500">Top earners this week</p>
-          </div>
-          <span className="flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-[11px] font-medium text-zinc-400">
-            <Clock className="h-3 w-3" />
+            </Typography>
+            <Typography variant="body2" sx={{ color: colors.text.secondary }}>Top earners this week</Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, borderRadius: 50, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, px: 1.5, py: 0.75, fontSize: "11px", fontWeight: 500, color: colors.text.secondary }}>
+            <Clock size={12} />
             Updated every 6 hours
-          </span>
-        </div>
+          </Box>
+        </Box>
 
         {leaderboard.length === 0 ? (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-12 text-center">
-            <Medal className="mx-auto h-10 w-10 text-zinc-700" />
-            <p className="mt-3 text-sm text-zinc-500">
+          <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 6, textAlign: "center" }}>
+            <Medal size={40} color="rgba(169,169,202,0.4)" style={{ margin: "0 auto" }} />
+            <Typography variant="body2" sx={{ mt: 1.5, color: colors.text.secondary }}>
               No leaderboard data yet. Check back soon.
-            </p>
-          </div>
+            </Typography>
+          </Paper>
         ) : (
           <>
             {/* Mobile cards */}
-            <div className="space-y-2 sm:hidden">
+            <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1 }}>
               {leaderboard.map((row) => {
                 const isMe = user?.id === row.user_id;
                 return (
-                  <div
+                  <Box
                     key={row.user_id}
-                    className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${
-                      isMe
-                        ? "border-emerald-500/40 bg-emerald-500/5"
-                        : "border-zinc-800 bg-zinc-900/60"
-                    }`}
+                    sx={{
+                      display: "flex", alignItems: "center", gap: 1.5, borderRadius: 3, px: 2, py: 1.5, transition: "all 0.2s",
+                      border: `1px solid ${isMe ? "rgba(1,214,118,0.4)" : colors.divider}`,
+                      bgcolor: isMe ? "rgba(1,214,118,0.05)" : colors.primary,
+                      ...(isMe ? { boxShadow: "0 4px 20px rgba(1,214,118,0.05)" } : { "&:hover": { bgcolor: colors.background.ternary } }),
+                    }}
                   >
                     <RankCell rank={row.rank} />
-                    <div className="min-w-0 flex-1">
-                      <p className={`truncate text-sm font-medium ${isMe ? "text-emerald-400" : ""}`}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: isMe ? "#01D676" : "#fff" }} truncate>
                         {row.display_name}
                         {isMe && (
-                          <span className="ml-2 text-[10px] font-semibold uppercase text-emerald-500">
+                          <Box component="span" sx={{ ml: 1, borderRadius: 50, bgcolor: colors.background.secondary, border: "1px solid rgba(1,214,118,0.2)", px: 1, py: 0.25, fontSize: "10px", fontWeight: 600, textTransform: "uppercase", color: "#01D676" }}>
                             You
-                          </span>
+                          </Box>
                         )}
-                      </p>
-                    </div>
-                    <p className="text-sm font-semibold text-emerald-400">
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#01D676" }}>
                       {row.weekly_coins.toLocaleString()}
-                    </p>
-                  </div>
+                    </Typography>
+                  </Box>
                 );
               })}
-            </div>
+            </Box>
 
             {/* Desktop table */}
-            <div className="hidden overflow-hidden rounded-xl border border-zinc-800 sm:block">
-              <table className="w-full text-left text-sm">
-                <thead className="border-b border-zinc-800 bg-zinc-900/80 text-xs uppercase text-zinc-500">
-                  <tr>
-                    <th className="w-16 px-4 py-3 text-center font-medium">Rank</th>
-                    <th className="px-4 py-3 font-medium">Player</th>
-                    <th className="px-4 py-3 text-right font-medium">Weekly Coins</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-800/60">
+            <TableContainer component={Paper} sx={{ display: { xs: "none", sm: "block" }, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: "transparent", overflow: "hidden" }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: "rgba(29,30,48,0.8)" }}>
+                    <TableCell align="center" sx={{ width: 64, color: colors.text.secondary, fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 500, borderColor: colors.divider }}>Rank</TableCell>
+                    <TableCell sx={{ color: colors.text.secondary, fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 500, borderColor: colors.divider }}>Player</TableCell>
+                    <TableCell align="right" sx={{ color: colors.text.secondary, fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 500, borderColor: colors.divider }}>Weekly Coins</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
                   {leaderboard.map((row) => {
                     const isMe = user?.id === row.user_id;
                     return (
-                      <tr
+                      <TableRow
                         key={row.user_id}
-                        className={
-                          isMe
-                            ? "bg-emerald-500/5"
-                            : "bg-zinc-900/40"
-                        }
+                        sx={{
+                          bgcolor: isMe ? "rgba(1,214,118,0.05)" : "rgba(29,30,48,0.4)",
+                          ...(!isMe && { "&:hover": { bgcolor: colors.background.ternary } }),
+                        }}
                       >
-                        <td className="px-4 py-3 text-center">
-                          <div className="flex justify-center">
+                        <TableCell align="center" sx={{ borderColor: colors.divider }}>
+                          <Box sx={{ display: "flex", justifyContent: "center" }}>
                             <RankCell rank={row.rank} />
-                          </div>
-                        </td>
-                        <td className={`px-4 py-3 font-medium ${isMe ? "text-emerald-400" : ""}`}>
+                          </Box>
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 500, color: isMe ? "#01D676" : "#fff", borderColor: colors.divider }}>
                           {row.display_name}
                           {isMe && (
-                            <span className="ml-2 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-400">
+                            <Box component="span" sx={{ ml: 1, borderRadius: 50, bgcolor: colors.background.secondary, border: "1px solid rgba(1,214,118,0.2)", px: 1, py: 0.25, fontSize: "10px", fontWeight: 600, textTransform: "uppercase", color: "#01D676" }}>
                               You
-                            </span>
+                            </Box>
                           )}
-                        </td>
-                        <td className="px-4 py-3 text-right font-semibold text-emerald-400">
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600, color: "#01D676", borderColor: colors.divider }}>
                           {row.weekly_coins.toLocaleString()}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
+                </TableBody>
+              </Table>
+            </TableContainer>
           </>
         )}
-      </div>
+      </Box>
     </AppShell>
   );
 }

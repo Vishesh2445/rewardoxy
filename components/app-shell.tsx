@@ -4,6 +4,24 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  AppBar,
+  Box,
+  Drawer,
+  Toolbar,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  Divider,
+  Grid,
+  BottomNavigation as MuiBottomNavigation,
+  BottomNavigationAction as MuiBottomNavigationAction,
+  styled,
+} from "@mui/material";
+import {
   LayoutDashboard,
   Gift,
   Trophy,
@@ -12,23 +30,92 @@ import {
   User,
   History,
   CalendarCheck,
-  Menu,
-  X,
   LogOut,
   Coins,
+  Menu,
+  X,
 } from "lucide-react";
+import TwitterIcon from "@mui/icons-material/Twitter";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import RedditIcon from "@mui/icons-material/Reddit";
 import { createClient } from "@/lib/supabase/client";
+import Icons from "@/components/icons";
+import Typography from "@/components/ui/Typography";
+import colors from "@/theme/colors";
+
+const drawerWidth = 200;
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Earn", href: "/offers", icon: Gift },
-  { label: "Daily Bonus", href: "/daily-bonus", icon: CalendarCheck },
-  { label: "Leaderboard", href: "/leaderboard", icon: Trophy },
-  { label: "Referrals", href: "/referrals", icon: Users },
-  { label: "History", href: "/history", icon: History },
-  { label: "Cash Out", href: "/cashout", icon: Wallet },
-  { label: "Profile", href: "/profile", icon: User },
+  { label: "Dashboard", href: "/dashboard", Icon: LayoutDashboard },
+  { label: "Earn", href: "/earn", Icon: Gift },
+  { label: "Daily Bonus", href: "/daily-bonus", Icon: CalendarCheck },
+  { label: "Leaderboard", href: "/leaderboard", Icon: Trophy },
+  { label: "Referrals", href: "/referrals", Icon: Users },
+  { label: "History", href: "/history", Icon: History },
+  { label: "Cash Out", href: "/cashout", Icon: Wallet },
+  { label: "Profile", href: "/profile", Icon: User },
 ];
+
+const BOTTOM_NAV_ITEMS = [
+  { label: "Dashboard", href: "/dashboard", Icon: LayoutDashboard },
+  { label: "Earn", href: "/earn", Icon: Gift },
+  { label: "Daily Bonus", href: "/daily-bonus", Icon: CalendarCheck },
+  { label: "Cash Out", href: "/cashout", Icon: Wallet },
+];
+
+const footerInfoList = [
+  {
+    title: "About",
+    links: [
+      { text: "Terms of Service", url: "/terms" },
+      { text: "Privacy Policy", url: "/privacy" },
+    ],
+  },
+  {
+    title: "Support",
+    links: [
+      { text: "How It Works", url: "/#how-it-works" },
+      { text: "FAQ", url: "/#faq" },
+      { text: "Contact", url: "/contact" },
+    ],
+  },
+];
+
+const footerSocialIcons = [
+  { link: "#", Icon: TwitterIcon },
+  { link: "#", Icon: FacebookIcon },
+  { link: "#", Icon: InstagramIcon },
+  { link: "#", Icon: RedditIcon },
+];
+
+type StyledBottomNavActionProps = {
+  isActive?: boolean;
+};
+
+const StyledBottomNavAction = styled(MuiBottomNavigationAction, {
+  shouldForwardProp: (prop) => prop !== "isActive",
+})<StyledBottomNavActionProps>(({ isActive }) => ({
+  minWidth: 0,
+  maxWidth: "none",
+  flex: 1,
+  padding: "6px 0 8px",
+  color: isActive ? "#01D676" : colors.text.secondary,
+  transition: "color 0.2s",
+  "& .MuiBottomNavigationAction-label": {
+    fontSize: "0.625rem",
+    fontWeight: isActive ? 700 : 500,
+    marginTop: 2,
+    opacity: 1,
+    transition: "color 0.2s",
+    "&.Mui-selected": {
+      fontSize: "0.625rem",
+    },
+  },
+  "& .MuiSvgIcon-root, & svg": {
+    transition: "color 0.2s",
+  },
+}));
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -45,142 +132,297 @@ export default function AppShell({ children, coins }: AppShellProps) {
     window.location.href = "/";
   }
 
-  return (
-    <div className="flex min-h-screen bg-zinc-950 text-zinc-100">
-      {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r border-zinc-800 bg-zinc-900/40 lg:flex lg:flex-col">
-        <div className="flex h-16 items-center gap-2 border-b border-zinc-800 px-6">
-          <Link href="/dashboard" className="text-xl font-bold text-emerald-400">
-            Rewardoxy
-          </Link>
-        </div>
+  const balanceCard = (
+    <Box
+      sx={{
+        borderRadius: 3,
+        bgcolor: colors.background.secondary,
+        border: "1px solid rgba(1, 214, 118, 0.2)",
+        p: 2,
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+        <Coins size={16} color="#01D676" />
+        <Typography
+          variant="caption"
+          sx={{
+            fontSize: "10px",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            color: "rgba(1, 214, 118, 0.6)",
+          }}
+        >
+          Balance
+        </Typography>
+      </Box>
+      <Typography sx={{ fontSize: "1.5rem", fontWeight: 700, color: "#01D676" }}>
+        {(coins ?? 0).toLocaleString()}
+      </Typography>
+      <Typography sx={{ fontSize: "10px", color: "rgba(1, 214, 118, 0.4)", mt: 0.25 }}>
+        &#8776; ${((coins ?? 0) / 1000).toFixed(2)} USD
+      </Typography>
+    </Box>
+  );
 
-        {coins !== undefined && (
-          <div className="mx-4 mt-4 rounded-xl bg-emerald-500/10 px-4 py-3">
-            <div className="flex items-center gap-2">
-              <Coins className="h-4 w-4 text-emerald-400" />
-              <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">Balance</span>
-            </div>
-            <p className="mt-1 text-xl font-bold text-emerald-400">{coins.toLocaleString()}</p>
-          </div>
-        )}
-
-        <nav className="mt-4 flex-1 space-y-1 px-3">
-          {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-            const active = pathname === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                  active
-                    ? "bg-emerald-500/10 text-emerald-400"
-                    : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200"
-                }`}
-              >
-                <Icon className="h-4.5 w-4.5" />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="border-t border-zinc-800 p-3">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-red-400"
+  const navList = (onClickItem?: () => void) => (
+    <List sx={{ mt: 1 }}>
+      {NAV_ITEMS.map(({ label, href, Icon }) => (
+        <ListItem key={href} sx={{ px: 1.5, py: 0.25 }}>
+          <ListItemButton
+            LinkComponent={Link}
+            href={href}
+            selected={pathname === href}
+            onClick={onClickItem}
           >
-            <LogOut className="h-4.5 w-4.5" />
-            Log Out
-          </button>
-        </div>
-      </aside>
+            <ListItemIcon>
+              <Icon size={18} />
+            </ListItemIcon>
+            <ListItemText primary={label} />
+          </ListItemButton>
+        </ListItem>
+      ))}
+    </List>
+  );
 
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/60"
-            onClick={() => setMobileOpen(false)}
-            onKeyDown={() => {}}
-            role="presentation"
-          />
-          <aside className="relative z-50 flex h-full w-72 flex-col bg-zinc-900 shadow-2xl">
-            <div className="flex h-16 items-center justify-between border-b border-zinc-800 px-6">
-              <span className="text-xl font-bold text-emerald-400">Rewardoxy</span>
-              <button type="button" onClick={() => setMobileOpen(false)} className="text-zinc-400">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+  const logoutButton = (
+    <Box sx={{ p: 1.5 }}>
+      <ListItemButton
+        onClick={handleLogout}
+        sx={{
+          "&:hover": {
+            bgcolor: "rgba(239, 68, 68, 0.1) !important",
+            color: "#f87171 !important",
+            "& svg": { color: "#f87171" },
+          },
+        }}
+      >
+        <ListItemIcon>
+          <LogOut size={18} />
+        </ListItemIcon>
+        <ListItemText primary="Log Out" />
+      </ListItemButton>
+    </Box>
+  );
 
+  return (
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      {/* Top AppBar */}
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          borderBottom: `1px solid ${colors.divider}`,
+        }}
+      >
+        <Toolbar>
+          <IconButton
+            aria-label="open menu"
+            onClick={() => setMobileOpen(true)}
+            sx={{
+              display: { xs: "inline-flex", lg: "none" },
+              mr: 1,
+              bgcolor: "transparent",
+            }}
+          >
+            <Menu size={20} color={colors.text.secondary} />
+          </IconButton>
+
+          <Box sx={{ flexGrow: 1 }}>
+            <Icons.Logo href="/dashboard" />
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             {coins !== undefined && (
-              <div className="mx-4 mt-4 rounded-xl bg-emerald-500/10 px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-emerald-400" />
-                  <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">Balance</span>
-                </div>
-                <p className="mt-1 text-xl font-bold text-emerald-400">{coins.toLocaleString()}</p>
-              </div>
-            )}
-
-            <nav className="mt-4 flex-1 space-y-1 px-3">
-              {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-                const active = pathname === href;
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                      active
-                        ? "bg-emerald-500/10 text-emerald-400"
-                        : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200"
-                    }`}
-                  >
-                    <Icon className="h-4.5 w-4.5" />
-                    {label}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div className="border-t border-zinc-800 p-3">
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800/60 hover:text-red-400"
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.75,
+                  borderRadius: 50,
+                  bgcolor: colors.background.secondary,
+                  border: "1px solid rgba(1, 214, 118, 0.2)",
+                  px: 1.5,
+                  py: 0.5,
+                  fontSize: "0.875rem",
+                  fontWeight: 600,
+                  color: "#01D676",
+                }}
               >
-                <LogOut className="h-4.5 w-4.5" />
-                Log Out
-              </button>
-            </div>
-          </aside>
-        </div>
-      )}
+                <Coins size={14} />
+                {coins.toLocaleString()}
+              </Box>
+            )}
+          </Box>
+        </Toolbar>
+      </AppBar>
 
-      {/* Main content */}
-      <div className="flex flex-1 flex-col">
-        {/* Mobile header */}
-        <header className="flex h-14 items-center justify-between border-b border-zinc-800 bg-zinc-900/60 px-4 lg:hidden">
-          <button type="button" onClick={() => setMobileOpen(true)} className="text-zinc-400">
-            <Menu className="h-5 w-5" />
-          </button>
-          <Link href="/dashboard" className="text-lg font-bold text-emerald-400">
-            Rewardoxy
-          </Link>
-          {coins !== undefined && (
-            <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
-              <Coins className="h-4 w-4" />
-              {coins.toLocaleString()}
-            </div>
-          )}
-        </header>
+      {/* Desktop permanent drawer */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            borderRight: `1px solid ${colors.divider}`,
+          },
+          display: { xs: "none", lg: "block" },
+        }}
+      >
+        <Toolbar />
+        {coins !== undefined && <Box sx={{ mx: 1.5, mt: 2 }}>{balanceCard}</Box>}
+        <Box sx={{ overflow: "auto", flex: 1 }}>{navList()}</Box>
+        <Divider sx={{ borderColor: colors.divider }} />
+        {logoutButton}
+      </Drawer>
 
-        <main className="flex-1 overflow-y-auto">
+      {/* Mobile drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: "block", lg: "none" },
+          "& .MuiDrawer-paper": { width: 260 },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            px: 2,
+            py: 1.5,
+            borderBottom: `1px solid ${colors.divider}`,
+          }}
+        >
+          <Icons.Logo href="/dashboard" />
+          <IconButton onClick={() => setMobileOpen(false)} sx={{ bgcolor: "transparent" }}>
+            <X size={20} color={colors.text.secondary} />
+          </IconButton>
+        </Box>
+        {coins !== undefined && <Box sx={{ mx: 1.5, mt: 2 }}>{balanceCard}</Box>}
+        <Box sx={{ overflow: "auto", flex: 1 }}>{navList(() => setMobileOpen(false))}</Box>
+        <Divider sx={{ borderColor: colors.divider }} />
+        {logoutButton}
+      </Drawer>
+
+      {/* Main content area */}
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          overflow: "hidden",
+        }}
+      >
+        <Toolbar />
+        <Box component="main" sx={{ flex: 1, overflow: "auto", maxWidth: 960, width: "100%", mx: "auto", pb: { xs: "calc(80px + env(safe-area-inset-bottom))", lg: 0 } }}>
           {children}
-        </main>
-      </div>
-    </div>
+        </Box>
+
+        {/* Footer (desktop only) */}
+        <Box
+          component="footer"
+          sx={{
+            bgcolor: colors.primary,
+            display: { xs: "none", lg: "block" },
+          }}
+        >
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 4, p: 8 }}>
+            <Box sx={{ flexGrow: 1 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Icons.Logo href="/dashboard" />
+                <Typography color="textSecondary" variant="caption" fontWeight={700}>
+                  &copy; {new Date().getFullYear()} Rewardoxy. All rights reserved.
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+              {footerInfoList.map(({ title, links }) => (
+                <Box key={title} sx={{ pr: 4 }}>
+                  <Typography color="textPrimary">{title}</Typography>
+                  <List sx={{ pr: 4 }}>
+                    {links.map(({ text, url }) => (
+                      <ListItemButton key={text} href={url} sx={{ py: 1, px: 0 }}>
+                        <ListItemText primary={text} />
+                      </ListItemButton>
+                    ))}
+                  </List>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+          <Divider />
+          <Box sx={{ px: 8, py: 3 }}>
+            {footerSocialIcons.map(({ Icon, link }, i) => (
+              <IconButton key={i} href={link} sx={{ mx: 1 }}>
+                <Icon />
+              </IconButton>
+            ))}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Mobile bottom navigation */}
+      <Box sx={{ display: { xs: "flex", lg: "none" } }}>
+        <Paper
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1200,
+            pb: "env(safe-area-inset-bottom)",
+            borderTop: `1px solid ${colors.divider}`,
+            bgcolor: colors.primary,
+            backgroundImage: "none",
+          }}
+          elevation={0}
+        >
+          <MuiBottomNavigation
+            showLabels
+            sx={{
+              bgcolor: "transparent",
+              height: 56,
+              "& .Mui-selected": { color: "#01D676 !important" },
+            }}
+          >
+            {BOTTOM_NAV_ITEMS.map(({ label, href, Icon }) => {
+              const active = pathname === href;
+              return (
+                <StyledBottomNavAction
+                  key={href}
+                  isActive={active}
+                  label={label}
+                  icon={
+                    <Box sx={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                      {active && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: -6,
+                            width: 20,
+                            height: 3,
+                            borderRadius: 2,
+                            bgcolor: "#01D676",
+                          }}
+                        />
+                      )}
+                      <Icon size={20} color={active ? "#01D676" : colors.text.secondary} />
+                    </Box>
+                  }
+                  {...{ component: Link, href } as any}
+                />
+              );
+            })}
+          </MuiBottomNavigation>
+        </Paper>
+      </Box>
+    </Box>
   );
 }

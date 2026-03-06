@@ -2,16 +2,10 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import {
-  History,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle,
-  Gamepad2,
-  FileText,
-  Smartphone,
-  Search,
-} from "lucide-react";
+import { Box, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { History, ChevronLeft, ChevronRight, CheckCircle, Gamepad2, FileText, Smartphone, Search } from "lucide-react";
+import Typography from "@/components/ui/Typography";
+import colors from "@/theme/colors";
 
 const PAGE_SIZE = 20;
 
@@ -29,11 +23,7 @@ interface HistoryClientProps {
   initialTotal: number;
 }
 
-const OFFER_ICONS: Record<string, typeof Gamepad2> = {
-  game: Gamepad2,
-  survey: FileText,
-  app: Smartphone,
-};
+const OFFER_ICONS: Record<string, typeof Gamepad2> = { game: Gamepad2, survey: FileText, app: Smartphone };
 
 function offerIcon(name: string) {
   const lower = name.toLowerCase();
@@ -42,168 +32,126 @@ function offerIcon(name: string) {
   return OFFER_ICONS.app;
 }
 
-export default function HistoryClient({
-  userId,
-  initialCompletions,
-  initialTotal,
-}: HistoryClientProps) {
+export default function HistoryClient({ userId, initialCompletions, initialTotal }: HistoryClientProps) {
   const [completions, setCompletions] = useState<Completion[]>(initialCompletions);
   const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(0);
-
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   async function fetchPage(newPage: number) {
     const supabase = createClient();
     const from = newPage * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
-
     const { data, count } = await supabase
       .from("completions")
-      .select("id, program_id, payout_decimal, coins_awarded, created_at", {
-        count: "exact",
-      })
+      .select("id, program_id, payout_decimal, coins_awarded, created_at", { count: "exact" })
       .eq("player_id", userId)
       .order("created_at", { ascending: false })
       .range(from, to);
-
     if (data) setCompletions(data);
     if (count !== null) setTotal(count);
     setPage(newPage);
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold">
-            <History className="h-6 w-6 text-emerald-400" />
+    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
+      <Box sx={{ mb: 4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Box>
+          <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <History size={24} color="#01D676" />
             Earning History
-          </h1>
-          <p className="text-sm text-zinc-500">{total} total completions</p>
-        </div>
-      </div>
+          </Typography>
+          <Typography variant="body2" color="textSecondary">{total} total completions</Typography>
+        </Box>
+      </Box>
 
       {completions.length === 0 ? (
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-12 text-center">
-          <Search className="mx-auto h-10 w-10 text-zinc-700" />
-          <p className="mt-3 text-sm text-zinc-500">
-            No completions yet. Complete offers to see your history here.
-          </p>
-        </div>
+        <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 6, textAlign: "center" }}>
+          <Search size={40} color="rgba(169,169,202,0.4)" style={{ margin: "0 auto" }} />
+          <Typography variant="body2" color="textSecondary" sx={{ mt: 1.5 }}>No completions yet. Complete offers to see your history here.</Typography>
+        </Paper>
       ) : (
         <>
           {/* Mobile cards */}
-          <div className="space-y-3 sm:hidden">
+          <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1 }}>
             {completions.map((c) => {
               const Icon = offerIcon(c.program_id);
               return (
-                <div
-                  key={c.id}
-                  className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-800">
-                    <Icon className="h-5 w-5 text-emerald-400" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">Program {c.program_id}</p>
-                    <p className="text-xs text-zinc-500">
-                      {new Date(c.created_at).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="flex items-center gap-1 text-sm font-semibold text-emerald-400">
-                      <CheckCircle className="h-3.5 w-3.5" />
-                      +{c.coins_awarded}
-                    </p>
+                <Box key={c.id} sx={{ display: "flex", alignItems: "center", gap: 2, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, px: 2, py: 1.5, transition: "all 0.2s" }}>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 3, bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}`, flexShrink: 0 }}>
+                    <Icon size={20} color="#01D676" />
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }} truncate>Program {c.program_id}</Typography>
+                    <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
+                      {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: "right" }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, borderRadius: 50, bgcolor: colors.background.secondary, border: "1px solid rgba(1,214,118,0.2)", px: 1.25, py: 0.25, fontSize: "0.875rem", fontWeight: 600, color: "#01D676" }}>
+                      <CheckCircle size={14} />+{c.coins_awarded}
+                    </Box>
                     {c.payout_decimal != null && (
-                      <p className="text-[10px] text-zinc-500">${c.payout_decimal.toFixed(2)}</p>
+                      <Typography sx={{ mt: 0.25, fontSize: "10px", color: colors.text.secondary }}>${c.payout_decimal.toFixed(2)}</Typography>
                     )}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
               );
             })}
-          </div>
+          </Box>
 
           {/* Desktop table */}
-          <div className="hidden overflow-hidden rounded-xl border border-zinc-800 sm:block">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-zinc-800 bg-zinc-900/80 text-xs uppercase text-zinc-500">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Program</th>
-                  <th className="px-4 py-3 text-right font-medium">Payout</th>
-                  <th className="px-4 py-3 text-right font-medium">Coins</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800/60">
+          <TableContainer component={Paper} sx={{ display: { xs: "none", sm: "block" }, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: "transparent" }}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ bgcolor: "rgba(29,30,48,0.8)" }}>
+                  <TableCell sx={{ color: colors.text.secondary, fontSize: "0.75rem", textTransform: "uppercase", borderColor: colors.divider }}>Date</TableCell>
+                  <TableCell sx={{ color: colors.text.secondary, fontSize: "0.75rem", textTransform: "uppercase", borderColor: colors.divider }}>Program</TableCell>
+                  <TableCell align="right" sx={{ color: colors.text.secondary, fontSize: "0.75rem", textTransform: "uppercase", borderColor: colors.divider }}>Payout</TableCell>
+                  <TableCell align="right" sx={{ color: colors.text.secondary, fontSize: "0.75rem", textTransform: "uppercase", borderColor: colors.divider }}>Coins</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {completions.map((c) => {
                   const Icon = offerIcon(c.program_id);
                   return (
-                    <tr key={c.id} className="bg-zinc-900/40">
-                      <td className="whitespace-nowrap px-4 py-3 text-zinc-400">
-                        {new Date(c.created_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <Icon className="h-4 w-4 text-emerald-400" />
-                          <span className="font-medium">Program {c.program_id}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-right text-zinc-400">
+                    <TableRow key={c.id} sx={{ bgcolor: "rgba(29,30,48,0.4)", "&:hover": { bgcolor: "rgba(29,30,48,0.6)" } }}>
+                      <TableCell sx={{ color: colors.text.secondary, borderColor: colors.divider, whiteSpace: "nowrap" }}>
+                        {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </TableCell>
+                      <TableCell sx={{ borderColor: colors.divider }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Icon size={16} color="#01D676" />
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>Program {c.program_id}</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell align="right" sx={{ color: colors.text.secondary, borderColor: colors.divider }}>
                         {c.payout_decimal != null ? `$${c.payout_decimal.toFixed(2)}` : "--"}
-                      </td>
-                      <td className="px-4 py-3 text-right font-semibold text-emerald-400">
-                        +{c.coins_awarded}
-                      </td>
-                    </tr>
+                      </TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600, color: "#01D676", borderColor: colors.divider }}>+{c.coins_awarded}</TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
+          </TableContainer>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => fetchPage(page - 1)}
-                disabled={page === 0}
-                className="flex items-center gap-1 rounded-lg border border-zinc-800 px-3 py-2 text-xs font-medium text-zinc-400 transition-colors hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-30"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
+            <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Button size="small" onClick={() => fetchPage(page - 1)} disabled={page === 0} startIcon={<ChevronLeft size={14} />}
+                sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
                 Prev
-              </button>
-              <span className="text-xs text-zinc-500">
-                Page {page + 1} of {totalPages}
-              </span>
-              <button
-                type="button"
-                onClick={() => fetchPage(page + 1)}
-                disabled={page >= totalPages - 1}
-                className="flex items-center gap-1 rounded-lg border border-zinc-800 px-3 py-2 text-xs font-medium text-zinc-400 transition-colors hover:border-zinc-700 hover:text-zinc-200 disabled:opacity-30"
-              >
+              </Button>
+              <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>Page {page + 1} of {totalPages}</Typography>
+              <Button size="small" onClick={() => fetchPage(page + 1)} disabled={page >= totalPages - 1} endIcon={<ChevronRight size={14} />}
+                sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
                 Next
-                <ChevronRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
+              </Button>
+            </Box>
           )}
         </>
       )}
-    </div>
+    </Box>
   );
 }

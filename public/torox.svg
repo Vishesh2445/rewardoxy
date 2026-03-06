@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1000" height="1000" viewBox="0 0 1000 1000" xml:space="preserve">
+<desc>Created with Fabric.js 3.5.0</desc>
+<defs>
+</defs>
+<rect x="0" y="0" width="100%" height="100%" fill="rgba(255,255,255,0)"/>
+<g transform="matrix(4.1516 0 0 4.1516 499.9951 499.995)" id="942425">
+<g style="">
+		<g transform="matrix(4.3085 0 0 4.3085 0.0003 11.9312)" id="logoMark &lt;PathItem&gt;">
+<linearGradient id="SVGID_3" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1 0 0 1 0 0)" x1="12.4432" y1="47.3589" x2="26.6666" y2="6.2236">
+<stop offset="0%" style="stop-color:rgb(106,56,255);stop-opacity: 1"/>
+<stop offset="100%" style="stop-color:rgb(187,105,255);stop-opacity: 1"/>
+</linearGradient>
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: url(#SVGID_3); fill-rule: nonzero; opacity: 1;" transform=" translate(-25.3671, -28.5484)" d="M 30.535 18.0189 C 29.6624 18.5595 28.9418 19.3136 28.4414 20.2101 C 27.9409 21.1066 27.6771 22.1159 27.6748 23.1427 L 25.8161 38.0127 C 25.8019 38.1248 25.7473 38.2279 25.6626 38.3027 C 25.5778 38.3774 25.4687 38.4186 25.3557 38.4186 C 25.2427 38.4186 25.1336 38.3774 25.0489 38.3027 C 24.9641 38.2279 24.9096 38.1248 24.8954 38.0127 L 23.0366 23.1542 C 23.0371 22.1269 22.7745 21.1166 22.2738 20.2196 C 21.773 19.3226 21.051 18.5689 20.1764 18.0304 L 0 5.53833 L 1.20849 17.8694 L 10.9514 23.914 C 11.6242 24.3277 12.1799 24.9067 12.5657 25.5959 C 12.9515 26.2851 13.1545 27.0617 13.1555 27.8516 L 15.3135 49.9236 C 15.3577 50.372 15.5673 50.7879 15.9014 51.0902 C 16.2355 51.3924 16.6701 51.5594 17.1206 51.5584 H 33.6139 C 34.0637 51.5573 34.4972 51.3896 34.8308 51.0877 C 35.1645 50.7859 35.3746 50.3712 35.4209 49.9236 L 37.5789 27.8516 C 37.5771 27.0612 37.779 26.2836 38.165 25.5939 C 38.5511 24.9042 39.1083 24.3256 39.7829 23.914 L 49.5259 17.8694 L 50.7343 5.53833 L 30.535 18.0189 Z" stroke-linecap="round"/>
+</g>
+		<g transform="matrix(4.3085 0 0 4.3085 -0.049 -31.5495)" id="logoMark &lt;CompoundPathItem&gt;">
+<linearGradient id="SVGID_4" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1 0 0 1 0 0)" x1="26.0376" y1="-1.60642" x2="22.5306" y2="35.1107">
+<stop offset="0%" style="stop-color:rgb(136,19,186);stop-opacity: 1"/>
+<stop offset="100%" style="stop-color:rgb(141,64,247);stop-opacity: 1"/>
+</linearGradient>
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: url(#SVGID_4); fill-rule: evenodd; opacity: 1;" transform=" translate(-25.3557, -18.4565)" d="M 7.84957 0 L 0 5.53827 L 8.93724 11.0589 L 7.84957 0 Z M 1.54802 21.3521 L 9.48968 26.28 C 9.8034 26.4724 10.0678 26.7356 10.2616 27.0485 C 10.4555 27.3614 10.5735 27.7154 10.6061 28.0821 L 11.4751 36.913 L 3.5277 31.962 C 3.21503 31.7685 2.95149 31.505 2.75777 31.1924 C 2.56405 30.8798 2.44543 30.5265 2.41124 30.1602 L 1.54802 21.3521 Z M 42.8561 0 L 41.7742 11.0589 L 50.7114 5.53827 L 42.8561 0 Z M 49.169 21.3521 L 41.2215 26.28 C 40.9078 26.4724 40.6435 26.7356 40.4497 27.0485 C 40.2558 27.3615 40.1378 27.7154 40.1051 28.0821 L 39.2362 36.913 L 47.1836 31.962 C 47.4963 31.7685 47.7598 31.5051 47.9535 31.1924 C 48.1472 30.8798 48.2658 30.5265 48.3 30.1602 L 49.169 21.3521 Z" stroke-linecap="round"/>
+</g>
+</g>
+</g>
+</svg>
