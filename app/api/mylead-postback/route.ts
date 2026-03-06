@@ -54,10 +54,10 @@ async function handlePostback(request: NextRequest) {
     const supabase = getSupabase();
     log('Supabase client created');
 
-    // 4. Check if user exists
+    // 4. Check if user exists (only select id to avoid missing column errors)
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('id, coins_balance')
+      .select('id')
       .eq('id', player_id)
       .single();
 
@@ -65,7 +65,7 @@ async function handlePostback(request: NextRequest) {
       log(`User not found: ${userError?.message || 'no data'}`);
       return ok({ error: 'user_not_found', player_id, detail: userError?.message, logs });
     }
-    log(`User found: coins_balance=${userData.coins_balance}`);
+    log('User found');
 
     // 5. Duplicate check against completions
     const { data: existing, error: checkError } = await supabase
@@ -105,8 +105,9 @@ async function handlePostback(request: NextRequest) {
       log('Completion inserted');
     }
 
-    // 7. Credit coins - try RPC first, fall back to direct update
+    // 7. Credit coins - try RPC first, then fall back to raw SQL via rpc
     let credited = false;
+    let creditMethod = 'none';
 
     const { error: rpcError } = await supabase.rpc('increment_coins', {
       p_user_id: player_id,
@@ -116,32 +117,49 @@ async function handlePostback(request: NextRequest) {
     if (rpcError) {
       log(`RPC increment_coins failed: ${rpcError.message} (code: ${rpcError.code})`);
 
-      // Fallback: direct SQL update
-      log('Trying direct update fallback...');
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ coins_balance: userData.coins_balance + coins })
-        .eq('id', player_id);
+      // Fallback: raw SQL increment via rpc to avoid needing the column name
+      log('Trying raw SQL fallback...');
+      const { error: sqlError } = await supabase.rpc('exec_sql', {
+        query: `UPDATE public.users SET coins_balance = COALESCE(coins_balance, 0) + ${coins} WHERE id = '${player_id}'`
+      });
 
-      if (updateError) {
-        log(`Direct update also failed: ${updateError.message}`);
-        return ok({ error: 'credit_failed_all_methods', logs });
+      if (sqlError) {
+        log(`Raw SQL fallback failed: ${sqlError.message}`);
+
+        // Last resort: direct column update
+        log('Trying direct update fallback...');
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ coins_balance: coins })
+          .eq('id', player_id);
+
+        if (updateError) {
+          log(`Direct update also failed: ${updateError.message}`);
+          return ok({ error: 'credit_failed_all_methods', logs });
+        }
+        creditMethod = 'direct_update';
+      } else {
+        creditMethod = 'raw_sql';
       }
       credited = true;
-      log(`Direct update succeeded: ${userData.coins_balance} + ${coins} = ${userData.coins_balance + coins}`);
     } else {
       credited = true;
+      creditMethod = 'rpc';
       log('RPC increment_coins succeeded');
     }
 
-    // 8. Verify the credit actually worked
-    const { data: verifyData } = await supabase
+    // 8. Verify
+    const { data: verifyData, error: verifyError } = await supabase
       .from('users')
-      .select('coins_balance')
+      .select('*')
       .eq('id', player_id)
       .single();
 
-    log(`Verification: coins_balance is now ${verifyData?.coins_balance}`);
+    if (verifyError) {
+      log(`Verification query failed: ${verifyError.message}`);
+    } else {
+      log(`Verification: user row = ${JSON.stringify(verifyData)}`);
+    }
 
     return ok({
       status: 'success',
@@ -150,8 +168,8 @@ async function handlePostback(request: NextRequest) {
       payout,
       coins_credited: coins,
       completion_inserted: completionInserted,
-      coins_credited_via: credited ? (rpcError ? 'direct_update' : 'rpc') : 'none',
-      new_balance: verifyData?.coins_balance,
+      credit_method: creditMethod,
+      user_row: verifyData,
       logs
     });
   } catch (err: unknown) {
