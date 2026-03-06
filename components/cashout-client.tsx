@@ -28,7 +28,7 @@ const STATUS_COLORS: Record<string, { bg: string; color: string; border: string 
 
 interface Withdrawal {
   id: string;
-  created_at: string;
+  requested_at: string;
   coins: number;
   amount_usd: number;
   network: string;
@@ -62,7 +62,7 @@ export default function CashoutClient({ userId, initialCoins, initialWithdrawals
     const supabase = createClient();
     const from = newPage * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
-    const { data, count } = await supabase.from("withdrawals").select("id, created_at, coins, amount_usd, network, status, tx_hash", { count: "exact" }).eq("user_id", userId).order("created_at", { ascending: false }).range(from, to);
+    const { data, count } = await supabase.from("withdrawals").select("id, requested_at, coins, amount_usd, network, status, tx_hash", { count: "exact" }).eq("user_id", userId).order("requested_at", { ascending: false }).range(from, to);
     if (data) setWithdrawals(data);
     if (count !== null) setTotal(count);
     setPage(newPage);
@@ -199,7 +199,7 @@ export default function CashoutClient({ userId, initialCoins, initialWithdrawals
                   <Paper key={w.id} sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 2 }}>
                     <Box sx={{ mb: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
-                        {new Date(w.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </Typography>
                       <Box sx={{ borderRadius: 50, border: `1px solid ${st.border}`, bgcolor: st.bg, color: st.color, px: 1.25, py: 0.25, fontSize: "10px", fontWeight: 600, textTransform: "uppercase" }}>{w.status}</Box>
                     </Box>
@@ -236,7 +236,7 @@ export default function CashoutClient({ userId, initialCoins, initialWithdrawals
                     return (
                       <TableRow key={w.id} sx={{ bgcolor: "rgba(29,30,48,0.4)", "&:hover": { bgcolor: "rgba(29,30,48,0.6)" } }}>
                         <TableCell sx={{ color: colors.text.secondary, borderColor: colors.divider, whiteSpace: "nowrap" }}>
-                          {new Date(w.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </TableCell>
                         <TableCell sx={{ fontWeight: 500, color: "#fff", borderColor: colors.divider }}>{w.coins.toLocaleString()}</TableCell>
                         <TableCell sx={{ color: "#fff", borderColor: colors.divider }}>${w.amount_usd.toFixed(2)}</TableCell>

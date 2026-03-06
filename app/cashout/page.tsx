@@ -27,11 +27,11 @@ export default async function CashoutPage() {
 
     supabase
       .from("withdrawals")
-      .select("id, created_at, coins, amount_usd, network, status, tx_hash", {
+      .select("id, requested_at, coins, amount_usd, network, status, tx_hash", {
         count: "exact",
       })
       .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
+      .order("requested_at", { ascending: false })
       .range(0, PAGE_SIZE - 1),
   ]);
 

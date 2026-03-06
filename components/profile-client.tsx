@@ -19,7 +19,7 @@ interface Withdrawal {
   network: string;
   status: string;
   tx_hash: string | null;
-  created_at: string;
+  requested_at: string;
 }
 
 interface Completion {
@@ -97,8 +97,8 @@ export default function ProfileClient({
       const [compRes, withRes] = await Promise.all([
         supabase.from("completions").select("id, program_id, coins_awarded, created_at")
           .eq("player_id", userId).order("created_at", { ascending: false }).limit(50),
-        supabase.from("withdrawals").select("id, coins, amount_usd, network, status, tx_hash, created_at")
-          .eq("user_id", userId).order("created_at", { ascending: false }).limit(50),
+        supabase.from("withdrawals").select("id, coins, amount_usd, network, status, tx_hash, requested_at")
+          .eq("user_id", userId).order("requested_at", { ascending: false }).limit(50),
       ]);
       setCompletions(compRes.data ?? []);
       setWithdrawals(withRes.data ?? []);
@@ -365,7 +365,7 @@ export default function ProfileClient({
                       <Box key={w.id} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, px: 2, py: 1.5 }}>
                         <Box sx={{ mb: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
-                            {new Date(w.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                           </Typography>
                           <Box sx={{ borderRadius: 50, bgcolor: sc.bg, px: 1.25, py: 0.25, fontSize: "10px", fontWeight: 600, color: sc.color, textTransform: "capitalize" }}>
                             {w.status}
@@ -407,7 +407,7 @@ export default function ProfileClient({
                               </Box>
                             </TableCell>
                             <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.8rem", whiteSpace: "nowrap" }}>
-                              {new Date(w.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                              {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                             </TableCell>
                           </TableRow>
                         );

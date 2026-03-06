@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Box,
   Container,
@@ -11,6 +13,10 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  TextField,
+  InputAdornment,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import {
   Shield,
@@ -33,10 +39,13 @@ import {
   CreditCard,
   Bitcoin,
   Sparkles,
+  Mail,
+  Lock,
 } from "lucide-react";
 import Icons from "@/components/icons";
 import Typography from "@/components/ui/Typography";
 import OfferwallModal from "@/components/offerwall-modal";
+import { createClient } from "@/lib/supabase/client";
 
 const colors = {
   bgPage: "#141523",
@@ -88,6 +97,72 @@ const sxBadge = {
 } as const;
 
 export default function Home() {
+  const router = useRouter();
+  const supabase = createClient();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [signupLoading, setSignupLoading] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsAuthenticated(!!user);
+    });
+  }, []);
+
+  async function handleSignup(e: React.FormEvent) {
+    e.preventDefault();
+    setSignupError(null);
+    setSignupLoading(true);
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (signUpError) {
+      setSignupError(signUpError.message);
+      setSignupLoading(false);
+      return;
+    }
+
+    if (data.user) {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: data.user.id,
+          email: data.user.email,
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json();
+        setSignupError(body.error || "Failed to create profile");
+        setSignupLoading(false);
+        return;
+      }
+
+      router.push("/dashboard");
+    }
+
+    setSignupLoading(false);
+  }
+
+  async function handleGoogleSignup() {
+    setSignupError(null);
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    if (oauthError) {
+      setSignupError(oauthError.message);
+    }
+  }
+
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
       {/* ===================== NAVBAR ===================== */}
@@ -119,6 +194,7 @@ export default function Home() {
               { label: "Earn", href: "#earn" },
               { label: "Features", href: "#features" },
               { label: "FAQ", href: "#faq" },
+              { label: "Contact", href: "/contact" },
             ].map((item) => (
               <Box
                 key={item.href}
@@ -138,35 +214,54 @@ export default function Home() {
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Button
-              component={Link}
-              href="/auth/login"
-              variant="text"
-              sx={{
-                display: { xs: "none", sm: "inline-flex" },
-                color: colors.textSecondary,
-                fontWeight: 600,
-                fontSize: "0.875rem",
-                textTransform: "none",
-                "&:hover": { color: colors.textPrimary, bgcolor: "transparent" },
-              }}
-            >
-              Sign In
-            </Button>
-            <Button
-              component={Link}
-              href="/auth/signup"
-              variant="contained"
-              sx={{
-                ...sxGradientBtn,
-                height: 40,
-                px: 2.5,
-                fontSize: "0.875rem",
-                borderRadius: "8px",
-              }}
-            >
-              Sign Up Free
-            </Button>
+            {isAuthenticated ? (
+              <Button
+                component={Link}
+                href="/dashboard"
+                variant="contained"
+                sx={{
+                  ...sxGradientBtn,
+                  height: 40,
+                  px: 2.5,
+                  fontSize: "0.875rem",
+                  borderRadius: "8px",
+                }}
+              >
+                Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button
+                  component={Link}
+                  href="/auth/login"
+                  variant="text"
+                  sx={{
+                    display: { xs: "none", sm: "inline-flex" },
+                    color: colors.textSecondary,
+                    fontWeight: 600,
+                    fontSize: "0.875rem",
+                    textTransform: "none",
+                    "&:hover": { color: colors.textPrimary, bgcolor: "transparent" },
+                  }}
+                >
+                  Sign In
+                </Button>
+                <Button
+                  component={Link}
+                  href="/auth/signup"
+                  variant="contained"
+                  sx={{
+                    ...sxGradientBtn,
+                    height: 40,
+                    px: 2.5,
+                    fontSize: "0.875rem",
+                    borderRadius: "8px",
+                  }}
+                >
+                  Sign Up Free
+                </Button>
+              </>
+            )}
           </Box>
         </Container>
       </Box>
@@ -178,7 +273,7 @@ export default function Home() {
           position: "relative",
           overflow: "hidden",
           px: { xs: 2, sm: 3, lg: 4 },
-          pt: { xs: 10, sm: 14 },
+          pt: { xs: 8, sm: 12 },
           pb: { xs: 8, sm: 12 },
         }}
       >
@@ -203,124 +298,259 @@ export default function Home() {
           />
         </Box>
 
-        <Container maxWidth="md" sx={{ position: "relative", textAlign: "center" }}>
-          <Typography
-            variant="h1"
-            isBold
-            sx={{
-              fontSize: { xs: "2.25rem", sm: "3rem", lg: "4.25rem" },
-              lineHeight: 1.15,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Earn Money by
-            <br />
-            <Typography
-              component="span"
-              isGradient
-              isBold
-              sx={{ fontSize: "inherit", lineHeight: "inherit" }}
-            >
-              Completing Tasks
-            </Typography>
-          </Typography>
+        <Container maxWidth="lg" sx={{ position: "relative" }}>
+          <Grid container spacing={6} alignItems="center">
+            {/* Left side — headline */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography
+                variant="h1"
+                isBold
+                sx={{
+                  fontSize: { xs: "2.25rem", sm: "2.75rem", lg: "3.5rem" },
+                  lineHeight: 1.15,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                Earn Money by
+                <br />
+                <Typography
+                  component="span"
+                  isGradient
+                  isBold
+                  sx={{ fontSize: "inherit", lineHeight: "inherit" }}
+                >
+                  Completing Tasks
+                </Typography>
+              </Typography>
 
-          <Typography
-            sx={{
-              mt: 3,
-              mx: "auto",
-              maxWidth: 600,
-              fontSize: { xs: "1.125rem", sm: "1.25rem" },
-              lineHeight: 1.7,
-              color: colors.textSecondary,
-            }}
-          >
-            Complete offers, play games, fill surveys and earn coins. Cash out instantly as
-            USDT crypto. Free to join, worldwide.
-          </Typography>
+              <Typography
+                sx={{
+                  mt: 3,
+                  maxWidth: 480,
+                  fontSize: { xs: "1rem", sm: "1.125rem" },
+                  lineHeight: 1.7,
+                  color: colors.textSecondary,
+                }}
+              >
+                Complete offers, play games, fill surveys and earn coins. Cash out
+                instantly as USDT crypto. Free to join, worldwide.
+              </Typography>
 
-          <Box
-            sx={{
-              mt: 5,
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 2,
-            }}
-          >
-            <Button
-              component={Link}
-              href="/auth/signup"
-              variant="contained"
-              sx={{
-                ...sxGradientBtn,
-                height: 56,
-                px: 5,
-                fontSize: "1rem",
-                boxShadow: "0 8px 32px rgba(1,214,118,0.2)",
-                gap: 1,
-              }}
-            >
-              Start Earning Now
-              <ArrowRight size={20} />
-            </Button>
-            <Button
-              component={Link}
-              href="/auth/login"
-              variant="contained"
-              color="primary"
-              sx={{
-                height: 56,
-                px: 5,
-                fontSize: "1rem",
-                fontWeight: 600,
-                textTransform: "none",
-                borderRadius: "12px",
-                color: colors.textPrimary,
-              }}
-            >
-              Sign In
-            </Button>
-          </Box>
+              {/* Trust badges */}
+              <Box
+                sx={{
+                  mt: 4,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: { xs: 2, sm: 3 },
+                  color: colors.textSecondary,
+                  fontSize: "0.875rem",
+                }}
+              >
+                {[
+                  { icon: <Shield size={16} />, label: "Secure & Safe" },
+                  { icon: <Zap size={16} />, label: "Instant Payouts" },
+                  { icon: <Globe size={16} />, label: "100+ Countries" },
+                ].map((badge) => (
+                  <Box key={badge.label} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 32,
+                        height: 32,
+                        borderRadius: "8px",
+                        bgcolor: colors.greenTint,
+                        color: colors.green,
+                      }}
+                    >
+                      {badge.icon}
+                    </Box>
+                    {badge.label}
+                  </Box>
+                ))}
+              </Box>
+            </Grid>
 
-          {/* Trust badges */}
-          <Box
-            sx={{
-              mt: 6,
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: { xs: 3, sm: 4 },
-              color: colors.textSecondary,
-              fontSize: "0.875rem",
-            }}
-          >
-            {[
-              { icon: <Shield size={16} />, label: "Secure & Safe" },
-              { icon: <Zap size={16} />, label: "Instant Payouts" },
-              { icon: <Globe size={16} />, label: "100+ Countries" },
-            ].map((badge) => (
-              <Box key={badge.label} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Box
+            {/* Right side — signup card or start earning */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              {isAuthenticated ? (
+                <Paper
+                  elevation={0}
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: 32,
-                    height: 32,
-                    borderRadius: "8px",
-                    bgcolor: colors.greenTint,
-                    color: colors.green,
+                    ...sxCard,
+                    p: { xs: 4, sm: 5 },
+                    textAlign: "center",
                   }}
                 >
-                  {badge.icon}
-                </Box>
-                {badge.label}
-              </Box>
-            ))}
-          </Box>
+                  <Box
+                    sx={{
+                      mx: "auto",
+                      mb: 2.5,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 64,
+                      height: 64,
+                      borderRadius: "16px",
+                      background: "linear-gradient(135deg, #01D676 0%, #007e45 100%)",
+                      boxShadow: "0 8px 32px rgba(1,214,118,0.25)",
+                    }}
+                  >
+                    <Sparkles size={32} color="#fff" />
+                  </Box>
+                  <Typography variant="h5" isBold sx={{ mb: 1 }}>
+                    Welcome Back!
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.95rem", color: colors.textSecondary, mb: 3 }}>
+                    Continue earning coins and cash out anytime.
+                  </Typography>
+                  <Button
+                    component={Link}
+                    href="/earn"
+                    variant="contained"
+                    fullWidth
+                    sx={{
+                      ...sxGradientBtn,
+                      height: 52,
+                      fontSize: "1rem",
+                      gap: 1,
+                    }}
+                  >
+                    Start Earning
+                    <ArrowRight size={20} />
+                  </Button>
+                </Paper>
+              ) : (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    ...sxCard,
+                    p: { xs: 3, sm: 4 },
+                  }}
+                >
+                  <Typography variant="h5" isBold sx={{ mb: 0.5, textAlign: "center" }}>
+                    Create Free Account
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.85rem", color: colors.textSecondary, textAlign: "center", mb: 3 }}>
+                    Start earning in under 2 minutes
+                  </Typography>
+
+                  {/* Google button */}
+                  <Button
+                    onClick={handleGoogleSignup}
+                    fullWidth
+                    sx={{
+                      height: 48,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      borderRadius: "12px",
+                      bgcolor: "#fff",
+                      color: "#333",
+                      fontSize: "0.9rem",
+                      gap: 1.5,
+                      mb: 2.5,
+                      "&:hover": { bgcolor: "#f5f5f5" },
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 18 18">
+                      <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+                      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+                      <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 2.58 9 2.58z" fill="#EA4335"/>
+                    </svg>
+                    Continue with Google
+                  </Button>
+
+                  <Divider sx={{ borderColor: colors.divider, mb: 2.5, fontSize: "0.75rem", color: colors.textSecondary }}>
+                    or sign up with email
+                  </Divider>
+
+                  {/* Signup form */}
+                  <Box
+                    component="form"
+                    onSubmit={handleSignup}
+                    sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                  >
+                    <TextField
+                      type="email"
+                      required
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      size="small"
+                      slotProps={{
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Mail size={16} color={colors.textSecondary} />
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
+                    />
+                    <TextField
+                      type="password"
+                      required
+                      placeholder="Min 6 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      size="small"
+                      inputProps={{ minLength: 6 }}
+                      slotProps={{
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Lock size={16} color={colors.textSecondary} />
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
+                    />
+
+                    {signupError && (
+                      <Alert severity="error" sx={{ fontSize: "0.8rem" }}>
+                        {signupError}
+                      </Alert>
+                    )}
+
+                    <Button
+                      type="submit"
+                      fullWidth
+                      disabled={signupLoading}
+                      sx={{
+                        ...sxGradientBtn,
+                        height: 48,
+                        fontSize: "0.95rem",
+                        gap: 1,
+                      }}
+                    >
+                      {signupLoading ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        <>
+                          Sign Up Free
+                          <ArrowRight size={18} />
+                        </>
+                      )}
+                    </Button>
+                  </Box>
+
+                  <Typography sx={{ mt: 2, fontSize: "0.8rem", color: colors.textSecondary, textAlign: "center" }}>
+                    Already have an account?{" "}
+                    <Box
+                      component={Link}
+                      href="/auth/login"
+                      sx={{ color: colors.green, textDecoration: "none", fontWeight: 600 }}
+                    >
+                      Sign In
+                    </Box>
+                  </Typography>
+                </Paper>
+              )}
+            </Grid>
+          </Grid>
         </Container>
       </Box>
 
@@ -435,17 +665,40 @@ export default function Home() {
             </Grid>
           </Grid>
 
-          <Box sx={{ mt: 10 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <DollarSign size={20} color={colors.green} />
-              <Typography variant="h6" isBold>
-                Offer Walls
-              </Typography>
-            </Box>
-            <Box sx={{ mt: 3 }}>
-              <OfferwallModal />
-            </Box>
-          </Box>
+
+        </Container>
+      </Box>
+
+      {/* ===================== STATS / TRUST ===================== */}
+      <Divider sx={{ borderColor: colors.divider }} />
+      <Box
+        component="section"
+        sx={{ px: { xs: 2, sm: 3, lg: 4 }, py: { xs: 8, sm: 10 } }}
+      >
+        <Container maxWidth="md">
+          <Grid container spacing={3}>
+            {[
+              { value: "100+", label: "Countries Supported" },
+              { value: "500+", label: "Available Offers" },
+              { value: "Instant", label: "Crypto Payouts" },
+              { value: "$2", label: "Minimum Cashout" },
+            ].map((stat) => (
+              <Grid key={stat.label} size={{ xs: 6, sm: 3 }}>
+                <Box sx={{ textAlign: "center" }}>
+                  <Typography
+                    isBold
+                    isGradient
+                    sx={{ fontSize: { xs: "1.75rem", sm: "2.25rem" } }}
+                  >
+                    {stat.value}
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.85rem", color: colors.textSecondary, mt: 0.5 }}>
+                    {stat.label}
+                  </Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
         </Container>
       </Box>
 
@@ -537,16 +790,13 @@ export default function Home() {
             </Typography>
           </Box>
 
-          <Grid container spacing={2} sx={{ mt: 6 }} columns={{ xs: 6, sm: 6 }}>
+          <Grid container spacing={2} sx={{ mt: 6 }} columns={{ xs: 3, sm: 3 }}>
             {[
               { name: "USDT", sub: "TRC-20" },
               { name: "USDT", sub: "BEP-20" },
               { name: "SOL", sub: "Solana" },
-              { name: "BTC", sub: "Bitcoin" },
-              { name: "ETH", sub: "Ethereum" },
-              { name: "LTC", sub: "Litecoin" },
             ].map((p) => (
-              <Grid key={p.sub} size={{ xs: 2, sm: 1 }}>
+              <Grid key={p.sub} size={{ xs: 1, sm: 1 }}>
                 <Paper
                   elevation={0}
                   sx={{
@@ -555,7 +805,7 @@ export default function Home() {
                     flexDirection: "column",
                     alignItems: "center",
                     gap: 1,
-                    p: 2,
+                    p: 3,
                     textAlign: "center",
                   }}
                 >
@@ -576,7 +826,7 @@ export default function Home() {
                   <Typography sx={{ fontSize: "0.875rem", fontWeight: 600 }}>
                     {p.name}
                   </Typography>
-                  <Typography sx={{ fontSize: "0.625rem", color: colors.textSecondary }}>
+                  <Typography sx={{ fontSize: "0.75rem", color: colors.textSecondary }}>
                     {p.sub}
                   </Typography>
                 </Paper>
@@ -684,7 +934,7 @@ export default function Home() {
             </Typography>
             <Button
               component={Link}
-              href="/auth/signup"
+              href={isAuthenticated ? "/earn" : "/auth/signup"}
               variant="contained"
               sx={{
                 ...sxGradientBtn,
@@ -696,7 +946,7 @@ export default function Home() {
                 gap: 1,
               }}
             >
-              Create Free Account
+              {isAuthenticated ? "Start Earning" : "Create Free Account"}
               <ArrowRight size={20} />
             </Button>
           </Paper>

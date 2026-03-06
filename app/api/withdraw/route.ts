@@ -67,12 +67,16 @@ export async function POST(request: NextRequest) {
   // Get current balance and saved crypto address
   const { data: userData, error: userError } = await supabase
     .from("users")
-    .select("coins_balance, crypto_address")
+    .select("coins_balance, crypto_address, is_banned")
     .eq("id", user.id)
     .single();
 
   if (userError || !userData) {
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+  }
+
+  if (userData.is_banned) {
+    return NextResponse.json({ error: "Your account has been suspended" }, { status: 403 });
   }
 
   const { coins_balance: coins, crypto_address } = userData;

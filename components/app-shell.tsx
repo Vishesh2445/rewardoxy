@@ -35,13 +35,10 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import TwitterIcon from "@mui/icons-material/Twitter";
-import FacebookIcon from "@mui/icons-material/Facebook";
-import InstagramIcon from "@mui/icons-material/Instagram";
-import RedditIcon from "@mui/icons-material/Reddit";
 import { createClient } from "@/lib/supabase/client";
 import Icons from "@/components/icons";
 import Typography from "@/components/ui/Typography";
+import NotificationBell from "@/components/notification-bell";
 import colors from "@/theme/colors";
 
 const drawerWidth = 200;
@@ -66,6 +63,14 @@ const BOTTOM_NAV_ITEMS = [
 
 const footerInfoList = [
   {
+    title: "Quick Links",
+    links: [
+      { text: "Earn", url: "/earn" },
+      { text: "Cash Out", url: "/cashout" },
+      { text: "Profile", url: "/profile" },
+    ],
+  },
+  {
     title: "About",
     links: [
       { text: "Terms of Service", url: "/terms" },
@@ -80,13 +85,6 @@ const footerInfoList = [
       { text: "Contact", url: "/contact" },
     ],
   },
-];
-
-const footerSocialIcons = [
-  { link: "#", Icon: TwitterIcon },
-  { link: "#", Icon: FacebookIcon },
-  { link: "#", Icon: InstagramIcon },
-  { link: "#", Icon: RedditIcon },
 ];
 
 type StyledBottomNavActionProps = {
@@ -234,6 +232,7 @@ export default function AppShell({ children, coins }: AppShellProps) {
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <NotificationBell />
             {coins !== undefined && (
               <Box
                 sx={{
@@ -356,14 +355,6 @@ export default function AppShell({ children, coins }: AppShellProps) {
                 </Box>
               ))}
             </Box>
-          </Box>
-          <Divider />
-          <Box sx={{ px: 8, py: 3 }}>
-            {footerSocialIcons.map(({ Icon, link }, i) => (
-              <IconButton key={i} href={link} sx={{ mx: 1 }}>
-                <Icon />
-              </IconButton>
-            ))}
           </Box>
         </Box>
       </Box>
