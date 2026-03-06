@@ -2,23 +2,30 @@ import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const sig = request.headers.get('x-signature') || new URL(request.url).searchParams.get('sig') || '';
+  const sig = request.headers.get('x-signature') || 
+             new URL(request.url).searchParams.get('sig') || 
+             new URL(request.url).searchParams.get('mll') || '';
+  
   if (sig !== process.env.POSTBACK_SECRET) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 403 });
   }
 
   const url = new URL(request.url);
   const player_id = url.searchParams.get('player_id') || url.searchParams.get('ml_sub1');
-  const offer_id = url.searchParams.get('offer_id') || url.searchParams.get('program_id');
+  const offer_id = url.searchParams.get('offer_id') || url.searchParams.get('program_id') || 'unknown';
   const payout = parseFloat(url.searchParams.get('payout') || '0');
 
-  if (!player_id || !offer_id || payout <= 0) {
+  // FIXED: Removed !offer_id requirement
+  if (!player_id || payout <= 0) {
     return NextResponse.json({ error: 'Missing params' }, { status: 400 });
   }
 
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
-  // Check duplicate
+  // FIXED: Handle empty offer_id in duplicate check
   const { data: existing } = await supabase
     .from('completions')
     .select('id')
@@ -41,8 +48,18 @@ export async function POST(request: NextRequest) {
 
   // Credit instantly
   const coins = Math.floor(payout * 80);
-  await supabase.from('completions').insert({ player_id, offer_id, payout, coins_awarded: coins });
+  await supabase.from('completions').insert({ 
+    player_id, 
+    offer_id, 
+    payout, 
+    coins_awarded: coins 
+  });
   await supabase.rpc('increment_coins', { p_user_id: player_id, p_amount: coins });
 
   return NextResponse.json({ status: 'credited', coins }, { status: 200 });
+}
+
+// Support MyLead test (GET)
+export async function GET(request: NextRequest) {
+  return POST(request);
 }
