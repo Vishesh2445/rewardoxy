@@ -1,0 +1,132 @@
+name: Update Leaderboard Cache
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install @supabase/supabase-js
+
+      - name: Rebuild leaderboard cache
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          node --input-type=module <<'EOF'
+          import { createClient } from "@supabase/supabase-js";
+
+          const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+          );
+
+          async function sendTelegramAlert(message) {
+            const token = process.env.TELEGRAM_BOT_TOKEN;
+            const chatId = process.env.TELEGRAM_CHAT_ID;
+            if (!token || !chatId) return;
+            try {
+              await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  chat_id: chatId,
+                  text: message,
+                  parse_mode: "Markdown",
+                }),
+              });
+            } catch (e) {
+              console.error("Telegram alert failed:", e.message);
+            }
+          }
+
+          try {
+            const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+            // Aggregate completions from last 7 days grouped by player_id
+            const { data: completions, error: compError } = await supabase
+              .from("completions")
+              .select("player_id, coins")
+              .gte("created_at", sevenDaysAgo);
+
+            if (compError) throw new Error(`Fetch completions failed: ${compError.message}`);
+
+            // Sum coins per player
+            const totals = new Map();
+            for (const row of completions) {
+              totals.set(row.player_id, (totals.get(row.player_id) || 0) + row.coins);
+            }
+
+            // Sort descending, take top 10
+            const top10 = [...totals.entries()]
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 10);
+
+            if (top10.length === 0) {
+              console.log("No completions in the last 7 days — leaderboard cleared");
+            }
+
+            // Fetch display_name for each player
+            const playerIds = top10.map(([id]) => id);
+            let nameMap = new Map();
+
+            if (playerIds.length > 0) {
+              const { data: users, error: userError } = await supabase
+                .from("users")
+                .select("id, display_name")
+                .in("id", playerIds);
+
+              if (userError) throw new Error(`Fetch users failed: ${userError.message}`);
+
+              for (const u of users) {
+                nameMap.set(u.id, u.display_name);
+              }
+            }
+
+            // Build rows
+            const now = new Date().toISOString();
+            const rows = top10.map(([playerId, totalCoins], i) => ({
+              rank: i + 1,
+              player_id: playerId,
+              display_name: nameMap.get(playerId) || null,
+              total_coins: totalCoins,
+              updated_at: now,
+            }));
+
+            // Clear existing cache
+            const { error: deleteError } = await supabase
+              .from("leaderboard_cache")
+              .delete()
+              .gte("rank", 0);
+
+            if (deleteError) throw new Error(`Delete cache failed: ${deleteError.message}`);
+
+            // Insert fresh rows
+            if (rows.length > 0) {
+              const { error: insertError } = await supabase
+                .from("leaderboard_cache")
+                .insert(rows);
+
+              if (insertError) throw new Error(`Insert cache failed: ${insertError.message}`);
+            }
+
+            console.log(`Leaderboard updated — ${rows.length} entries cached`);
+          } catch (err) {
+            console.error("Leaderboard update failed:", err.message);
+            await sendTelegramAlert(
+              `🚨 *Leaderboard Update Failed*\n\n\`${err.message}\``
+            );
+            process.exit(1);
+          }
+          EOF

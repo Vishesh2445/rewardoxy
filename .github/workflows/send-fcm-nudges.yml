@@ -1,0 +1,101 @@
+name: Send FCM Nudges
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  nudge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install @supabase/supabase-js firebase-admin
+
+      - name: Send nudge notifications
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          node --input-type=module <<'EOF'
+          import { createClient } from "@supabase/supabase-js";
+          import admin from "firebase-admin";
+
+          const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+          );
+
+          const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+          admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+          });
+
+          async function sendTelegramAlert(message) {
+            const token = process.env.TELEGRAM_BOT_TOKEN;
+            const chatId = process.env.TELEGRAM_CHAT_ID;
+            if (!token || !chatId) return;
+            try {
+              await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  chat_id: chatId,
+                  text: message,
+                  parse_mode: "Markdown",
+                }),
+              });
+            } catch (e) {
+              console.error("Telegram alert failed:", e.message);
+            }
+          }
+
+          try {
+            const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
+            const { data: users, error: fetchError } = await supabase
+              .from("users")
+              .select("id, fcm_token")
+              .not("fcm_token", "is", null)
+              .lt("last_login", cutoff)
+              .limit(500);
+
+            if (fetchError) throw new Error(`Fetch users failed: ${fetchError.message}`);
+
+            console.log(`Found ${users.length} inactive user(s) to nudge`);
+
+            let sent = 0;
+
+            for (const user of users) {
+              try {
+                await admin.messaging().send({
+                  token: user.fcm_token,
+                  notification: {
+                    title: "Rewardoxy",
+                    body: "New tasks available — earn USDT now!",
+                  },
+                });
+                sent++;
+              } catch (e) {
+                // Token may be stale / unregistered — skip silently
+                console.warn(`FCM send failed for user ${user.id}: ${e.message}`);
+              }
+            }
+
+            console.log(`Done — sent ${sent}/${users.length} notification(s)`);
+          } catch (err) {
+            console.error("FCM nudge job failed:", err.message);
+            await sendTelegramAlert(
+              `🚨 *FCM Nudge Job Failed*\n\n\`${err.message}\``
+            );
+            process.exit(1);
+          }
+          EOF

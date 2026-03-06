@@ -1,0 +1,27 @@
+name: Keepalive
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write timestamp
+        run: date -u +"%Y-%m-%dT%H:%M:%SZ" > .last-run
+
+      - name: Commit and push
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add .last-run
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "chore: keepalive [skip ci]"
+          git push origin main
