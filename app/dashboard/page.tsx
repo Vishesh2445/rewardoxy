@@ -16,18 +16,12 @@ export default async function DashboardPage() {
   }
 
   // Fetch all initial data in parallel
-  const [userResult, pendingResult, completionsResult] = await Promise.all([
+  const [userResult, completionsResult] = await Promise.all([
     supabase
       .from("users")
       .select("coins_balance, streak_count")
       .eq("id", user.id)
       .single(),
-
-    supabase
-      .from("postback_queue")
-      .select("*", { count: "exact", head: true })
-      .eq("player_id", user.id)
-      .eq("status", "pending"),
 
     supabase
       .from("completions")
@@ -39,7 +33,6 @@ export default async function DashboardPage() {
 
   const coins = userResult.data?.coins_balance ?? 0;
   const streak = userResult.data?.streak_count ?? 0;
-  const pending = pendingResult.count ?? 0;
   const completions = completionsResult.data ?? [];
 
   return (
@@ -47,7 +40,6 @@ export default async function DashboardPage() {
       userId={user.id}
       initialCoins={coins}
       initialStreak={streak}
-      initialPending={pending}
       initialCompletions={completions}
     />
   );

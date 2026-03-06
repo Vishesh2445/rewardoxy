@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/client";
 import {
   Coins,
   Flame,
-  Clock,
   Gift,
   Wallet,
   Trophy,
@@ -30,7 +29,6 @@ interface DashboardProps {
   userId: string;
   initialCoins: number;
   initialStreak: number;
-  initialPending: number;
   initialCompletions: Completion[];
 }
 
@@ -58,12 +56,10 @@ export default function DashboardClient({
   userId,
   initialCoins,
   initialStreak,
-  initialPending,
   initialCompletions,
 }: DashboardProps) {
   const [coins, setCoins] = useState(initialCoins);
   const [streak, setStreak] = useState(initialStreak);
-  const [pending, setPending] = useState(initialPending);
   const [completions, setCompletions] = useState<Completion[]>(initialCompletions);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const supabaseRef = useRef(createClient());
@@ -125,14 +121,6 @@ export default function DashboardClient({
         setStreak(userData.streak_count);
       }
 
-      const { count } = await supabase
-        .from("postback_queue")
-        .select("*", { count: "exact", head: true })
-        .eq("player_id", userId)
-        .eq("status", "pending");
-
-      if (count !== null) setPending(count);
-
       const { data: recent } = await supabase
         .from("completions")
         .select("id, offer_name, coins_earned, created_at")
@@ -164,9 +152,9 @@ export default function DashboardClient({
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4">
           {/* Coin balance */}
-          <div className="col-span-2 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 sm:col-span-1">
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
                 <Coins className="h-5 w-5 text-emerald-400" />
@@ -197,26 +185,6 @@ export default function DashboardClient({
             </div>
           </div>
 
-          {/* Pending tasks */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
-            <div className="flex items-center gap-3">
-              <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-sky-500/10">
-                <Clock className="h-5 w-5 text-sky-400" />
-                {pending > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-sky-500 px-1.5 text-[10px] font-bold text-zinc-950">
-                    {pending}
-                  </span>
-                )}
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">Pending</p>
-                <p className="text-2xl font-bold">
-                  {pending}
-                  <span className="ml-1 text-sm font-normal text-zinc-500">tasks</span>
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Nav cards */}

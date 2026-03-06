@@ -32,21 +32,7 @@ async function handlePostback(request: NextRequest) {
   const coins = Math.floor(payout * 80); // $1 = 80 coins
   console.log('Postback:', { player_id, program_id, payout, coins });
 
-  // 1. Insert into postback_queue as 'pending' first
-  const { error: queueError } = await supabase.from('postback_queue').insert({
-    player_id,
-    program_id,
-    payout,
-    coins_awarded: coins,
-    status: 'pending'
-  });
-
-  if (queueError) {
-    console.error('Queue insert failed:', queueError);
-    return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } });
-  }
-
-  // 2. Duplicate check against completions table (matches GH Actions logic)
+  // Duplicate check against completions table
   const { data: existing } = await supabase
     .from('completions')
     .select('id')
@@ -56,26 +42,20 @@ async function handlePostback(request: NextRequest) {
 
   if (existing && existing.length > 0) {
     console.log('Duplicate skipped:', player_id, program_id);
-    await supabase.from('postback_queue')
-      .update({ status: 'duplicate' })
-      .eq('player_id', player_id)
-      .eq('program_id', program_id)
-      .eq('status', 'pending');
     return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } });
   }
 
-  // 3. Insert completion record (so dashboard can display it)
+  // Insert completion record
   const { error: completionError } = await supabase
     .from('completions')
     .insert({ player_id, program_id, payout, coins });
 
   if (completionError) {
     console.error('Completion insert failed:', completionError);
-    // Leave queue as 'pending' so GH Actions can retry
     return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } });
   }
 
-  // 4. Credit coins to user
+  // Credit coins to user instantly
   const { error: rpcError } = await supabase.rpc('increment_coins', {
     p_user_id: player_id,
     p_amount: coins
@@ -83,16 +63,8 @@ async function handlePostback(request: NextRequest) {
 
   if (rpcError) {
     console.error('Credit failed:', rpcError);
-    // Leave queue as 'pending' so GH Actions can retry
     return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } });
   }
-
-  // 5. Mark as processed only after everything succeeded
-  await supabase.from('postback_queue')
-    .update({ status: 'processed' })
-    .eq('player_id', player_id)
-    .eq('program_id', program_id)
-    .eq('status', 'pending');
 
   console.log('Credited', coins, 'coins to', player_id);
   return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } });
