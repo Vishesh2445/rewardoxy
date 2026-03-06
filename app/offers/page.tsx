@@ -16,7 +16,7 @@ export default async function OffersPage() {
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_MYLEAD_WALL_URL!;
-  const iframeSrc = `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}player_id=${user.id}`;
+  const iframeSrc = `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}uid=${user.id}`;
 
   return (
     <div className="flex h-screen flex-col bg-zinc-950 text-zinc-100">

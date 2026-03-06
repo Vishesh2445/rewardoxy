@@ -37,8 +37,8 @@ async function handlePostback(request: NextRequest) {
     }
     log('Signature OK');
 
-    // 2. Parse params
-    const player_id = url.searchParams.get('player_id');
+    // 2. Parse params — MyLead sends uid, but also accept player_id for manual testing
+    const player_id = url.searchParams.get('uid') || url.searchParams.get('player_id');
     const payout = parseFloat(url.searchParams.get('payout') || '0');
     const program_id = url.searchParams.get('program_id') || 'unknown';
 
