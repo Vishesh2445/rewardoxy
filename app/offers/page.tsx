@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Info } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function OffersPage() {
   const supabase = await createClient();
 

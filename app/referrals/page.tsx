@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ReferralsClient from "@/components/referrals-client";
 
+export const dynamic = "force-dynamic";
+
 function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
   if (!domain || local.length <= 2) return `**@${domain ?? "***"}`;

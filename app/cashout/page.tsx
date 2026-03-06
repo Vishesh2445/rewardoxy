@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CashoutClient from "@/components/cashout-client";
 
+export const dynamic = "force-dynamic";
+
 const PAGE_SIZE = 10;
 
 export default async function CashoutPage() {

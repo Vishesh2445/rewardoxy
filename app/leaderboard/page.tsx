@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ArrowLeft, Clock, Trophy, Medal } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 const MEDALS = ["", "gold", "silver", "bronze"] as const;
 
 function RankCell({ rank }: { rank: number }) {
