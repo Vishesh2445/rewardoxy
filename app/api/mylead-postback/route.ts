@@ -47,8 +47,8 @@ async function handlePostback(request: NextRequest) {
       return ok({ error: 'invalid_params', player_id, payout, logs });
     }
 
-    const coins = Math.floor(payout * 80);
-    log(`Params: player_id=${player_id}, program_id=${program_id}, payout=${payout}, coins=${coins}`);
+    const amount = payout;
+    log(`Params: player_id=${player_id}, program_id=${program_id}, amount=${amount}`);
 
     // 3. Init Supabase
     const supabase = getSupabase();
@@ -93,7 +93,7 @@ async function handlePostback(request: NextRequest) {
         player_id,
         program_id,
         payout,
-        coins_earned: coins,
+        coins_earned: amount,
         offer_name: `Program ${program_id}`
       });
 
@@ -111,7 +111,7 @@ async function handlePostback(request: NextRequest) {
 
     const { error: rpcError } = await supabase.rpc('increment_coins', {
       p_user_id: player_id,
-      p_amount: coins
+      p_amount: amount
     });
 
     if (rpcError) {
@@ -120,7 +120,7 @@ async function handlePostback(request: NextRequest) {
       // Fallback: raw SQL increment via rpc to avoid needing the column name
       log('Trying raw SQL fallback...');
       const { error: sqlError } = await supabase.rpc('exec_sql', {
-        query: `UPDATE public.users SET coins_balance = COALESCE(coins_balance, 0) + ${coins} WHERE id = '${player_id}'`
+        query: `UPDATE public.users SET coins_balance = COALESCE(coins_balance, 0) + ${amount} WHERE id = '${player_id}'`
       });
 
       if (sqlError) {
@@ -130,7 +130,7 @@ async function handlePostback(request: NextRequest) {
         log('Trying direct update fallback...');
         const { error: updateError } = await supabase
           .from('users')
-          .update({ coins_balance: coins })
+          .update({ coins_balance: amount })
           .eq('id', player_id);
 
         if (updateError) {
@@ -166,7 +166,7 @@ async function handlePostback(request: NextRequest) {
       player_id,
       program_id,
       payout,
-      coins_credited: coins,
+      amount_credited: amount,
       completion_inserted: completionInserted,
       credit_method: creditMethod,
       user_row: verifyData,
