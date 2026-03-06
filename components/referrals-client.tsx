@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
-  ArrowLeft,
   Users,
   Coins,
   Copy,
@@ -41,23 +39,12 @@ export default function ReferralsClient({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-4">
-          <Link
-            href="/dashboard"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 transition-colors hover:border-zinc-700 hover:text-zinc-200"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Referrals</h1>
-            <p className="text-sm text-zinc-500">
-              Invite friends and earn bonus coins
-            </p>
-          </div>
-        </div>
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">Referrals</h1>
+        <p className="text-sm text-zinc-500">Invite friends and earn bonus coins</p>
+      </div>
 
         {/* Referral link */}
         <div className="mb-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
@@ -166,6 +153,5 @@ export default function ReferralsClient({
           )}
         </div>
       </div>
-    </div>
   );
 }

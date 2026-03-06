@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { ArrowLeft, Clock, Trophy, Medal } from "lucide-react";
+import AppShell from "@/components/app-shell";
+import { Clock, Trophy, Medal } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -38,30 +38,33 @@ function RankCell({ rank }: { rank: number }) {
 export default async function LeaderboardPage() {
   const supabase = await createClient();
 
-  // Optional auth — don't redirect, just check
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: rows } = await supabase
-    .from("leaderboard_cache")
-    .select("rank, user_id, display_name, weekly_coins")
-    .order("rank", { ascending: true });
+  const [leaderboardResult, userResult] = await Promise.all([
+    supabase
+      .from("leaderboard_cache")
+      .select("rank, user_id, display_name, weekly_coins")
+      .order("rank", { ascending: true }),
+    user
+      ? supabase
+          .from("users")
+          .select("coins_balance")
+          .eq("id", user.id)
+          .single()
+      : Promise.resolve({ data: null }),
+  ]);
 
-  const leaderboard = rows ?? [];
+  const leaderboard = leaderboardResult.data ?? [];
+  const coins = userResult.data?.coins_balance ?? 0;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <AppShell coins={user ? coins : undefined}>
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8 flex items-center gap-4">
-          <Link
-            href="/dashboard"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 transition-colors hover:border-zinc-700 hover:text-zinc-200"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <div className="flex-1">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
             <h1 className="flex items-center gap-2 text-2xl font-bold">
               <Trophy className="h-6 w-6 text-amber-400" />
               Leaderboard
@@ -162,6 +165,6 @@ export default async function LeaderboardPage() {
           </>
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }

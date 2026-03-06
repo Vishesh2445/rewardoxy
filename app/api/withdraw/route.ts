@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     coins,
     amount_usd,
     network: network.trim(),
-    address: crypto_address.trim(),
+    crypto_address: crypto_address.trim(),
     status: "pending",
   });
 

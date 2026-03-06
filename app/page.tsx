@@ -11,6 +11,10 @@ import {
   Smartphone,
   ArrowRight,
   Trophy,
+  Users,
+  DollarSign,
+  Star,
+  CalendarCheck,
 } from "lucide-react";
 
 export default function Home() {
@@ -140,6 +144,47 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── FEATURES ── */}
+      <section className="border-t border-zinc-800 px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="text-center text-3xl font-bold sm:text-4xl">
+            Why Choose Rewardoxy?
+          </h2>
+          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <FeatureCard
+              icon={<DollarSign className="h-6 w-6 text-emerald-400" />}
+              title="Crypto Payouts"
+              description="Withdraw in USDT via TRC-20, BEP-20, or SOL"
+            />
+            <FeatureCard
+              icon={<CalendarCheck className="h-6 w-6 text-amber-400" />}
+              title="Daily Bonus"
+              description="Earn free coins every day with streak rewards"
+            />
+            <FeatureCard
+              icon={<Trophy className="h-6 w-6 text-yellow-400" />}
+              title="Leaderboard"
+              description="Compete with others and climb the ranks"
+            />
+            <FeatureCard
+              icon={<Users className="h-6 w-6 text-violet-400" />}
+              title="Referral Program"
+              description="Invite friends and earn bonus coins"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ── STATS ── */}
+      <section className="border-t border-zinc-800 px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
+          <StatBlock label="Active Users" value="1,000+" />
+          <StatBlock label="Offers Available" value="500+" />
+          <StatBlock label="Paid Out" value="$10K+" />
+          <StatBlock label="Countries" value="100+" />
+        </div>
+      </section>
+
       {/* ── FOOTER ── */}
       <footer className="border-t border-zinc-800 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
@@ -227,6 +272,35 @@ function OfferCard({
       >
         {difficulty}
       </span>
+    </div>
+  );
+}
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 text-center transition-colors hover:border-zinc-700">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800">
+        {icon}
+      </div>
+      <h3 className="mt-3 font-semibold">{title}</h3>
+      <p className="mt-1 text-sm text-zinc-500">{description}</p>
+    </div>
+  );
+}
+
+function StatBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="text-center">
+      <p className="text-3xl font-extrabold text-emerald-400">{value}</p>
+      <p className="mt-1 text-sm text-zinc-500">{label}</p>
     </div>
   );
 }

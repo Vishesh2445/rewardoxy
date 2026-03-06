@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppShell from "@/components/app-shell";
-import CashoutClient from "@/components/cashout-client";
+import HistoryClient from "@/components/history-client";
 
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 20;
 
-export default async function CashoutPage() {
+export default async function HistoryPage() {
   const supabase = await createClient();
 
   const {
@@ -18,7 +18,7 @@ export default async function CashoutPage() {
     redirect("/auth/login");
   }
 
-  const [userResult, withdrawalsResult] = await Promise.all([
+  const [userResult, completionsResult] = await Promise.all([
     supabase
       .from("users")
       .select("coins_balance")
@@ -26,26 +26,23 @@ export default async function CashoutPage() {
       .single(),
 
     supabase
-      .from("withdrawals")
-      .select("id, created_at, coins, amount_usd, network, status, tx_hash", {
+      .from("completions")
+      .select("id, program_id, payout_decimal, coins_awarded, created_at", {
         count: "exact",
       })
-      .eq("user_id", user.id)
+      .eq("player_id", user.id)
       .order("created_at", { ascending: false })
       .range(0, PAGE_SIZE - 1),
   ]);
 
   const coins = userResult.data?.coins_balance ?? 0;
-  const withdrawals = withdrawalsResult.data ?? [];
-  const total = withdrawalsResult.count ?? 0;
 
   return (
     <AppShell coins={coins}>
-      <CashoutClient
+      <HistoryClient
         userId={user.id}
-        initialCoins={coins}
-        initialWithdrawals={withdrawals}
-        initialTotal={total}
+        initialCompletions={completionsResult.data ?? []}
+        initialTotal={completionsResult.count ?? 0}
       />
     </AppShell>
   );

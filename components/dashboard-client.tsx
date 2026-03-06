@@ -8,36 +8,31 @@ import {
   Flame,
   Gift,
   Wallet,
-  Trophy,
-  Users,
+  TrendingUp,
   ArrowRight,
   CheckCircle,
   Gamepad2,
   FileText,
   Smartphone,
+  CalendarCheck,
 } from "lucide-react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface Completion {
   id: string;
-  offer_name: string;
-  coins_earned: number;
+  program_id: string;
+  coins_awarded: number;
   created_at: string;
 }
 
 interface DashboardProps {
   userId: string;
+  displayName: string;
   initialCoins: number;
   initialStreak: number;
+  initialTotalEarned: number;
   initialCompletions: Completion[];
 }
-
-const NAV_CARDS = [
-  { label: "Offers", href: "/offers", icon: Gift, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-  { label: "Wallet", href: "/wallet", icon: Wallet, color: "text-sky-400", bg: "bg-sky-500/10" },
-  { label: "Leaderboard", href: "/leaderboard", icon: Trophy, color: "text-amber-400", bg: "bg-amber-500/10" },
-  { label: "Referrals", href: "/referrals", icon: Users, color: "text-violet-400", bg: "bg-violet-500/10" },
-];
 
 const OFFER_ICONS: Record<string, typeof Gamepad2> = {
   game: Gamepad2,
@@ -54,23 +49,24 @@ function offerIcon(name: string) {
 
 export default function DashboardClient({
   userId,
+  displayName,
   initialCoins,
   initialStreak,
+  initialTotalEarned,
   initialCompletions,
 }: DashboardProps) {
   const [coins, setCoins] = useState(initialCoins);
   const [streak, setStreak] = useState(initialStreak);
+  const [totalEarned, setTotalEarned] = useState(initialTotalEarned);
   const [completions, setCompletions] = useState<Completion[]>(initialCompletions);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const supabaseRef = useRef(createClient());
 
-  // Realtime subscription with visibility pause
   useEffect(() => {
     const supabase = supabaseRef.current;
 
     function subscribe() {
       if (channelRef.current) return;
-
       const channel = supabase
         .channel(`user-${userId}`)
         .on(
@@ -82,13 +78,17 @@ export default function DashboardClient({
             filter: `id=eq.${userId}`,
           },
           (payload) => {
-            const row = payload.new as { coins_balance: number; streak_count: number };
+            const row = payload.new as {
+              coins_balance: number;
+              streak_count: number;
+              total_earned: number;
+            };
             setCoins(row.coins_balance);
             setStreak(row.streak_count);
+            setTotalEarned(row.total_earned);
           }
         )
         .subscribe();
-
       channelRef.current = channel;
     }
 
@@ -102,7 +102,6 @@ export default function DashboardClient({
     function handleVisibility() {
       if (document.visibilityState === "visible") {
         subscribe();
-        // Refetch latest data when tab becomes visible
         refreshData();
       } else {
         unsubscribe();
@@ -112,28 +111,28 @@ export default function DashboardClient({
     async function refreshData() {
       const { data: userData } = await supabase
         .from("users")
-        .select("coins_balance, streak_count")
+        .select("coins_balance, streak_count, total_earned")
         .eq("id", userId)
         .single();
 
       if (userData) {
         setCoins(userData.coins_balance);
         setStreak(userData.streak_count);
+        setTotalEarned(userData.total_earned);
       }
 
       const { data: recent } = await supabase
         .from("completions")
-        .select("id, offer_name, coins_earned, created_at")
+        .select("id, program_id, coins_awarded, created_at")
         .eq("player_id", userId)
         .order("created_at", { ascending: false })
-        .limit(5);
+        .limit(10);
 
       if (recent) setCompletions(recent);
     }
 
     subscribe();
     document.addEventListener("visibilitychange", handleVisibility);
-
     return () => {
       document.removeEventListener("visibilitychange", handleVisibility);
       unsubscribe();
@@ -141,122 +140,192 @@ export default function DashboardClient({
   }, [userId]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-emerald-400">
-            Rewardoxy
-          </Link>
-          <span className="text-sm text-zinc-500">Dashboard</span>
-        </div>
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Welcome */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">
+          Welcome back, <span className="text-emerald-400">{displayName}</span>
+        </h1>
+        <p className="mt-1 text-sm text-zinc-500">Here&apos;s your earnings overview</p>
+      </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Coin balance */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10">
-                <Coins className="h-5 w-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">Balance</p>
-                <p className="text-2xl font-bold text-emerald-400">
-                  {coins.toLocaleString()}
-                  <span className="ml-1 text-sm font-normal text-zinc-500">coins</span>
-                </p>
-              </div>
-            </div>
-          </div>
+      {/* Stats row */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          icon={<Coins className="h-5 w-5 text-emerald-400" />}
+          bg="bg-emerald-500/10"
+          label="Balance"
+          value={coins.toLocaleString()}
+          sub="coins"
+          accent
+        />
+        <StatCard
+          icon={<TrendingUp className="h-5 w-5 text-sky-400" />}
+          bg="bg-sky-500/10"
+          label="Total Earned"
+          value={totalEarned.toLocaleString()}
+          sub="coins"
+        />
+        <StatCard
+          icon={<Flame className="h-5 w-5 text-amber-400" />}
+          bg="bg-amber-500/10"
+          label="Streak"
+          value={String(streak)}
+          sub="days"
+        />
+        <StatCard
+          icon={<CheckCircle className="h-5 w-5 text-violet-400" />}
+          bg="bg-violet-500/10"
+          label="Completions"
+          value={String(completions.length)}
+          sub="recent"
+        />
+      </div>
 
-          {/* Streak */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10">
-                <Flame className="h-5 w-5 text-amber-400" />
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">Streak</p>
-                <p className="text-2xl font-bold">
-                  {streak}
-                  <span className="ml-1 text-sm font-normal text-zinc-500">days</span>
-                </p>
-              </div>
-            </div>
-          </div>
+      {/* Quick actions */}
+      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <QuickAction
+          href="/offers"
+          icon={<Gift className="h-6 w-6 text-emerald-400" />}
+          title="Complete Offers"
+          description="Earn coins by completing tasks"
+        />
+        <QuickAction
+          href="/daily-bonus"
+          icon={<CalendarCheck className="h-6 w-6 text-amber-400" />}
+          title="Daily Bonus"
+          description="Claim your daily reward"
+        />
+        <QuickAction
+          href="/cashout"
+          icon={<Wallet className="h-6 w-6 text-sky-400" />}
+          title="Cash Out"
+          description="Withdraw your earnings"
+        />
+      </div>
 
-        </div>
-
-        {/* Nav cards */}
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {NAV_CARDS.map(({ label, href, icon: Icon, color, bg }) => (
+      {/* Recent activity */}
+      <div className="mt-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Recent Activity</h2>
+          {completions.length > 0 && (
             <Link
-              key={href}
-              href={href}
-              className="group flex flex-col items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 transition-colors hover:border-zinc-700"
+              href="/history"
+              className="flex items-center gap-1 text-sm text-emerald-400 hover:text-emerald-300"
             >
-              <div className={`flex h-12 w-12 items-center justify-center rounded-full ${bg}`}>
-                <Icon className={`h-6 w-6 ${color}`} />
-              </div>
-              <span className="flex items-center gap-1 text-sm font-medium text-zinc-300 group-hover:text-zinc-100">
-                {label}
-                <ArrowRight className="h-3.5 w-3.5 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
-              </span>
+              View All
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
-          ))}
+          )}
         </div>
 
-        {/* Recent completions */}
-        <div className="mt-8">
-          <h2 className="mb-4 text-lg font-semibold">Recent Activity</h2>
-
-          {completions.length === 0 ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-8 text-center">
-              <p className="text-sm text-zinc-500">
-                No completions yet. Complete your first offer to see activity here.
-              </p>
-              <Link
-                href="/offers"
-                className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-emerald-400 hover:text-emerald-300"
-              >
-                Browse Offers
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {completions.map((c) => {
-                const Icon = offerIcon(c.offer_name);
-                return (
-                  <div
-                    key={c.id}
-                    className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 px-5 py-4"
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-800">
-                      <Icon className="h-5 w-5 text-emerald-400" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{c.offer_name}</p>
-                      <p className="text-xs text-zinc-500">
-                        {new Date(c.created_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
-                      <CheckCircle className="h-4 w-4" />
-                      +{c.coins_earned}
-                    </div>
+        {completions.length === 0 ? (
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-8 text-center">
+            <p className="text-sm text-zinc-500">
+              No completions yet. Complete your first offer to see activity here.
+            </p>
+            <Link
+              href="/offers"
+              className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-emerald-400 hover:text-emerald-300"
+            >
+              Browse Offers
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {completions.map((c) => {
+              const Icon = offerIcon(c.program_id);
+              return (
+                <div
+                  key={c.id}
+                  className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 px-5 py-4"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-800">
+                    <Icon className="h-5 w-5 text-emerald-400" />
                   </div>
-                );
-              })}
-            </div>
-          )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">Program {c.program_id}</p>
+                    <p className="text-xs text-zinc-500">
+                      {new Date(c.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-sm font-semibold text-emerald-400">
+                    <CheckCircle className="h-4 w-4" />
+                    +{c.coins_awarded}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  icon,
+  bg,
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  icon: React.ReactNode;
+  bg: string;
+  label: string;
+  value: string;
+  sub: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
+      <div className="flex items-center gap-3">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${bg}`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">{label}</p>
+          <p className={`text-xl font-bold ${accent ? "text-emerald-400" : ""}`}>
+            {value}
+            <span className="ml-1 text-xs font-normal text-zinc-500">{sub}</span>
+          </p>
         </div>
       </div>
     </div>
+  );
+}
+
+function QuickAction({
+  href,
+  icon,
+  title,
+  description,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center gap-4 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 transition-colors hover:border-emerald-500/40"
+    >
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-zinc-800">
+        {icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold">{title}</p>
+        <p className="text-xs text-zinc-500">{description}</p>
+      </div>
+      <ArrowRight className="h-4 w-4 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-emerald-400" />
+    </Link>
   );
 }

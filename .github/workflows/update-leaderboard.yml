@@ -57,7 +57,7 @@ jobs:
             // Aggregate completions from last 7 days grouped by player_id
             const { data: completions, error: compError } = await supabase
               .from("completions")
-              .select("player_id, coins_earned")
+              .select("player_id, coins_awarded")
               .gte("created_at", sevenDaysAgo);
 
             if (compError) throw new Error(`Fetch completions failed: ${compError.message}`);
@@ -65,7 +65,7 @@ jobs:
             // Sum coins per player
             const totals = new Map();
             for (const row of completions) {
-              totals.set(row.player_id, (totals.get(row.player_id) || 0) + row.coins_earned);
+              totals.set(row.player_id, (totals.get(row.player_id) || 0) + row.coins_awarded);
             }
 
             // Sort descending, take top 10
@@ -84,13 +84,14 @@ jobs:
             if (playerIds.length > 0) {
               const { data: users, error: userError } = await supabase
                 .from("users")
-                .select("id, display_name")
+                .select("id, display_name, email")
                 .in("id", playerIds);
 
               if (userError) throw new Error(`Fetch users failed: ${userError.message}`);
 
               for (const u of users) {
-                nameMap.set(u.id, u.display_name);
+                const name = u.display_name || (u.email ? u.email.split("@")[0].slice(0, 2) + "****" : "Anonymous");
+                nameMap.set(u.id, name);
               }
             }
 
@@ -98,9 +99,9 @@ jobs:
             const now = new Date().toISOString();
             const rows = top10.map(([playerId, totalCoins], i) => ({
               rank: i + 1,
-              player_id: playerId,
-              display_name: nameMap.get(playerId) || null,
-              total_coins: totalCoins,
+              user_id: playerId,
+              display_name: nameMap.get(playerId) || "Anonymous",
+              weekly_coins: totalCoins,
               updated_at: now,
             }));
 

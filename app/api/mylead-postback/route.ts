@@ -47,8 +47,8 @@ async function handlePostback(request: NextRequest) {
       return ok({ error: 'invalid_params', player_id, payout, logs });
     }
 
-    const amount = payout;
-    log(`Params: player_id=${player_id}, program_id=${program_id}, amount=${amount}`);
+    const amount = Math.round(payout);
+    log(`Params: player_id=${player_id}, program_id=${program_id}, payout=${payout}, amount=${amount}`);
 
     // 3. Init Supabase
     const supabase = getSupabase();
@@ -92,9 +92,8 @@ async function handlePostback(request: NextRequest) {
       .insert({
         player_id,
         program_id,
-        payout,
-        coins_earned: amount,
-        offer_name: `Program ${program_id}`
+        payout_decimal: payout,
+        coins_awarded: amount
       });
 
     if (completionError) {
@@ -105,48 +104,26 @@ async function handlePostback(request: NextRequest) {
       log('Completion inserted');
     }
 
-    // 7. Credit coins - try RPC first, then fall back to raw SQL via rpc
+    // 7. Credit coins — atomic SQL: coins_balance = coins_balance + amount
     let credited = false;
     let creditMethod = 'none';
 
-    const { error: rpcError } = await supabase.rpc('increment_coins', {
-      p_user_id: player_id,
-      p_amount: amount
-    });
-
-    if (rpcError) {
-      log(`RPC increment_coins failed: ${rpcError.message} (code: ${rpcError.code})`);
-
-      // Fallback: raw SQL increment via rpc to avoid needing the column name
-      log('Trying raw SQL fallback...');
-      const { error: sqlError } = await supabase.rpc('exec_sql', {
-        query: `UPDATE public.users SET coins_balance = COALESCE(coins_balance, 0) + ${amount} WHERE id = '${player_id}'`
+    const { data: creditResult, error: creditError } = await supabase
+      .rpc('credit_postback', {
+        p_user_id: player_id,
+        p_amount: amount,
       });
 
-      if (sqlError) {
-        log(`Raw SQL fallback failed: ${sqlError.message}`);
-
-        // Last resort: direct column update
-        log('Trying direct update fallback...');
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({ coins_balance: amount })
-          .eq('id', player_id);
-
-        if (updateError) {
-          log(`Direct update also failed: ${updateError.message}`);
-          return ok({ error: 'credit_failed_all_methods', logs });
-        }
-        creditMethod = 'direct_update';
-      } else {
-        creditMethod = 'raw_sql';
-      }
-      credited = true;
-    } else {
-      credited = true;
-      creditMethod = 'rpc';
-      log('RPC increment_coins succeeded');
+    if (creditError) {
+      log(`credit_postback RPC failed: ${creditError.message} (code: ${creditError.code})`);
+      return ok({ error: 'credit_failed', detail: creditError.message, logs });
     }
+
+    credited = true;
+    creditMethod = 'atomic_rpc';
+    const newBalance = creditResult?.[0]?.new_balance ?? creditResult?.new_balance ?? '?';
+    const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
+    log(`Credited ${amount} coins. New balance: ${newBalance}, New total: ${newTotal}`);
 
     // 8. Verify
     const { data: verifyData, error: verifyError } = await supabase

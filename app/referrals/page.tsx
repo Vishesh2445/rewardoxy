@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import AppShell from "@/components/app-shell";
 import ReferralsClient from "@/components/referrals-client";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export default async function ReferralsPage() {
   const [userResult, countResult, coinsResult, listResult] = await Promise.all([
     supabase
       .from("users")
-      .select("referral_code")
+      .select("referral_code, coins_balance")
       .eq("id", user.id)
       .single(),
 
@@ -46,6 +47,7 @@ export default async function ReferralsPage() {
   ]);
 
   const referralCode = userResult.data?.referral_code ?? "";
+  const coins = userResult.data?.coins_balance ?? 0;
   const totalReferrals = countResult.count ?? 0;
 
   const totalCoins = (coinsResult.data ?? []).reduce(
@@ -63,11 +65,13 @@ export default async function ReferralsPage() {
   });
 
   return (
-    <ReferralsClient
-      referralCode={referralCode}
-      totalReferrals={totalReferrals}
-      totalCoins={totalCoins}
-      referrals={referrals}
-    />
+    <AppShell coins={coins}>
+      <ReferralsClient
+        referralCode={referralCode}
+        totalReferrals={totalReferrals}
+        totalCoins={totalCoins}
+        referrals={referrals}
+      />
+    </AppShell>
   );
 }
