@@ -96,6 +96,22 @@ const sxBadge = {
   letterSpacing: "0.05em",
 } as const;
 
+const heroHeadingTextShadow =
+  "0 1px 0 rgba(255,255,255,0.05), 0 4px 24px rgba(0,0,0,0.6), 0 0 80px rgba(1,214,118,0.08)";
+
+const HERO_PARTICLES = [
+  { top: "12%", left: "8%",  size: 3, delay: "0s",   dur: "4.5s" },
+  { top: "22%", left: "78%", size: 2, delay: "1.2s", dur: "6s"   },
+  { top: "58%", left: "12%", size: 2, delay: "2.1s", dur: "5.2s" },
+  { top: "72%", left: "68%", size: 3, delay: "0.6s", dur: "7s"   },
+  { top: "42%", left: "88%", size: 2, delay: "3s",   dur: "4s"   },
+  { top: "82%", left: "28%", size: 2, delay: "1.7s", dur: "8s"   },
+  { top: "8%",  left: "52%", size: 3, delay: "2.8s", dur: "5s"   },
+  { top: "33%", left: "3%",  size: 2, delay: "0.9s", dur: "6.5s" },
+  { top: "88%", left: "58%", size: 2, delay: "3.6s", dur: "4.8s" },
+  { top: "50%", left: "43%", size: 2, delay: "1.4s", dur: "7.2s" },
+] as const;
+
 export default function Home() {
   const router = useRouter();
   const supabase = createClient();
@@ -272,283 +288,622 @@ export default function Home() {
         sx={{
           position: "relative",
           overflow: "hidden",
+          minHeight: { xs: "auto", md: "88vh" },
+          display: "flex",
+          alignItems: "center",
           px: { xs: 2, sm: 3, lg: 4 },
-          pt: { xs: 8, sm: 12 },
-          pb: { xs: 8, sm: 12 },
+          pt: { xs: 8, sm: 10 },
+          pb: { xs: 8, sm: 10 },
         }}
       >
-        {/* Glow */}
+        {/* === LAYER 0: Animated mesh grid === */}
         <Box
           sx={{
             pointerEvents: "none",
             position: "absolute",
-            left: "50%",
-            top: 0,
-            transform: "translateX(-50%)",
+            inset: 0,
+            backgroundImage: [
+              "linear-gradient(rgba(1,214,118,0.04) 1px, transparent 1px)",
+              "linear-gradient(90deg, rgba(1,214,118,0.04) 1px, transparent 1px)",
+            ].join(", "),
+            backgroundSize: "64px 64px",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 85% 85% at 50% 50%, #000 30%, transparent 100%)",
+            maskImage:
+              "radial-gradient(ellipse 85% 85% at 50% 50%, #000 30%, transparent 100%)",
           }}
-        >
+        />
+
+        {/* === LAYER 1: Deep green glow — top-left === */}
+        <Box
+          sx={{
+            pointerEvents: "none",
+            position: "absolute",
+            top: "-15%",
+            left: "-8%",
+            width: { xs: 380, md: 620 },
+            height: { xs: 380, md: 620 },
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, rgba(1,214,118,0.13) 0%, transparent 70%)",
+            filter: "blur(60px)",
+            animation: "orbPulse 8s ease-in-out infinite",
+            willChange: "transform, opacity",
+          }}
+        />
+
+        {/* === LAYER 1: Purple glow — bottom-right === */}
+        <Box
+          sx={{
+            pointerEvents: "none",
+            position: "absolute",
+            bottom: "-20%",
+            right: "-8%",
+            width: { xs: 320, md: 540 },
+            height: { xs: 320, md: 540 },
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, rgba(100,80,255,0.1) 0%, transparent 70%)",
+            filter: "blur(80px)",
+            animation: "orbPulse 11s ease-in-out infinite 2s",
+            willChange: "transform, opacity",
+          }}
+        />
+
+        {/* === LAYER 1: Soft green center glow === */}
+        <Box
+          sx={{
+            pointerEvents: "none",
+            position: "absolute",
+            top: "35%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: { xs: 280, md: 680 },
+            height: { xs: 180, md: 380 },
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, rgba(1,214,118,0.05) 0%, transparent 70%)",
+            filter: "blur(90px)",
+          }}
+        />
+
+        {/* === LAYER 2: Particle stars === */}
+        {HERO_PARTICLES.map((s, i) => (
           <Box
+            key={i}
             sx={{
-              height: 600,
-              width: 900,
+              pointerEvents: "none",
+              position: "absolute",
+              top: s.top,
+              left: s.left,
+              width: s.size,
+              height: s.size,
               borderRadius: "50%",
-              background: "rgba(1,214,118,0.05)",
-              filter: "blur(150px)",
+              bgcolor: colors.green,
+              opacity: 0.55,
+              boxShadow: `0 0 ${s.size * 3}px ${colors.green}`,
+              animation: `particleDrift ${s.dur} ease-in-out infinite ${s.delay}`,
+              willChange: "transform, opacity",
+              display: { xs: "none", sm: "block" },
             }}
           />
+        ))}
+
+        {/* === LAYER 3: Floating 3D decorative icons === */}
+
+        {/* Dollar coin — far left */}
+        <Box
+          sx={{
+            pointerEvents: "none",
+            position: "absolute",
+            left: { md: "3%", lg: "4%" },
+            top: "22%",
+            display: { xs: "none", lg: "flex" },
+            alignItems: "center",
+            justifyContent: "center",
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            background:
+              "linear-gradient(135deg, rgba(1,214,118,0.22) 0%, rgba(0,126,69,0.12) 100%)",
+            border: "1px solid rgba(1,214,118,0.28)",
+            backdropFilter: "blur(8px)",
+            color: colors.green,
+            boxShadow:
+              "0 0 24px rgba(1,214,118,0.15), inset 0 1px 0 rgba(255,255,255,0.08)",
+            animation: "floatY 5s ease-in-out infinite",
+            willChange: "transform",
+          }}
+        >
+          <DollarSign size={24} />
         </Box>
 
-        <Container maxWidth="lg" sx={{ position: "relative" }}>
+        {/* Bitcoin icon — far right, upper */}
+        <Box
+          sx={{
+            pointerEvents: "none",
+            position: "absolute",
+            right: { md: "2%", lg: "3%" },
+            top: "18%",
+            display: { xs: "none", lg: "flex" },
+            alignItems: "center",
+            justifyContent: "center",
+            width: 52,
+            height: 52,
+            borderRadius: "14px",
+            background:
+              "linear-gradient(135deg, rgba(100,80,255,0.2) 0%, rgba(60,40,180,0.12) 100%)",
+            border: "1px solid rgba(100,80,255,0.28)",
+            backdropFilter: "blur(8px)",
+            color: "#9f8fff",
+            boxShadow: "0 0 20px rgba(100,80,255,0.15)",
+            animation: "floatY 6.2s ease-in-out infinite 1.1s",
+            willChange: "transform",
+          }}
+        >
+          <Bitcoin size={22} />
+        </Box>
+
+        {/* Trophy — lower left */}
+        <Box
+          sx={{
+            pointerEvents: "none",
+            position: "absolute",
+            left: { md: "5%", lg: "7%" },
+            bottom: "26%",
+            display: { xs: "none", lg: "flex" },
+            alignItems: "center",
+            justifyContent: "center",
+            width: 48,
+            height: 48,
+            borderRadius: "12px",
+            background:
+              "linear-gradient(135deg, rgba(255,195,0,0.18) 0%, rgba(200,130,0,0.1) 100%)",
+            border: "1px solid rgba(255,195,0,0.22)",
+            backdropFilter: "blur(8px)",
+            color: "#ffc83d",
+            boxShadow: "0 0 18px rgba(255,195,0,0.12)",
+            animation: "floatY 7s ease-in-out infinite 2.2s",
+            willChange: "transform",
+          }}
+        >
+          <Trophy size={20} />
+        </Box>
+
+        {/* Star — far right, lower */}
+        <Box
+          sx={{
+            pointerEvents: "none",
+            position: "absolute",
+            right: { md: "3%", lg: "5%" },
+            bottom: "28%",
+            display: { xs: "none", lg: "flex" },
+            alignItems: "center",
+            justifyContent: "center",
+            width: 44,
+            height: 44,
+            borderRadius: "12px",
+            background:
+              "linear-gradient(135deg, rgba(1,214,118,0.18) 0%, rgba(0,126,69,0.1) 100%)",
+            border: "1px solid rgba(1,214,118,0.22)",
+            backdropFilter: "blur(8px)",
+            color: colors.green,
+            boxShadow: "0 0 16px rgba(1,214,118,0.12)",
+            animation: "floatY 4.8s ease-in-out infinite 0.6s",
+            willChange: "transform",
+          }}
+        >
+          <Star size={18} />
+        </Box>
+
+        {/* === CONTENT === */}
+        <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
           <Grid container spacing={6} alignItems="center">
-            {/* Left side — headline */}
+
+            {/* Left side — headline with 3D depth treatment */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <Typography
-                variant="h1"
-                isBold
-                sx={{
-                  fontSize: { xs: "2.25rem", sm: "2.75rem", lg: "3.5rem" },
-                  lineHeight: 1.15,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                Earn Money by
-                <br />
-                <Typography
-                  component="span"
-                  isGradient
-                  isBold
-                  sx={{ fontSize: "inherit", lineHeight: "inherit" }}
-                >
-                  Completing Tasks
-                </Typography>
-              </Typography>
-
-              <Typography
-                sx={{
-                  mt: 3,
-                  maxWidth: 480,
-                  fontSize: { xs: "1rem", sm: "1.125rem" },
-                  lineHeight: 1.7,
-                  color: colors.textSecondary,
-                }}
-              >
-                Complete offers, play games, fill surveys and earn coins. Cash out
-                instantly as USDT crypto. Free to join, worldwide.
-              </Typography>
-
-              {/* Trust badges */}
               <Box
                 sx={{
-                  mt: 4,
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: { xs: 2, sm: 3 },
-                  color: colors.textSecondary,
-                  fontSize: "0.875rem",
+                  animation: "fadeInLeft 0.75s ease-out forwards",
+                  opacity: 0,
+                  willChange: "opacity, transform",
                 }}
               >
-                {[
-                  { icon: <Shield size={16} />, label: "Secure & Safe" },
-                  { icon: <Zap size={16} />, label: "Instant Payouts" },
-                  { icon: <Globe size={16} />, label: "100+ Countries" },
-                ].map((badge) => (
-                  <Box key={badge.label} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: 32,
-                        height: 32,
-                        borderRadius: "8px",
-                        bgcolor: colors.greenTint,
-                        color: colors.green,
-                      }}
-                    >
-                      {badge.icon}
+                {/* Top pill badge */}
+                <Box sx={{ ...sxBadge, mb: 3 }}>
+                  <Sparkles size={12} style={{ marginRight: 6 }} />
+                  Trusted by 50,000+ members worldwide
+                </Box>
+
+                <Typography
+                  variant="h1"
+                  isBold
+                  sx={{
+                    fontSize: { xs: "2.25rem", sm: "2.75rem", lg: "3.5rem" },
+                    lineHeight: 1.15,
+                    letterSpacing: "-0.02em",
+                    textShadow: heroHeadingTextShadow,
+                  }}
+                >
+                  Earn Money by
+                  <br />
+                  <Typography
+                    component="span"
+                    isGradient
+                    isBold
+                    sx={{
+                      fontSize: "inherit",
+                      lineHeight: "inherit",
+                      filter: "drop-shadow(0 0 22px rgba(1,214,118,0.35))",
+                    }}
+                  >
+                    Completing Tasks
+                  </Typography>
+                </Typography>
+
+                <Typography
+                  sx={{
+                    mt: 3,
+                    maxWidth: 480,
+                    fontSize: { xs: "1rem", sm: "1.125rem" },
+                    lineHeight: 1.7,
+                    color: colors.textSecondary,
+                  }}
+                >
+                  Complete offers, play games, fill surveys and earn coins. Cash out
+                  instantly as USDT crypto. Free to join, worldwide.
+                </Typography>
+
+                {/* Trust badges */}
+                <Box
+                  sx={{
+                    mt: 4,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: { xs: 2, sm: 3 },
+                    color: colors.textSecondary,
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  {[
+                    { icon: <Shield size={16} />, label: "Secure & Safe" },
+                    { icon: <Zap size={16} />, label: "Instant Payouts" },
+                    { icon: <Globe size={16} />, label: "100+ Countries" },
+                  ].map((badge) => (
+                    <Box key={badge.label} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: 32,
+                          height: 32,
+                          borderRadius: "8px",
+                          bgcolor: colors.greenTint,
+                          color: colors.green,
+                          boxShadow: "0 0 10px rgba(1,214,118,0.1)",
+                        }}
+                      >
+                        {badge.icon}
+                      </Box>
+                      {badge.label}
                     </Box>
-                    {badge.label}
-                  </Box>
-                ))}
+                  ))}
+                </Box>
               </Box>
             </Grid>
 
-            {/* Right side — signup card or start earning */}
+            {/* Right side — signup / welcome card with glass-morphism */}
             <Grid size={{ xs: 12, md: 6 }}>
-              {isAuthenticated ? (
-                <Paper
-                  elevation={0}
-                  sx={{
-                    ...sxCard,
-                    p: { xs: 4, sm: 5 },
-                    textAlign: "center",
-                  }}
-                >
-                  <Box
+              <Box
+                sx={{
+                  animation: "fadeInRight 0.75s ease-out 0.2s forwards",
+                  opacity: 0,
+                  willChange: "opacity, transform",
+                }}
+              >
+                {isAuthenticated ? (
+                  /* ── Welcome Back card ── */
+                  <Paper
+                    elevation={0}
                     sx={{
-                      mx: "auto",
-                      mb: 2.5,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 64,
-                      height: 64,
-                      borderRadius: "16px",
-                      background: "linear-gradient(135deg, #01D676 0%, #007e45 100%)",
-                      boxShadow: "0 8px 32px rgba(1,214,118,0.25)",
+                      background: "rgba(29,30,48,0.82)",
+                      backdropFilter: "blur(20px)",
+                      WebkitBackdropFilter: "blur(20px)",
+                      border: "1px solid rgba(1,214,118,0.18)",
+                      borderRadius: "24px",
+                      p: { xs: 4, sm: 5 },
+                      textAlign: "center",
+                      boxShadow:
+                        "0 8px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(1,214,118,0.04), inset 0 1px 0 rgba(255,255,255,0.05)",
+                      position: "relative",
+                      overflow: "hidden",
+                      transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+                      "&:hover": {
+                        borderColor: "rgba(1,214,118,0.32)",
+                        boxShadow:
+                          "0 8px 40px rgba(0,0,0,0.5), 0 0 60px rgba(1,214,118,0.07), 0 0 0 1px rgba(1,214,118,0.08)",
+                      },
+                      /* Top edge highlight */
+                      "&::before": {
+                        content: '""',
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: "1px",
+                        background:
+                          "linear-gradient(90deg, transparent, rgba(1,214,118,0.45), transparent)",
+                      },
                     }}
                   >
-                    <Sparkles size={32} color="#fff" />
-                  </Box>
-                  <Typography variant="h5" isBold sx={{ mb: 1 }}>
-                    Welcome Back!
-                  </Typography>
-                  <Typography sx={{ fontSize: "0.95rem", color: colors.textSecondary, mb: 3 }}>
-                    Continue earning coins and cash out anytime.
-                  </Typography>
-                  <Button
-                    component={Link}
-                    href="/earn"
-                    variant="contained"
-                    fullWidth
-                    sx={{
-                      ...sxGradientBtn,
-                      height: 52,
-                      fontSize: "1rem",
-                      gap: 1,
-                    }}
-                  >
-                    Start Earning
-                    <ArrowRight size={20} />
-                  </Button>
-                </Paper>
-              ) : (
-                <Paper
-                  elevation={0}
-                  sx={{
-                    ...sxCard,
-                    p: { xs: 3, sm: 4 },
-                  }}
-                >
-                  <Typography variant="h5" isBold sx={{ mb: 0.5, textAlign: "center" }}>
-                    Create Free Account
-                  </Typography>
-                  <Typography sx={{ fontSize: "0.85rem", color: colors.textSecondary, textAlign: "center", mb: 3 }}>
-                    Start earning in under 2 minutes
-                  </Typography>
-
-                  {/* Google button */}
-                  <Button
-                    onClick={handleGoogleSignup}
-                    fullWidth
-                    sx={{
-                      height: 48,
-                      textTransform: "none",
-                      fontWeight: 600,
-                      borderRadius: "12px",
-                      bgcolor: "#fff",
-                      color: "#333",
-                      fontSize: "0.9rem",
-                      gap: 1.5,
-                      mb: 2.5,
-                      "&:hover": { bgcolor: "#f5f5f5" },
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 18 18">
-                      <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
-                      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-                      <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-                      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 2.58 9 2.58z" fill="#EA4335"/>
-                    </svg>
-                    Continue with Google
-                  </Button>
-
-                  <Divider sx={{ borderColor: colors.divider, mb: 2.5, fontSize: "0.75rem", color: colors.textSecondary }}>
-                    or sign up with email
-                  </Divider>
-
-                  {/* Signup form */}
-                  <Box
-                    component="form"
-                    onSubmit={handleSignup}
-                    sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-                  >
-                    <TextField
-                      type="email"
-                      required
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      size="small"
-                      slotProps={{
-                        input: {
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Mail size={16} color={colors.textSecondary} />
-                            </InputAdornment>
-                          ),
-                        },
-                      }}
-                    />
-                    <TextField
-                      type="password"
-                      required
-                      placeholder="Min 6 characters"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      size="small"
-                      inputProps={{ minLength: 6 }}
-                      slotProps={{
-                        input: {
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Lock size={16} color={colors.textSecondary} />
-                            </InputAdornment>
-                          ),
-                        },
+                    {/* Inner top glow */}
+                    <Box
+                      sx={{
+                        pointerEvents: "none",
+                        position: "absolute",
+                        top: "-50%",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        width: "75%",
+                        height: "180px",
+                        borderRadius: "50%",
+                        background:
+                          "radial-gradient(circle, rgba(1,214,118,0.07) 0%, transparent 70%)",
                       }}
                     />
 
-                    {signupError && (
-                      <Alert severity="error" sx={{ fontSize: "0.8rem" }}>
-                        {signupError}
-                      </Alert>
-                    )}
-
+                    <Box
+                      sx={{
+                        mx: "auto",
+                        mb: 2.5,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 64,
+                        height: 64,
+                        borderRadius: "16px",
+                        background: "linear-gradient(135deg, #01D676 0%, #007e45 100%)",
+                        boxShadow: "0 8px 32px rgba(1,214,118,0.35), 0 0 60px rgba(1,214,118,0.12)",
+                      }}
+                    >
+                      <Sparkles size={32} color="#fff" />
+                    </Box>
+                    <Typography variant="h5" isBold sx={{ mb: 1 }}>
+                      Welcome Back!
+                    </Typography>
+                    <Typography sx={{ fontSize: "0.95rem", color: colors.textSecondary, mb: 3 }}>
+                      Continue earning coins and cash out anytime.
+                    </Typography>
                     <Button
-                      type="submit"
+                      component={Link}
+                      href="/earn"
+                      variant="contained"
                       fullWidth
-                      disabled={signupLoading}
                       sx={{
                         ...sxGradientBtn,
-                        height: 48,
-                        fontSize: "0.95rem",
+                        height: 52,
+                        fontSize: "1rem",
                         gap: 1,
+                        boxShadow: "0 4px 24px rgba(1,214,118,0.3)",
+                        "&:hover": { boxShadow: "0 6px 32px rgba(1,214,118,0.45)" },
                       }}
                     >
-                      {signupLoading ? (
-                        <CircularProgress size={20} color="inherit" />
-                      ) : (
-                        <>
-                          Sign Up Free
-                          <ArrowRight size={18} />
-                        </>
-                      )}
+                      Start Earning
+                      <ArrowRight size={20} />
                     </Button>
-                  </Box>
-
-                  <Typography sx={{ mt: 2, fontSize: "0.8rem", color: colors.textSecondary, textAlign: "center" }}>
-                    Already have an account?{" "}
+                  </Paper>
+                ) : (
+                  /* ── Signup card ── */
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      background: "rgba(29,30,48,0.78)",
+                      backdropFilter: "blur(20px)",
+                      WebkitBackdropFilter: "blur(20px)",
+                      border: "1px solid rgba(1,214,118,0.14)",
+                      borderRadius: "24px",
+                      p: { xs: 3, sm: 4 },
+                      boxShadow:
+                        "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(1,214,118,0.04), inset 0 1px 0 rgba(255,255,255,0.05)",
+                      position: "relative",
+                      overflow: "hidden",
+                      transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+                      "&:hover": {
+                        borderColor: "rgba(1,214,118,0.28)",
+                        boxShadow:
+                          "0 24px 80px rgba(0,0,0,0.55), 0 0 60px rgba(1,214,118,0.07), 0 0 0 1px rgba(1,214,118,0.08)",
+                      },
+                      /* Top edge highlight */
+                      "&::before": {
+                        content: '""',
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: "1px",
+                        background:
+                          "linear-gradient(90deg, transparent, rgba(1,214,118,0.5), transparent)",
+                      },
+                      /* Bottom subtle line */
+                      "&::after": {
+                        content: '""',
+                        position: "absolute",
+                        bottom: 0,
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        width: "55%",
+                        height: "1px",
+                        background:
+                          "linear-gradient(90deg, transparent, rgba(1,214,118,0.15), transparent)",
+                      },
+                    }}
+                  >
+                    {/* Inner top glow */}
                     <Box
-                      component={Link}
-                      href="/auth/login"
-                      sx={{ color: colors.green, textDecoration: "none", fontWeight: 600 }}
+                      sx={{
+                        pointerEvents: "none",
+                        position: "absolute",
+                        top: "-45%",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        width: "80%",
+                        height: "200px",
+                        borderRadius: "50%",
+                        background:
+                          "radial-gradient(circle, rgba(1,214,118,0.06) 0%, transparent 70%)",
+                      }}
+                    />
+
+                    <Typography variant="h5" isBold sx={{ mb: 0.5, textAlign: "center" }}>
+                      Create Free Account
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: "0.85rem",
+                        color: colors.textSecondary,
+                        textAlign: "center",
+                        mb: 3,
+                      }}
                     >
-                      Sign In
+                      Start earning in under 2 minutes
+                    </Typography>
+
+                    {/* Google button */}
+                    <Button
+                      onClick={handleGoogleSignup}
+                      fullWidth
+                      sx={{
+                        height: 48,
+                        textTransform: "none",
+                        fontWeight: 600,
+                        borderRadius: "12px",
+                        bgcolor: "#fff",
+                        color: "#333",
+                        fontSize: "0.9rem",
+                        gap: 1.5,
+                        mb: 2.5,
+                        boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
+                        "&:hover": {
+                          bgcolor: "#f5f5f5",
+                          boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+                        },
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 18 18">
+                        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+                        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+                        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 2.58 9 2.58z" fill="#EA4335"/>
+                      </svg>
+                      Continue with Google
+                    </Button>
+
+                    <Divider
+                      sx={{
+                        borderColor: colors.divider,
+                        mb: 2.5,
+                        fontSize: "0.75rem",
+                        color: colors.textSecondary,
+                      }}
+                    >
+                      or sign up with email
+                    </Divider>
+
+                    {/* Signup form */}
+                    <Box
+                      component="form"
+                      onSubmit={handleSignup}
+                      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                    >
+                      <TextField
+                        type="email"
+                        required
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        size="small"
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Mail size={16} color={colors.textSecondary} />
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                      />
+                      <TextField
+                        type="password"
+                        required
+                        placeholder="Min 6 characters"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        size="small"
+                        inputProps={{ minLength: 6 }}
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Lock size={16} color={colors.textSecondary} />
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                      />
+
+                      {signupError && (
+                        <Alert severity="error" sx={{ fontSize: "0.8rem" }}>
+                          {signupError}
+                        </Alert>
+                      )}
+
+                      <Button
+                        type="submit"
+                        fullWidth
+                        disabled={signupLoading}
+                        sx={{
+                          ...sxGradientBtn,
+                          height: 48,
+                          fontSize: "0.95rem",
+                          gap: 1,
+                          boxShadow: "0 4px 20px rgba(1,214,118,0.25)",
+                          "&:hover": {
+                            boxShadow: "0 6px 28px rgba(1,214,118,0.4)",
+                          },
+                        }}
+                      >
+                        {signupLoading ? (
+                          <CircularProgress size={20} color="inherit" />
+                        ) : (
+                          <>
+                            Sign Up Free
+                            <ArrowRight size={18} />
+                          </>
+                        )}
+                      </Button>
                     </Box>
-                  </Typography>
-                </Paper>
-              )}
+
+                    <Typography
+                      sx={{
+                        mt: 2,
+                        fontSize: "0.8rem",
+                        color: colors.textSecondary,
+                        textAlign: "center",
+                      }}
+                    >
+                      Already have an account?{" "}
+                      <Box
+                        component={Link}
+                        href="/auth/login"
+                        sx={{ color: colors.green, textDecoration: "none", fontWeight: 600 }}
+                      >
+                        Sign In
+                      </Box>
+                    </Typography>
+                  </Paper>
+                )}
+              </Box>
             </Grid>
           </Grid>
         </Container>
