@@ -48,14 +48,12 @@ export default function LoginClient() {
 
   async function handleGoogleLogin() {
     setError(null);
-    // Always use production URL for OAuth redirect to avoid localhost issues
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://rewardoxy.app';
-    
+    // In ALL auth calls, explicitly pass redirectTo
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider: 'google',
       options: {
-        redirectTo: `${appUrl}/auth/callback`,
-      },
+        redirectTo: 'https://rewardoxy.app/auth/callback'
+      }
     });
 
     if (oauthError) {

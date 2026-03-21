@@ -99,14 +99,12 @@ export default function SignupClient() {
     document.cookie = "oauth_terms_accepted=true; path=/; max-age=3600";
     
     setError(null);
-    // Always use production URL for OAuth redirect to avoid localhost issues
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://rewardoxy.app';
-    
+    // In ALL auth calls, explicitly pass redirectTo
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider: 'google',
       options: {
-        redirectTo: `${appUrl}/auth/callback${ref ? `?ref=${ref}` : ""}`,
-      },
+        redirectTo: `https://rewardoxy.app/auth/callback${ref ? `?ref=${ref}` : ""}`
+      }
     });
 
     if (oauthError) {
