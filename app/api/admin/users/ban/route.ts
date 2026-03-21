@@ -27,14 +27,19 @@ export async function POST(request: NextRequest) {
     ? "Your account has been banned by an administrator. Please contact support for more information."
     : "Your account has been unbanned. You can now access all features again.";
 
-  await adminSupabase.from("notifications").insert({
+  const { error: notifError } = await adminSupabase.from("notifications").insert({
     user_id: userId,
     title: notificationTitle,
     message: notificationMessage,
     is_broadcast: false,
     read: false,
     admin_sent: false,
+    created_at: new Date().toISOString(),
   });
+
+  if (notifError) {
+    console.error("Ban notification error:", notifError);
+  }
 
   return NextResponse.json({ success: true });
 }

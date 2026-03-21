@@ -31,7 +31,10 @@ export default function NotificationBell() {
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/notifications");
+      const res = await fetch(`/api/notifications?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache, no-store, must-revalidate" },
+      });
       if (res.ok) {
         const data = await res.json();
         setNotifications(data.notifications ?? []);
