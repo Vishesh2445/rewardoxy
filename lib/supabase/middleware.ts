@@ -32,8 +32,16 @@ export async function middleware(request: NextRequest) {
   // Refreshes the auth token by contacting the Supabase Auth server.
   const { data: { user } } = await supabase.auth.getUser();
 
-  // If user exists and is trying to access a protected route (not auth, not public)
-  if (user && !request.nextUrl.pathname.startsWith('/auth') && !request.nextUrl.pathname.startsWith('/banned') && request.nextUrl.pathname !== '/') {
+  // If user exists and is trying to access a protected route (not auth, not public, not contact/terms/privacy)
+  if (
+    user &&
+    !request.nextUrl.pathname.startsWith('/auth') &&
+    !request.nextUrl.pathname.startsWith('/banned') &&
+    !request.nextUrl.pathname.startsWith('/contact') &&
+    !request.nextUrl.pathname.startsWith('/terms') &&
+    !request.nextUrl.pathname.startsWith('/privacy') &&
+    request.nextUrl.pathname !== '/'
+  ) {
     const { data: userRecord } = await supabase
       .from('users')
       .select('is_banned')
