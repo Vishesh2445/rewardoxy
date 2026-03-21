@@ -10,19 +10,46 @@ import colors from "@/theme/colors";
 
 type EarnContentProps = {
   userId: string;
+  userName: string;
+  userEmail: string;
+  cpxHash: string;
 };
 
-export default function EarnContent({ userId }: EarnContentProps) {
+type WallType = "MyLead" | "CPX Research";
+
+export default function EarnContent({ userId, userName, userEmail, cpxHash }: EarnContentProps) {
   const [open, setOpen] = useState(false);
+  const [activeWall, setActiveWall] = useState<WallType | null>(null);
+  
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
 
-  const baseUrl = process.env.NEXT_PUBLIC_MYLEAD_WALL_URL ?? "";
-  const iframeSrc = `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}uid=${userId}`;
+  const myLeadBaseUrl = process.env.NEXT_PUBLIC_MYLEAD_WALL_URL ?? "";
+
+  const handleOpenWall = (wall: WallType) => {
+    setActiveWall(wall);
+    setOpen(true);
+  };
+
+  const getIframeSrc = () => {
+    if (activeWall === "MyLead") {
+      return `${myLeadBaseUrl}${myLeadBaseUrl.includes("?") ? "&" : "?"}uid=${userId}`;
+    }
+    if (activeWall === "CPX Research") {
+      const appId = "32037"; // From your provided iframe template
+      const encodedName = encodeURIComponent(userName);
+      const encodedEmail = encodeURIComponent(userEmail);
+      
+      return `https://offers.cpx-research.com/index.php?app_id=${appId}&ext_user_id=${userId}&secure_hash=${cpxHash}&username=${encodedName}&email=${encodedEmail}&subid_1=&subid_2`;
+    }
+    return "";
+  };
+
+  const iframeSrc = getIframeSrc();
 
   return (
     <Box sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 10, lg: 2 } }}>
-      {/* section header */}
+      {/* Offer Walls section */}
       <Box sx={{ py: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
           <Box
@@ -44,11 +71,10 @@ export default function EarnContent({ userId }: EarnContentProps) {
           <Typography variant="h6" isBold>Offer Wall</Typography>
         </Box>
 
-        {/* cards grid - 2 columns on mobile, flexible on desktop */}
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(auto-fill, 180px)" }, gap: 2 }}>
           {/* MyLead card */}
           <Paper
-            onClick={() => setOpen(true)}
+            onClick={() => handleOpenWall("MyLead")}
             elevation={0}
             sx={{
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
@@ -65,7 +91,6 @@ export default function EarnContent({ userId }: EarnContentProps) {
               sx={{ width: 64, height: 64, borderRadius: 3, objectFit: "cover" }}
             />
             <Typography variant="subtitle2" isBold sx={{ mt: 1.5, color: "#fff" }}>MyLead</Typography>
-            <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary, mt: 0.5 }}></Typography>
           </Paper>
 
           {/* Torox card - coming soon */}
@@ -95,8 +120,55 @@ export default function EarnContent({ userId }: EarnContentProps) {
               sx={{ width: 64, height: 64, objectFit: "contain" }}
             />
             <Typography variant="subtitle2" isBold sx={{ mt: 1.5, color: "#fff" }}>Torox</Typography>
-            <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary, mt: 0.5 }}></Typography>
           </Paper>
+        </Box>
+      </Box>
+
+      {/* Survey Partners section */}
+      <Box sx={{ py: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+          <Box
+            sx={{
+              width: 28, height: 28, borderRadius: 1.5,
+              bgcolor: colors.background.secondary,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <Box
+              sx={{
+                width: 0, height: 0, borderStyle: "solid",
+                borderWidth: "5px 0 5px 9px",
+                borderColor: `transparent transparent transparent ${colors.secondary}`,
+                ml: "1px",
+              }}
+            />
+          </Box>
+          <Typography variant="h6" isBold>Survey Partners</Typography>
+        </Box>
+
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(auto-fill, 180px)" }, gap: 2 }}>
+          {/* CPX Research card */}
+          <Paper
+            onClick={() => handleOpenWall("CPX Research")}
+            elevation={0}
+            sx={{
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              borderRadius: 4, p: { xs: 2.5, sm: 4 }, cursor: "pointer",
+              bgcolor: colors.primary, border: `1px solid ${colors.divider}`,
+              transition: "all 0.2s ease-in-out",
+              "&:hover": { transform: "scale(1.04)", borderColor: "rgba(1,214,118,0.4)" },
+            }}
+          >
+            <Box
+              component="img"
+              src="/cpx.png"
+              alt="CPX Research"
+              sx={{ width: 120, height: "auto", maxHeight: 80, objectFit: "contain" }}
+            />
+
+            <Typography variant="subtitle2" isBold sx={{ mt: 1.5, color: "#fff" }}>CPX Research</Typography>
+          </Paper>
+
         </Box>
       </Box>
 
@@ -133,7 +205,9 @@ export default function EarnContent({ userId }: EarnContentProps) {
             borderBottom: `1px solid ${colors.divider}`, px: 2.5, py: 1.5,
           }}
         >
-          <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#fff" }}>MyLead Offer Wall</Typography>
+          <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#fff" }}>
+            {activeWall} {activeWall === "CPX Research" ? "" : "Offer Wall"}
+          </Typography>
           <IconButton
             onClick={() => setOpen(false)}
             size="small"
@@ -147,16 +221,20 @@ export default function EarnContent({ userId }: EarnContentProps) {
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden" }}>
-          <Box
-            component="iframe"
-            src={iframeSrc}
-            title="MyLead Offer Wall"
-            allow="clipboard-write"
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation"
-            sx={{ width: "100%", height: "100%", border: "none" }}
-          />
+          {activeWall && (
+            <Box
+              component="iframe"
+              src={iframeSrc}
+              title={`${activeWall} Offer Wall`}
+              allow="clipboard-write"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation"
+              sx={{ width: "100%", height: "100%", border: "none" }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </Box>
   );
 }
+
+
