@@ -335,55 +335,75 @@ export default function AppShell({ children, coins }: AppShellProps) {
         <Box
           component="footer"
           sx={{
-            bgcolor: colors.primary,
-            display: { xs: "block", lg: "block" },
+            bgcolor: colors.background.secondary,
+            borderTop: `1px solid ${colors.divider}`,
             pb: { xs: "calc(80px + env(safe-area-inset-bottom))", lg: 0 },
+            mt: 4,
           }}
         >
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 4, p: 8 }}>
-            <Box sx={{ flexGrow: 1 }}>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                <Icons.Logo href="/dashboard" />
-                <Typography color="textSecondary" variant="caption" fontWeight={700}>
-                  &copy; {new Date().getFullYear()} Rewardoxy. All rights reserved.
-                </Typography>
-              </Box>
+          <Box
+            sx={{
+              maxWidth: 960,
+              width: "100%",
+              mx: "auto",
+              px: { xs: 3, sm: 4 },
+              py: { xs: 5, sm: 6 },
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              justifyContent: "space-between",
+              gap: { xs: 4, md: 8 },
+            }}
+          >
+            {/* Branding & Copyright */}
+            <Box sx={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 1.5 }}>
+              <Icons.Logo href="/dashboard" />
+              <Typography sx={{ color: colors.text.secondary, fontSize: "0.875rem", maxWidth: 300 }}>
+                Get paid to complete tasks, surveys and offers.
+              </Typography>
+              <Typography sx={{ color: "rgba(169,169,202,0.5)", fontSize: "0.75rem", mt: { xs: 2, md: "auto" } }}>
+                &copy; {new Date().getFullYear()} Rewardoxy. All rights reserved.
+              </Typography>
             </Box>
-            <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+
+            {/* Links */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(4, 1fr)" },
+                gap: { xs: 3, sm: 4 },
+                flexGrow: 1,
+              }}
+            >
               {footerInfoList.map(({ title, links }) => (
-                <Box key={title} sx={{ pr: 4 }}>
-                  <Typography color="textPrimary">{title}</Typography>
-                  <List sx={{ pr: 4 }}>
-                    {links.map(({ text, url, isEmail }) => (
-                      <ListItemButton
-                        key={text}
-                        component={isEmail ? "a" : Link}
-                        href={isEmail ? url : url}
-                        target={isEmail ? "_blank" : undefined}
-                        rel={isEmail ? "noopener noreferrer" : undefined}
-                        sx={{ py: 1, px: 0 }}
-                      >
-                        <ListItemText
-                          primary={
-                            isEmail ? (
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                                <Mail size={14} />
-                                <span>{text}</span>
-                              </Box>
-                            ) : (
-                              text
-                            )
-                          }
-                          primaryTypographyProps={{
-                            sx: {
-                              color: isEmail ? colors.secondary : colors.text.primary,
-                              fontSize: "0.8125rem",
-                            },
+                <Box key={title}>
+                  <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.875rem", mb: 2 }}>{title}</Typography>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                    {links.map(({ text, url, isEmail }) => {
+                      const LinkComponent = isEmail ? "a" : Link;
+                      return (
+                        <Box
+                          key={text}
+                          component={LinkComponent}
+                          href={isEmail ? url : url}
+                          target={isEmail ? "_blank" : undefined}
+                          rel={isEmail ? "noopener noreferrer" : undefined}
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.75,
+                            color: colors.text.secondary,
+                            textDecoration: "none",
+                            fontSize: "0.8125rem",
+                            transition: "color 0.2s",
+                            "&:hover": { color: "#01D676" },
                           }}
-                        />
-                      </ListItemButton>
-                    ))}
-                  </List>
+                        >
+                          {isEmail && <Mail size={14} />}
+                          {text}
+                        </Box>
+                      );
+                    })}
+                  </Box>
                 </Box>
               ))}
             </Box>

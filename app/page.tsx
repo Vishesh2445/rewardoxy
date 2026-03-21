@@ -1003,75 +1003,112 @@ export default function Home() {
       </Box>
 
       {/* ===================== FOOTER ===================== */}
-      <Divider sx={{ borderColor: colors.divider }} />
       <Box
         component="footer"
         sx={{
           bgcolor: colors.bgCard,
-          px: { xs: 2, sm: 3, lg: 4 },
-          py: 6,
+          borderTop: `1px solid ${colors.divider}`,
+          mt: 4,
         }}
       >
-        <Container maxWidth="md">
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              alignItems: "center",
-              justifyContent: { sm: "space-between" },
-              gap: 4,
-            }}
-          >
-            <Box sx={{ textAlign: { xs: "center", sm: "left" } }}>
-              <Icons.Logo />
-              <Typography
-                sx={{ mt: 1, fontSize: "0.875rem", color: colors.textSecondary }}
-              >
-                Complete tasks. Earn rewards. Withdraw crypto.
-              </Typography>
-            </Box>
-            <Box
-              component="nav"
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "center",
-                gap: 3,
-                fontSize: "0.875rem",
-              }}
-            >
-              {[
-                { label: "Terms", href: "/terms" },
-                { label: "Privacy", href: "/privacy" },
-                { label: "Contact", href: "/contact" },
-                { label: "Support", href: "mailto:support@rewardoxy.app", isEmail: true },
-              ].map((item) => (
-                <Box
-                  key={item.href}
-                  component={item.isEmail ? "a" : Link}
-                  href={item.href}
-                  sx={{
-                    color: item.isEmail ? colors.green : colors.textSecondary,
-                    textDecoration: "none",
-                    transition: "color 0.2s",
-                    "&:hover": { color: colors.textPrimary },
-                  }}
-                >
-                  {item.label}
-                </Box>
-              ))}
-            </Box>
+        <Container
+          maxWidth="lg"
+          sx={{
+            py: { xs: 6, md: 8 },
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            justifyContent: "space-between",
+            gap: { xs: 6, md: 10 },
+          }}
+        >
+          {/* Branding & Copyright */}
+          <Box sx={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Icons.Logo />
+            <Typography sx={{ color: colors.textSecondary, fontSize: "0.875rem", maxWidth: 320 }}>
+              Complete tasks. Earn rewards. Withdraw crypto. Join thousands earning USDT by completing offers, surveys and games.
+            </Typography>
+            <Typography sx={{ color: "rgba(169,169,202,0.5)", fontSize: "0.75rem", mt: { xs: 2, md: "auto" } }}>
+              &copy; {new Date().getFullYear()} Rewardoxy. All rights reserved.
+            </Typography>
           </Box>
 
-          <Divider sx={{ borderColor: colors.divider, my: 4 }} />
-
-          <Typography
-            alignCenter
-            suppressHydrationWarning
-            sx={{ fontSize: "0.75rem", color: "rgba(169,169,202,0.5)" }}
+          {/* Links Grid */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(4, 1fr)" },
+              gap: { xs: 4, sm: 6 },
+              flexGrow: 1,
+            }}
           >
-            &copy; {new Date().getFullYear()} Rewardoxy. All rights reserved.
-          </Typography>
+            {(
+              [
+                {
+                  title: "Quick Links",
+                  links: [
+                    { text: "Earn", url: "/earn" },
+                    { text: "Dashboard", url: "/dashboard" },
+                    { text: "Leaderboard", url: "/leaderboard" },
+                  ],
+                },
+                {
+                  title: "About",
+                  links: [
+                    { text: "Terms of Service", url: "/terms" },
+                    { text: "Privacy Policy", url: "/privacy" },
+                  ],
+                },
+                {
+                  title: "Support",
+                  links: [
+                    { text: "How It Works", url: "#how-it-works" },
+                    { text: "FAQ", url: "#faq" },
+                    { text: "Contact", url: "/contact" },
+                  ],
+                },
+                {
+                  title: "Contact",
+                  links: [
+                    { text: "support@rewardoxy.app", url: "mailto:support@rewardoxy.app", isEmail: true },
+                  ],
+                },
+              ] as {
+                title: string;
+                links: { text: string; url: string; isEmail?: boolean }[];
+              }[]
+            ).map(({ title, links }) => (
+              <Box key={title}>
+                <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.875rem", mb: 2.5 }}>{title}</Typography>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                  {links.map(({ text, url, isEmail }) => {
+                    const LinkComponent = isEmail ? "a" : Link;
+                    return (
+                      <Box
+                        key={text}
+                        component={LinkComponent}
+                        href={url}
+                        target={isEmail ? "_blank" : undefined}
+                        rel={isEmail ? "noopener noreferrer" : undefined}
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 1,
+                          color: colors.textSecondary,
+                          textDecoration: "none",
+                          fontSize: "0.8125rem",
+                          transition: "color 0.2s",
+                          "&:hover": { color: colors.green },
+                        }}
+                      >
+                        {isEmail && <Mail size={14} />}
+                        {text}
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </Box>
+            ))}
+          </Box>
         </Container>
       </Box>
     </Box>

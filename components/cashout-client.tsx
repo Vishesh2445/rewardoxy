@@ -74,6 +74,7 @@ interface CashoutClientProps {
   initialCoins: number;
   initialWithdrawals: Withdrawal[];
   initialTotal: number;
+  isBanned?: boolean;
 }
 
 export default function CashoutClient({
@@ -81,6 +82,7 @@ export default function CashoutClient({
   initialCoins,
   initialWithdrawals,
   initialTotal,
+  isBanned = false,
 }: CashoutClientProps) {
   const router = useRouter();
   const [coins, setCoins] = useState(initialCoins);
@@ -216,8 +218,29 @@ export default function CashoutClient({
         </Box>
       </Paper>
 
-      {/* Network selector */}
-      <Typography variant="subtitle1" isBold sx={{ mb: 2 }}>Select Withdrawal Method</Typography>
+      {isBanned ? (
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 4,
+            borderRadius: 4,
+            border: "1px solid rgba(239,68,68,0.3)",
+            bgcolor: "rgba(239,68,68,0.08)",
+            p: { xs: 3, sm: 4 },
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h6" sx={{ color: "#f87171", mb: 1, fontWeight: 700 }}>
+            Account Banned
+          </Typography>
+          <Typography variant="body2" sx={{ color: colors.text.secondary }}>
+            You cannot cash out because your account is suspended. If you believe this is a mistake, please contact support.
+          </Typography>
+        </Paper>
+      ) : (
+        <>
+          {/* Network selector */}
+          <Typography variant="subtitle1" isBold sx={{ mb: 2 }}>Select Withdrawal Method</Typography>
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(3,1fr)" }, gap: 2, mb: 4 }}>
         {NETWORK_DETAILS.map((net) => {
           const isSelected = network === net.id;
@@ -377,6 +400,8 @@ export default function CashoutClient({
           </Button>
         </Box>
       </Paper>
+        </>
+      )}
 
       {/* Withdrawal history */}
       <Box>
