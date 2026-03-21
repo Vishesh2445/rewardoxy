@@ -26,7 +26,7 @@ export default function ReferralsClient({
   referrals,
 }: ReferralsClientProps) {
   const [copied, setCopied] = useState(false);
-  const referralLink = `https://rewardoxy.com/auth/signup?ref=${referralCode}`;
+  const referralLink = `https://rewardoxy.app/auth/signup?ref=${referralCode}`;
 
   async function handleCopy() {
     await navigator.clipboard.writeText(referralLink);
@@ -43,7 +43,7 @@ export default function ReferralsClient({
           Referrals
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
-          Invite friends and earn bonus coins for every successful signup
+          Invite friends and earn 5% of their earnings
         </Typography>
       </Box>
 
@@ -82,12 +82,12 @@ export default function ReferralsClient({
             <Typography variant="h6" isBold sx={{ mb: 0.5 }}>
               Earn{" "}
               <Box component="span" sx={{ background: "linear-gradient(90deg,#01D676,#00a855)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                500 Coins
+                5%
               </Box>{" "}
-              Per Referral
+              of Referral Earnings
             </Typography>
             <Typography variant="body2" sx={{ color: colors.text.secondary, maxWidth: 480 }}>
-              Share your unique link with friends. When they sign up, you both earn bonus coins — no limits!
+              Share your unique link with friends. When they earn coins, you earn 5% commission — no limits!
             </Typography>
           </Box>
         </Box>
@@ -97,7 +97,7 @@ export default function ReferralsClient({
           {[
             { step: "1", title: "Share your link", desc: "Copy and share your referral link anywhere" },
             { step: "2", title: "Friend signs up", desc: "Your friend creates a free Rewardoxy account" },
-            { step: "3", title: "Both earn coins", desc: "You get 500 coins instantly upon their signup" },
+            { step: "3", title: "Earn 5% commission", desc: "You earn 5% of all coins your referrals earn" },
           ].map((s) => (
             <Box
               key={s.step}
@@ -297,7 +297,7 @@ export default function ReferralsClient({
             </Box>
             <Typography variant="body1" isBold sx={{ mb: 1 }}>No referrals yet</Typography>
             <Typography variant="body2" sx={{ color: colors.text.secondary, mb: 3 }}>
-              Share your referral link and start earning bonus coins!
+              Share your referral link and start earning 5% commission!
             </Typography>
             <Button
               onClick={handleCopy}
@@ -357,7 +357,7 @@ export default function ReferralsClient({
                         mt: 0.25,
                       }}
                     >
-                      +500 coins earned
+                      5% earnings
                     </Box>
                   </Box>
                 </Box>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Mail, Lock, ArrowRight, Check } from "lucide-react";
+import { Mail, Lock, ArrowRight, Check, UserPlus } from "lucide-react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -35,8 +35,17 @@ export default function SignupClient() {
   const [googleDialogOpen, setGoogleDialogOpen] = useState(false);
   const [googleTermsAccepted, setGoogleTermsAccepted] = useState(false);
   const [referralCode, setReferralCode] = useState("");
+  const [referralFromUrl, setReferralFromUrl] = useState<string | null>(null);
 
   const supabase = createClient();
+
+  // Auto-fill referral code from URL on mount
+  useEffect(() => {
+    if (ref) {
+      setReferralFromUrl(ref);
+      setReferralCode(ref);
+    }
+  }, [ref]);
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -333,9 +342,20 @@ export default function SignupClient() {
               <TextField
                 fullWidth
                 value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value)}
+                onChange={(e) => {
+                  setReferralCode(e.target.value);
+                }}
                 placeholder="Enter referral code"
                 autoComplete="off"
+                slotProps={{
+                  input: referralFromUrl ? {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <UserPlus size={16} />
+                      </InputAdornment>
+                    ),
+                  } : undefined
+                }}
                 sx={textFieldSx}
               />
             </Box>

@@ -31,6 +31,12 @@ interface Completion {
   created_at: string;
 }
 
+interface ReferrerInfo {
+  email: string;
+  displayName: string;
+  referralCode: string;
+}
+
 interface ProfileClientProps {
   userId: string;
   email: string;
@@ -43,6 +49,7 @@ interface ProfileClientProps {
   totalWithdrawals: number;
   memberSince: string;
   emailVerified: boolean;
+  referredBy: ReferrerInfo | null;
 }
 
 function stringAvatar(name: string, size: number = 100) {
@@ -79,6 +86,7 @@ export default function ProfileClient({
   streakCount,
   totalCompletions,
   totalWithdrawals,
+  referredBy,
   memberSince,
   emailVerified: initialEmailVerified,
 }: ProfileClientProps) {
@@ -238,6 +246,12 @@ export default function ProfileClient({
                 <Calendar size={14} />
                 Member since {new Date(memberSince).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
               </Box>
+              {referredBy && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: "0.875rem", color: colors.secondary, mt: 0.5 }}>
+                  <User size={14} />
+                  Referred by {referredBy.displayName || referredBy.email}
+                </Box>
+              )}
             </Box>
           </Paper>
 

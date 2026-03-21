@@ -53,6 +53,15 @@ export async function GET(request: Request) {
             accepted_at: termsAccepted ? new Date().toISOString() : null,
           });
 
+          // Create referral record if user was referred
+          if (referred_by_id) {
+            await admin.from("referrals").insert({
+              referrer_uid: referred_by_id,
+              referee_uid: user.id,
+              lifetime_coins_earned: 0,
+            });
+          }
+
           // Add welcome notification for Google OAuth users
           await admin.from("notifications").insert({
             user_id: user.id,

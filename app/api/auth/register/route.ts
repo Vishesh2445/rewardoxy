@@ -112,6 +112,37 @@ async function sendVerificationEmail(email: string, token: string) {
   return true;
 }
 
+// Helper function to get country from IP
+async function getCountryFromRequest(request: NextRequest): Promise<string | null> {
+  try {
+    // Get client IP from headers
+    const forwardedFor = request.headers.get("x-forwarded-for");
+    const realIp = request.headers.get("x-real-ip");
+    const ip = forwardedFor?.split(",")[0]?.trim() || realIp || "";
+
+    // Skip localhost
+    if (!ip || ip === "127.0.0.1" || ip === "::1" || ip === "localhost") {
+      return "US"; // Default for localhost
+    }
+
+    // Use free IP geolocation API
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,countryCode`, {
+      headers: { "Accept": "application/json" },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.status === "success") {
+        return data.countryCode;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error("Failed to get country from IP:", error);
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { user_id, email, referred_by, accepted_terms, is_google_oauth } = body as {
@@ -132,6 +163,9 @@ export async function POST(request: NextRequest) {
   const referral_code = randomBytes(4).toString("hex"); // 8-char alphanumeric
 
   const admin = createAdminClient();
+
+  // Get country from IP
+  const country = await getCountryFromRequest(request);
 
   // Validate referred_by: must be a real user's referral_code
   let referred_by_id: string | null = null;
@@ -165,9 +199,18 @@ export async function POST(request: NextRequest) {
         email_verified: is_google_oauth ?? false,
         accepted_terms: accepted_terms ?? false,
         accepted_at: accepted_terms ? new Date().toISOString() : null,
+        country: country,
       });
 
       if (!error) {
+        // Create referral record if user was referred
+        if (referred_by_id) {
+          await admin.from("referrals").insert({
+            referrer_uid: referred_by_id,
+            referee_uid: user_id,
+            lifetime_coins_earned: 0,
+          });
+        }
         // Create email verification token for non-Google users
         if (!is_google_oauth) {
           // Create token
