@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Box, Dialog, DialogTitle, DialogContent, IconButton, Paper, Alert } from "@mui/material";
+import { Box, Dialog, DialogTitle, DialogContent, IconButton, Paper, CircularProgress } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
@@ -20,29 +20,37 @@ type WallType = "MyLead" | "CPX Research";
 export default function EarnContent({ userId, userName, userEmail, cpxHash }: EarnContentProps) {
   const [open, setOpen] = useState(false);
   const [activeWall, setActiveWall] = useState<WallType | null>(null);
-  const [adblokerActive, setAdblokerActive] = useState(false);
+  const [iframeLoading, setIframeLoading] = useState(true);
+  const [adBlockDetected, setAdBlockDetected] = useState(false);
   
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
 
   useEffect(() => {
-    // Check for adblocker by trying to ping CPX
+    // Basic Adblock detection by attempting to fetch a known tracker URL
     const checkAdBlock = async () => {
       try {
-        const url = "https://offers.cpx-research.com/index.php";
-        await fetch(url, { mode: 'no-cors', method: 'HEAD' });
-        setAdblokerActive(false);
-      } catch (error) {
-        setAdblokerActive(true);
+        await fetch("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js", {
+          method: "HEAD",
+          mode: "no-cors",
+          cache: "no-store",
+        });
+        setAdBlockDetected(false);
+      } catch (e) {
+        setAdBlockDetected(true);
       }
     };
-    checkAdBlock();
-  }, []);
+    
+    if (open && activeWall === "CPX Research") {
+      checkAdBlock();
+    }
+  }, [open, activeWall]);
 
   const myLeadBaseUrl = process.env.NEXT_PUBLIC_MYLEAD_WALL_URL ?? "";
 
   const handleOpenWall = (wall: WallType) => {
     setActiveWall(wall);
+    setIframeLoading(true);
     setOpen(true);
   };
 
@@ -51,9 +59,9 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
       return `${myLeadBaseUrl}${myLeadBaseUrl.includes("?") ? "&" : "?"}uid=${userId}`;
     }
     if (activeWall === "CPX Research") {
-      const appId = "32037"; // From your provided iframe template
-      const encodedName = encodeURIComponent(userName);
-      const encodedEmail = encodeURIComponent(userEmail);
+      const appId = "32037"; 
+      const encodedName = encodeURIComponent(userName || "");
+      const encodedEmail = encodeURIComponent(userEmail || "");
       
       return `https://offers.cpx-research.com/index.php?app_id=${appId}&ext_user_id=${userId}&secure_hash=${cpxHash}&username=${encodedName}&email=${encodedEmail}&subid_1=&subid_2`;
     }
@@ -64,16 +72,6 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
 
   return (
     <Box sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 10, lg: 2 } }}>
-      {/* Adblocker Warning */}
-      {adblokerActive && (
-        <Alert 
-          severity="warning" 
-          sx={{ mb: 2, borderRadius: 3, bgcolor: colors.background.ternary, color: colors.text.secondary, border: `1px solid ${colors.divider}` }}
-        >
-          If you have problem loading walls, please deactivate your adblocker.
-        </Alert>
-      )}
-
       {/* Offer Walls section */}
       <Box sx={{ py: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
@@ -190,10 +188,8 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
               alt="CPX Research"
               sx={{ width: 120, height: "auto", maxHeight: 80, objectFit: "contain" }}
             />
-
             <Typography variant="subtitle2" isBold sx={{ mt: 1.5, color: "#fff" }}>CPX Research</Typography>
           </Paper>
-
         </Box>
       </Box>
 
@@ -213,7 +209,7 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
         fullScreen={isMobile}
         PaperProps={{
           sx: {
-            bgcolor: colors.background.default,
+            bgcolor: "#000",
             border: `1px solid ${colors.divider}`,
             borderRadius: 6,
             height: "90vh", maxHeight: "90vh",
@@ -228,6 +224,7 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
           sx={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             borderBottom: `1px solid ${colors.divider}`, px: 2.5, py: 1.5,
+            bgcolor: colors.background.default
           }}
         >
           <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#fff" }}>
@@ -245,19 +242,35 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
             <CloseIcon sx={{ fontSize: 16 }} />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden", position: "relative" }}>
-          {adblokerActive && (
+        <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden", position: "relative", bgcolor: "#000" }}>
+          
+          {/* Loading Animation */}
+          {iframeLoading && !adBlockDetected && (
             <Box
               sx={{
-                position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                bgcolor: "rgba(0,0,0,0.9)", zIndex: 10, p: 4, textAlign: "center",
+                position: "absolute", inset: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                zIndex: 2, bgcolor: "#000"
               }}
             >
-              <Typography sx={{ mb: 2, color: "#fff", opacity: 0.8 }}>
+              <CircularProgress size={40} sx={{ color: colors.secondary }} />
+            </Box>
+          )}
+
+          {/* Adblock Error Message for CPX */}
+          {activeWall === "CPX Research" && adBlockDetected && (
+            <Box
+              sx={{
+                position: "absolute", inset: 0,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                textAlign: "center", p: 3, zIndex: 3, bgcolor: "#000",
+                border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, m: 2
+              }}
+            >
+              <Typography sx={{ color: colors.text.secondary, mb: 1.5, fontSize: "1rem" }}>
                 Unfortunately we cant connect to our Server.
               </Typography>
-              <Typography sx={{ color: "#fff", opacity: 0.8 }}>
+              <Typography sx={{ color: colors.text.secondary, opacity: 0.8, fontSize: "0.875rem" }}>
                 If you have the problem permanently, please deactivate your adblocker.
               </Typography>
             </Box>
@@ -267,10 +280,13 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
             <Box
               component="iframe"
               src={iframeSrc}
-              title={`${activeWall} Offer Wall`}
-              allow="clipboard-write"
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation"
-              sx={{ width: "100%", height: "100%", border: "none" }}
+              onLoad={() => setIframeLoading(false)}
+              title={`${activeWall}`}
+              sx={{ 
+                width: "100%", height: "100%", border: "none", 
+                bgcolor: "#000",
+                display: adBlockDetected ? "none" : "block" 
+              }}
             />
           )}
         </DialogContent>
