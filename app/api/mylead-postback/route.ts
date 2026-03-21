@@ -132,8 +132,8 @@ async function handlePostback(request: NextRequest) {
       .eq('id', player_id)
       .single();
 
-    if (!referrerError && userWithReferrer?.referred_by && userWithReferrer?.email_verified === true) {
-      // Add 5% commission to referrer's pending earnings
+    if (!referrerError && userWithReferrer?.referred_by) {
+      // Add 5% commission to referrer's pending earnings (no email verification required)
       const commissionAmount = Math.round(amount * 0.05);
       if (commissionAmount > 0) {
         const { error: commissionError } = await supabase.rpc('increment_pending_referral_earnings', {
@@ -146,8 +146,6 @@ async function handlePostback(request: NextRequest) {
           log(`Referral commission: ${commissionAmount} coins added to pending earnings for referrer ${userWithReferrer.referred_by}`);
         }
       }
-    } else if (userWithReferrer?.referred_by && userWithReferrer?.email_verified !== true) {
-      log(`Referral commission skipped: referred user email not verified`);
     }
 
     // 9. Verify
