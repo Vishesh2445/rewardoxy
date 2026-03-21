@@ -22,47 +22,36 @@ export default async function ReferralsPage() {
     redirect("/auth/login");
   }
 
-  const [userResult, countResult, coinsResult, listResult] = await Promise.all([
+  const [userResult, referredUsersResult] = await Promise.all([
     supabase
       .from("users")
-      .select("referral_code, coins_balance")
+      .select("referral_code, coins_balance, total_earned")
       .eq("id", user.id)
       .single(),
 
+    // Get users who were referred by this user (using referred_by field)
     supabase
-      .from("referrals")
-      .select("*", { count: "exact", head: true })
-      .eq("referrer_uid", user.id),
-
-    supabase
-      .from("referrals")
-      .select("lifetime_coins_earned")
-      .eq("referrer_uid", user.id),
-
-    supabase
-      .from("referrals")
-      .select("id, referred_uid, lifetime_coins_earned, created_at, users!referrals_referred_uid_fkey(email)")
-      .eq("referrer_uid", user.id)
+      .from("users")
+      .select("id, email, created_at, total_earned")
+      .eq("referred_by", user.id)
       .order("created_at", { ascending: false }),
   ]);
 
   const referralCode = userResult.data?.referral_code ?? "";
   const coins = userResult.data?.coins_balance ?? 0;
-  const totalReferrals = countResult.count ?? 0;
+  const totalReferrals = referredUsersResult.data?.length ?? 0;
 
-  const totalCoins = (coinsResult.data ?? []).reduce(
-    (sum, row) => sum + (row.lifetime_coins_earned ?? 0),
+  // Calculate total coins earned from referrals (5% of each referral's total_earned)
+  const totalCoins = (referredUsersResult.data ?? []).reduce(
+    (sum, row) => sum + Math.round((row.total_earned ?? 0) * 0.05),
     0
   );
 
-  const referrals = (listResult.data ?? []).map((row) => {
-    const joined = row.users as unknown as { email: string } | null;
-    return {
-      id: row.id,
-      masked_email: joined?.email ? maskEmail(joined.email) : "***",
-      created_at: row.created_at,
-    };
-  });
+  const referrals = (referredUsersResult.data ?? []).map((row) => ({
+    id: row.id,
+    masked_email: row.email ? maskEmail(row.email) : "***",
+    created_at: row.created_at,
+  }));
 
   return (
     <AppShell coins={coins}>
