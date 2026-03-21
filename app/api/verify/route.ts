@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -9,10 +9,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard?verified=false&error=no_token", request.url));
   }
 
-  const supabase = await createClient();
+  const admin = createAdminClient();
 
   // Find the token in the database
-  const { data: tokenData, error: tokenError } = await supabase
+  const { data: tokenData, error: tokenError } = await admin
     .from("email_verification_tokens")
     .select("id, user_id, expires_at")
     .eq("token", token)
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   // Check if token has expired
   if (new Date(tokenData.expires_at) < new Date()) {
     // Delete expired token
-    await supabase
+    await admin
       .from("email_verification_tokens")
       .delete()
       .eq("id", tokenData.id);
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Update user's email_verified to true
-  const { error: updateError } = await supabase
+  const { error: updateError } = await admin
     .from("users")
     .update({ email_verified: true })
     .eq("id", tokenData.user_id);
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Delete the used token
-  await supabase
+  await admin
     .from("email_verification_tokens")
     .delete()
     .eq("id", tokenData.id);
