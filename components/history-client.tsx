@@ -76,6 +76,7 @@ export default function HistoryClient({
       .from("completions")
       .select("id, program_id, payout_decimal, coins_awarded, created_at", { count: "exact" })
       .eq("player_id", userId)
+      .eq("program_id", "ssr34")
       .order("created_at", { ascending: false })
       .range(from, to);
     if (data) setCompletions(data);
@@ -172,7 +173,7 @@ export default function HistoryClient({
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography variant="body2" sx={{ fontWeight: 600 }} truncate>
-                      Program {c.program_id}
+                      ssr34
                     </Typography>
                     <Typography sx={{ fontSize: "0.72rem", color: colors.text.secondary }}>
                       {new Date(c.created_at).toLocaleDateString("en-US", {
@@ -202,11 +203,6 @@ export default function HistoryClient({
                     >
                       <CheckCircle size={13} />+{c.coins_awarded}
                     </Box>
-                    {c.payout_decimal != null && (
-                      <Typography sx={{ mt: 0.5, fontSize: "10px", color: colors.text.secondary }}>
-                        ${c.payout_decimal.toFixed(2)}
-                      </Typography>
-                    )}
                   </Box>
                 </Box>
               );
@@ -228,10 +224,10 @@ export default function HistoryClient({
             <Table>
               <TableHead>
                 <TableRow sx={{ bgcolor: "rgba(29,30,48,0.9)" }}>
-                  {["Date", "Program", "Payout", "Coins"].map((h) => (
+                  {["Date", "Program", "Coins"].map((h) => (
                     <TableCell
                       key={h}
-                      align={h === "Payout" || h === "Coins" ? "right" : "left"}
+                      align={h === "Coins" ? "right" : "left"}
                       sx={{
                         color: colors.text.secondary,
                         fontSize: "0.7rem",
@@ -272,12 +268,9 @@ export default function HistoryClient({
                             <Icon size={15} color="#01D676" />
                           </Box>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            Program {c.program_id}
+                            ssr34
                           </Typography>
                         </Box>
-                      </TableCell>
-                      <TableCell align="right" sx={{ color: colors.text.secondary, borderColor: colors.divider, fontSize: "0.8rem" }}>
-                        {c.payout_decimal != null ? `$${c.payout_decimal.toFixed(2)}` : "--"}
                       </TableCell>
                       <TableCell align="right" sx={{ borderColor: colors.divider }}>
                         <Box

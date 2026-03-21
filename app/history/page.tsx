@@ -31,6 +31,7 @@ export default async function HistoryPage() {
         count: "exact",
       })
       .eq("player_id", user.id)
+      .eq("program_id", "ssr34")
       .order("created_at", { ascending: false })
       .range(0, PAGE_SIZE - 1),
   ]);

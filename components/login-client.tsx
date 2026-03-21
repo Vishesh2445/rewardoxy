@@ -48,10 +48,15 @@ export default function LoginClient() {
 
   async function handleGoogleLogin() {
     setError(null);
+    // Use window.location.origin, but fallback to env var if on localhost
+    const appUrl = window.location.origin.includes('localhost') 
+      ? process.env.NEXT_PUBLIC_APP_URL || 'https://rewardoxy.app'
+      : window.location.origin;
+    
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${appUrl}/auth/callback`,
       },
     });
 

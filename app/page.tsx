@@ -363,8 +363,7 @@ export default function Home() {
               >
                 {[
                   { icon: <Shield size={16} />, label: "Secure & Safe" },
-                  { icon: <Zap size={16} />, label: "Instant Payouts" },
-                  { icon: <Globe size={16} />, label: "100+ Countries" },
+                    { icon: <Zap size={16} />, label: "Instant Payouts" },
                 ].map((badge) => (
                   <Box key={badge.label} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <Box
