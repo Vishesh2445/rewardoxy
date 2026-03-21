@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const forwardedFor = request.headers.get("x-forwarded-for");
   const realIp = request.headers.get("x-real-ip");
   
-  let ip = forwardedFor?.split(",")[0]?.trim() || realIp || "";
+  const ip = forwardedFor?.split(",")[0]?.trim() || realIp || "";
   
   // If no IP found (e.g., localhost), return a default
   if (!ip || ip === "127.0.0.1" || ip === "::1" || ip === "localhost") {

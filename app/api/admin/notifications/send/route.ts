@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       message: message.trim(),
       is_broadcast: true,
       read: false,
+      admin_sent: true,
     });
 
     if (error) {
@@ -45,6 +46,7 @@ export async function POST(request: NextRequest) {
       message: message.trim(),
       is_broadcast: false,
       read: false,
+      admin_sent: true,
     });
 
     if (error) {

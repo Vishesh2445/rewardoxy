@@ -21,5 +21,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
   }
 
+  // Send notification to the user about their ban status
+  const notificationTitle = banned ? "Account Banned" : "Account Unbanned";
+  const notificationMessage = banned 
+    ? "Your account has been banned by an administrator. Please contact support for more information."
+    : "Your account has been unbanned. You can now access all features again.";
+
+  await adminSupabase.from("notifications").insert({
+    user_id: userId,
+    title: notificationTitle,
+    message: notificationMessage,
+    is_broadcast: false,
+    read: false,
+    admin_sent: false,
+  });
+
   return NextResponse.json({ success: true });
 }

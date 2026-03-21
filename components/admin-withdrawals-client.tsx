@@ -19,6 +19,8 @@ import {
   CircularProgress,
   Tooltip,
   IconButton,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { Wallet, CheckCircle, XCircle, ChevronLeft, ChevronRight, Copy } from "lucide-react";
 import Typography from "@/components/ui/Typography";
@@ -64,6 +66,14 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
   const [txHash, setTxHash] = useState("");
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  const [toast, setToast] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const handleCloseToast = () => setToast((prev) => ({ ...prev, open: false }));
+
   function copyUid(uid: string) {
     navigator.clipboard.writeText(uid);
   }
@@ -100,6 +110,10 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
       setWithdrawals((prev) =>
         prev.map((w) => (w.id === approveDialog ? { ...w, status: "paid", tx_hash: txHash } : w))
       );
+      setToast({ open: true, message: "Withdrawal approved successfully.", severity: "success" });
+    } else {
+      const data = await res.json();
+      setToast({ open: true, message: data.error || "Failed to approve withdrawal.", severity: "error" });
     }
     setApproveDialog(null);
     setTxHash("");
@@ -117,6 +131,10 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
       setWithdrawals((prev) =>
         prev.map((w) => (w.id === id ? { ...w, status: "failed" } : w))
       );
+      setToast({ open: true, message: "Withdrawal rejected and coins refunded.", severity: "success" });
+    } else {
+      const data = await res.json();
+      setToast({ open: true, message: data.error || "Failed to reject withdrawal.", severity: "error" });
     }
     setActionLoading(null);
   }
@@ -325,6 +343,27 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Toast Feedback */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseToast}
+          severity={toast.severity}
+          sx={{
+            bgcolor: toast.severity === "success" ? "rgba(1,214,118,0.1)" : "rgba(239,68,68,0.1)",
+            border: `1px solid ${toast.severity === "success" ? "rgba(1,214,118,0.3)" : "rgba(239,68,68,0.3)"}`,
+            color: toast.severity === "success" ? "#01D676" : "#f87171",
+            "& .MuiAlert-icon": { color: toast.severity === "success" ? "#01D676" : "#f87171" },
+          }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

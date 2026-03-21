@@ -17,6 +17,8 @@ import {
   Collapse,
   IconButton,
   Tooltip,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { Users, Search, ShieldOff, ShieldCheck, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Activity, Copy } from "lucide-react";
 import Typography from "@/components/ui/Typography";
@@ -72,6 +74,14 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
   const [activityData, setActivityData] = useState<Record<string, UserActivity>>({});
   const [activityLoading, setActivityLoading] = useState<string | null>(null);
 
+  const [toast, setToast] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const handleCloseToast = () => setToast((prev) => ({ ...prev, open: false }));
+
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const fetchUsers = useCallback(async (q: string, p: number) => {
@@ -94,15 +104,35 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
 
   async function handleBan(userId: string, ban: boolean) {
     setBanLoading(userId);
-    const res = await fetch("/api/admin/users/ban", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, banned: ban }),
-    });
-    if (res.ok) {
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, is_banned: ban } : u))
-      );
+    try {
+      const res = await fetch("/api/admin/users/ban", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, banned: ban }),
+      });
+      if (res.ok) {
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, is_banned: ban } : u))
+        );
+        setToast({
+          open: true,
+          message: `User successfully ${ban ? "banned" : "unbanned"}.`,
+          severity: "success",
+        });
+      } else {
+        const data = await res.json();
+        setToast({
+          open: true,
+          message: data.error || "Failed to update ban status.",
+          severity: "error",
+        });
+      }
+    } catch {
+      setToast({
+        open: true,
+        message: "Network error. Failed to update ban status.",
+        severity: "error",
+      });
     }
     setBanLoading(null);
   }
@@ -423,6 +453,27 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
           </Button>
         </Box>
       )}
+
+      {/* Toast Feedback */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseToast}
+          severity={toast.severity}
+          sx={{
+            bgcolor: toast.severity === "success" ? "rgba(1,214,118,0.1)" : "rgba(239,68,68,0.1)",
+            border: `1px solid ${toast.severity === "success" ? "rgba(1,214,118,0.3)" : "rgba(239,68,68,0.3)"}`,
+            color: toast.severity === "success" ? "#01D676" : "#f87171",
+            "& .MuiAlert-icon": { color: toast.severity === "success" ? "#01D676" : "#f87171" },
+          }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
