@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Box, Dialog, DialogTitle, DialogContent, IconButton, Paper } from "@mui/material";
+import { useState, useEffect } from "react";
+import { Box, Dialog, DialogTitle, DialogContent, IconButton, Paper, Alert } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
@@ -20,9 +20,24 @@ type WallType = "MyLead" | "CPX Research";
 export default function EarnContent({ userId, userName, userEmail, cpxHash }: EarnContentProps) {
   const [open, setOpen] = useState(false);
   const [activeWall, setActiveWall] = useState<WallType | null>(null);
+  const [adblokerActive, setAdblokerActive] = useState(false);
   
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
+
+  useEffect(() => {
+    // Check for adblocker by trying to ping CPX
+    const checkAdBlock = async () => {
+      try {
+        const url = "https://offers.cpx-research.com/index.php";
+        await fetch(url, { mode: 'no-cors', method: 'HEAD' });
+        setAdblokerActive(false);
+      } catch (error) {
+        setAdblokerActive(true);
+      }
+    };
+    checkAdBlock();
+  }, []);
 
   const myLeadBaseUrl = process.env.NEXT_PUBLIC_MYLEAD_WALL_URL ?? "";
 
@@ -49,6 +64,16 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
 
   return (
     <Box sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 10, lg: 2 } }}>
+      {/* Adblocker Warning */}
+      {adblokerActive && (
+        <Alert 
+          severity="warning" 
+          sx={{ mb: 2, borderRadius: 3, bgcolor: colors.background.ternary, color: colors.text.secondary, border: `1px solid ${colors.divider}` }}
+        >
+          If you have problem loading walls, please deactivate your adblocker.
+        </Alert>
+      )}
+
       {/* Offer Walls section */}
       <Box sx={{ py: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
@@ -220,7 +245,24 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
             <CloseIcon sx={{ fontSize: 16 }} />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden" }}>
+        <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden", position: "relative" }}>
+          {adblokerActive && (
+            <Box
+              sx={{
+                position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                bgcolor: "rgba(0,0,0,0.9)", zIndex: 10, p: 4, textAlign: "center",
+              }}
+            >
+              <Typography sx={{ mb: 2, color: "#fff", opacity: 0.8 }}>
+                Unfortunately we cant connect to our Server.
+              </Typography>
+              <Typography sx={{ color: "#fff", opacity: 0.8 }}>
+                If you have the problem permanently, please deactivate your adblocker.
+              </Typography>
+            </Box>
+          )}
+
           {activeWall && (
             <Box
               component="iframe"
@@ -236,5 +278,6 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
     </Box>
   );
 }
+
 
 
