@@ -331,12 +331,13 @@ export default function AppShell({ children, coins }: AppShellProps) {
           {children}
         </Box>
 
-        {/* Footer (desktop only) */}
+        {/* Footer (mobile and desktop) */}
         <Box
           component="footer"
           sx={{
             bgcolor: colors.primary,
-            display: { xs: "none", lg: "block" },
+            display: { xs: "block", lg: "block" },
+            pb: { xs: "calc(80px + env(safe-area-inset-bottom))", lg: 0 },
           }}
         >
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 4, p: 8 }}>

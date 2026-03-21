@@ -25,7 +25,6 @@ import {
   Menu,
   X,
   ArrowLeft,
-  Key,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Icons from "@/components/icons";
@@ -38,7 +37,6 @@ const ADMIN_NAV_ITEMS = [
   { label: "Dashboard", href: "/admin", Icon: LayoutDashboard },
   { label: "Users", href: "/admin/users", Icon: Users },
   { label: "Withdrawals", href: "/admin/withdrawals", Icon: Wallet },
-  { label: "Password Resets", href: "/admin/password-resets", Icon: Key },
   { label: "Notifications", href: "/admin/notifications", Icon: Bell },
 ];
 
