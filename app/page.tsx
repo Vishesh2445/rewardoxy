@@ -17,6 +17,8 @@ import {
   InputAdornment,
   CircularProgress,
   Alert,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import {
   Shield,
@@ -104,6 +106,8 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [signupLoading, setSignupLoading] = useState(false);
   const [signupError, setSignupError] = useState<string | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -114,6 +118,13 @@ export default function Home() {
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
     setSignupError(null);
+
+    if (!acceptedTerms) {
+      setSignupError("You must accept the Terms of Service and Privacy Policy to continue");
+      setSignupLoading(false);
+      return;
+    }
+
     setSignupLoading(true);
 
     const { data, error: signUpError } = await supabase.auth.signUp({
@@ -134,6 +145,9 @@ export default function Home() {
         body: JSON.stringify({
           user_id: data.user.id,
           email: data.user.email,
+          accepted_terms: true,
+          is_google_oauth: false,
+          referred_by: referralCode || undefined,
         }),
       });
 
@@ -509,11 +523,47 @@ export default function Home() {
                       }}
                     />
 
+                    {/* Referral Code - Optional */}
+                    <TextField
+                      placeholder="Referral code (optional)"
+                      value={referralCode}
+                      onChange={(e) => setReferralCode(e.target.value)}
+                      size="small"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          fontSize: "0.85rem",
+                        },
+                      }}
+                    />
+
                     {signupError && (
                       <Alert severity="error" sx={{ fontSize: "0.8rem" }}>
                         {signupError}
                       </Alert>
                     )}
+
+                    {/* Terms Checkbox */}
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={acceptedTerms}
+                          onChange={(e) => setAcceptedTerms(e.target.checked)}
+                          sx={{ color: colors.textSecondary }}
+                        />
+                      }
+                      label={
+                        <Typography sx={{ fontSize: "0.75rem", color: colors.textSecondary }}>
+                          I agree to the{" "}
+                          <Link href="/terms" target="_blank" style={{ color: colors.green, textDecoration: "none" }}>
+                            Terms
+                          </Link>{" and "}
+                          <Link href="/privacy" target="_blank" style={{ color: colors.green, textDecoration: "none" }}>
+                            Privacy
+                          </Link>
+                        </Typography>
+                      }
+                      sx={{ alignItems: "flex-start", mt: 1 }}
+                    />
 
                     <Button
                       type="submit"
@@ -995,13 +1045,14 @@ export default function Home() {
                 { label: "Terms", href: "/terms" },
                 { label: "Privacy", href: "/privacy" },
                 { label: "Contact", href: "/contact" },
+                { label: "Support", href: "mailto:support@rewardoxy.app", isEmail: true },
               ].map((item) => (
                 <Box
                   key={item.href}
-                  component={Link}
+                  component={item.isEmail ? "a" : Link}
                   href={item.href}
                   sx={{
-                    color: colors.textSecondary,
+                    color: item.isEmail ? colors.green : colors.textSecondary,
                     textDecoration: "none",
                     transition: "color 0.2s",
                     "&:hover": { color: colors.textPrimary },
@@ -1017,6 +1068,7 @@ export default function Home() {
 
           <Typography
             alignCenter
+            suppressHydrationWarning
             sx={{ fontSize: "0.75rem", color: "rgba(169,169,202,0.5)" }}
           >
             &copy; {new Date().getFullYear()} Rewardoxy. All rights reserved.

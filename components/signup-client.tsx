@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Mail, Lock, ArrowRight } from "lucide-react";
+import { Mail, Lock, ArrowRight, Check } from "lucide-react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -12,6 +12,12 @@ import InputAdornment from "@mui/material/InputAdornment";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Divider from "@mui/material/Divider";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 import Typography from "@/components/ui/Typography";
 import Icons from "@/components/icons";
 import colors from "@/theme/colors";
@@ -25,12 +31,22 @@ export default function SignupClient() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [googleDialogOpen, setGoogleDialogOpen] = useState(false);
+  const [googleTermsAccepted, setGoogleTermsAccepted] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
 
   const supabase = createClient();
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!acceptedTerms) {
+      setError("You must accept the Terms of Service and Privacy Policy to continue");
+      return;
+    }
+
     setLoading(true);
 
     const { data, error: signUpError } = await supabase.auth.signUp({
@@ -51,7 +67,9 @@ export default function SignupClient() {
         body: JSON.stringify({
           user_id: data.user.id,
           email: data.user.email,
-          referred_by: ref || undefined,
+          referred_by: ref || referralCode || undefined,
+          accepted_terms: true,
+          is_google_oauth: false,
         }),
       });
 
@@ -69,6 +87,17 @@ export default function SignupClient() {
   }
 
   async function handleGoogleSignup() {
+    if (!googleTermsAccepted) {
+      setGoogleDialogOpen(true);
+      return;
+    }
+    proceedWithGoogleSignup();
+  }
+
+  async function proceedWithGoogleSignup() {
+    // Set cookie to indicate terms were accepted for OAuth callback
+    document.cookie = "oauth_terms_accepted=true; path=/; max-age=3600";
+    
     setError(null);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -291,6 +320,61 @@ export default function SignupClient() {
               />
             </Box>
 
+            {/* Referral Code - Optional */}
+            <Box>
+              <Typography
+                variant="body2"
+                isBold
+                sx={{ mb: 0.75, color: colors.text.secondary }}
+              >
+                Referral Code (Optional)
+              </Typography>
+              <TextField
+                fullWidth
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                placeholder="Enter referral code"
+                autoComplete="off"
+                sx={textFieldSx}
+              />
+            </Box>
+
+            {/* Terms Checkbox */}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  sx={{
+                    color: colors.text.secondary,
+                    "&.Mui-checked": {
+                      color: colors.secondary,
+                    },
+                  }}
+                />
+              }
+              label={
+                <Typography variant="body2" sx={{ color: colors.text.secondary, fontSize: "0.8rem" }}>
+                  I agree to the{" "}
+                  <Link
+                    href="/terms"
+                    target="_blank"
+                    style={{ color: colors.secondary, textDecoration: "none" }}
+                  >
+                    Terms
+                  </Link>{" and "}
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    style={{ color: colors.secondary, textDecoration: "none" }}
+                  >
+                    Privacy
+                  </Link>
+                </Typography>
+              }
+              sx={{ alignItems: "flex-start", mt: 1 }}
+            />
+
             {/* Error */}
             {error && (
               <Alert
@@ -366,6 +450,98 @@ export default function SignupClient() {
           </Link>
         </Typography>
       </Box>
+
+      {/* Google Terms Dialog */}
+      <Dialog
+        open={googleDialogOpen}
+        onClose={() => setGoogleDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: colors.primary,
+            border: `1px solid ${colors.divider}`,
+            borderRadius: "12px",
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: colors.text.primary, fontWeight: 700 }}>
+          Terms of Service
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ color: colors.text.secondary, mb: 2 }}>
+            Before continuing with Google sign up, please accept our terms.
+          </Typography>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={googleTermsAccepted}
+                onChange={(e) => setGoogleTermsAccepted(e.target.checked)}
+                sx={{
+                  color: colors.text.secondary,
+                  "&.Mui-checked": {
+                    color: colors.secondary,
+                  },
+                }}
+              />
+            }
+            label={
+              <Typography variant="body2" sx={{ color: colors.text.secondary }}>
+                I agree to the{" "}
+                <Link
+                  href="/terms"
+                  target="_blank"
+                  style={{ color: colors.secondary, textDecoration: "none" }}
+                >
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  style={{ color: colors.secondary, textDecoration: "none" }}
+                >
+                  Privacy Policy
+                </Link>
+              </Typography>
+            }
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button
+            onClick={() => {
+              setGoogleDialogOpen(false);
+              setGoogleTermsAccepted(false);
+            }}
+            sx={{ color: colors.text.secondary }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setGoogleDialogOpen(false);
+              proceedWithGoogleSignup();
+            }}
+            disabled={!googleTermsAccepted}
+            sx={{
+              background: colors.background.gradient,
+              fontWeight: 700,
+              textTransform: "none",
+              boxShadow: "none",
+              "&:hover": {
+                background: colors.background.gradient,
+                opacity: 0.9,
+              },
+              "&.Mui-disabled": {
+                opacity: 0.5,
+              },
+            }}
+          >
+            Continue with Google
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

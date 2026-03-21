@@ -18,7 +18,7 @@ export default async function ProfilePage() {
 
   const { data: userData } = await supabase
     .from("users")
-    .select("coins_balance, display_name, crypto_address, preferred_network, total_earned, streak_count, created_at")
+    .select("coins_balance, display_name, crypto_address, preferred_network, total_earned, streak_count, created_at, email_verified")
     .eq("id", user.id)
     .single();
 
@@ -47,6 +47,7 @@ export default async function ProfilePage() {
         totalCompletions={completionCount ?? 0}
         totalWithdrawals={withdrawalCount ?? 0}
         memberSince={userData?.created_at ?? user.created_at}
+        emailVerified={userData?.email_verified ?? false}
       />
     </AppShell>
   );

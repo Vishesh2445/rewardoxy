@@ -21,6 +21,7 @@ import {
   BottomNavigationAction as MuiBottomNavigationAction,
   styled,
 } from "@mui/material";
+import Image from "next/image";
 import {
   LayoutDashboard,
   Gift,
@@ -34,6 +35,7 @@ import {
   Coins,
   Menu,
   X,
+  Mail,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Icons from "@/components/icons";
@@ -61,7 +63,7 @@ const BOTTOM_NAV_ITEMS = [
   { label: "Cash Out", href: "/cashout", Icon: Wallet },
 ];
 
-const footerInfoList = [
+const footerInfoList: { title: string; links: { text: string; url: string; isEmail?: boolean }[] }[] = [
   {
     title: "Quick Links",
     links: [
@@ -83,6 +85,12 @@ const footerInfoList = [
       { text: "How It Works", url: "/#how-it-works" },
       { text: "FAQ", url: "/#faq" },
       { text: "Contact", url: "/contact" },
+    ],
+  },
+  {
+    title: "Contact",
+    links: [
+      { text: "support@rewardoxy.app", url: "mailto:support@rewardoxy.app", isEmail: true },
     ],
   },
 ];
@@ -140,7 +148,7 @@ export default function AppShell({ children, coins }: AppShellProps) {
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-        <Coins size={16} color="#01D676" />
+        <Image src="/logo.png" alt="Coins" width={16} height={16} style={{ objectFit: "contain" }} />
         <Typography
           variant="caption"
           sx={{
@@ -238,7 +246,7 @@ export default function AppShell({ children, coins }: AppShellProps) {
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 0.75,
+                  gap: 0.5,
                   borderRadius: 50,
                   bgcolor: colors.background.secondary,
                   border: "1px solid rgba(1, 214, 118, 0.2)",
@@ -249,8 +257,7 @@ export default function AppShell({ children, coins }: AppShellProps) {
                   color: "#01D676",
                 }}
               >
-                <Coins size={14} />
-                {coins.toLocaleString()}
+                ${((coins ?? 0) / 1000).toFixed(2)}
               </Box>
             )}
           </Box>
@@ -346,9 +353,33 @@ export default function AppShell({ children, coins }: AppShellProps) {
                 <Box key={title} sx={{ pr: 4 }}>
                   <Typography color="textPrimary">{title}</Typography>
                   <List sx={{ pr: 4 }}>
-                    {links.map(({ text, url }) => (
-                      <ListItemButton key={text} href={url} sx={{ py: 1, px: 0 }}>
-                        <ListItemText primary={text} />
+                    {links.map(({ text, url, isEmail }) => (
+                      <ListItemButton
+                        key={text}
+                        component={isEmail ? "a" : Link}
+                        href={isEmail ? url : url}
+                        target={isEmail ? "_blank" : undefined}
+                        rel={isEmail ? "noopener noreferrer" : undefined}
+                        sx={{ py: 1, px: 0 }}
+                      >
+                        <ListItemText
+                          primary={
+                            isEmail ? (
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                                <Mail size={14} />
+                                <span>{text}</span>
+                              </Box>
+                            ) : (
+                              text
+                            )
+                          }
+                          primaryTypographyProps={{
+                            sx: {
+                              color: isEmail ? colors.secondary : colors.text.primary,
+                              fontSize: "0.8125rem",
+                            },
+                          }}
+                        />
                       </ListItemButton>
                     ))}
                   </List>

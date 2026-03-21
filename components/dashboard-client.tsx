@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Box, Paper, Grid, Button } from "@mui/material";
+import { Box, Paper, Grid, Button, Divider } from "@mui/material";
 import {
   Coins,
   Flame,
@@ -17,6 +17,10 @@ import {
   Smartphone,
   CalendarCheck,
   Zap,
+  Trophy,
+  Users,
+  Star,
+  Clock,
 } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
@@ -49,6 +53,15 @@ function offerIcon(name: string) {
   if (lower.includes("game") || lower.includes("play")) return OFFER_ICONS.game;
   if (lower.includes("survey") || lower.includes("fill")) return OFFER_ICONS.survey;
   return OFFER_ICONS.app;
+}
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
 }
 
 export default function DashboardClient({
@@ -143,50 +156,224 @@ export default function DashboardClient({
     };
   }, [userId]);
 
-  const miniStats = [
-    { icon: <Coins size={20} color="#01D676" />, label: "Balance", value: coins.toLocaleString(), sub: "coins", accent: true },
-    { icon: <TrendingUp size={20} color="#01D676" />, label: "Total Earned", value: totalEarned.toLocaleString(), sub: "coins", accent: false },
-    { icon: <Flame size={20} color="#01D676" />, label: "Streak", value: String(streak), sub: "days", accent: false },
-    { icon: <CheckCircle size={20} color="#01D676" />, label: "Completions", value: String(completions.length), sub: "recent", accent: false },
+  const initials = displayName.slice(0, 2).toUpperCase();
+  const usdValue = (coins / 1000).toFixed(2);
+
+  const stats = [
+    {
+      icon: <Coins size={22} color="#01D676" />,
+      label: "Coin Balance",
+      value: coins.toLocaleString(),
+      sub: `≈ $${usdValue} USDT`,
+      accent: true,
+      glow: true,
+    },
+    {
+      icon: <TrendingUp size={22} color="#01D676" />,
+      label: "Total Earned",
+      value: totalEarned.toLocaleString(),
+      sub: "lifetime coins",
+      accent: false,
+      glow: false,
+    },
+    {
+      icon: <Flame size={22} color="#f97316" />,
+      label: "Day Streak",
+      value: String(streak),
+      sub: streak > 0 ? "🔥 Keep it up!" : "Start today!",
+      accent: false,
+      glow: false,
+    },
+    {
+      icon: <CheckCircle size={22} color="#01D676" />,
+      label: "Completions",
+      value: String(completions.length),
+      sub: "recent tasks",
+      accent: false,
+      glow: false,
+    },
   ];
 
   const quickActions = [
-    { href: "/earn", icon: <Gift size={24} color="#01D676" />, title: "Complete Offers", description: "Earn coins by completing tasks" },
-    { href: "/daily-bonus", icon: <CalendarCheck size={24} color="#01D676" />, title: "Daily Bonus", description: "Claim your daily reward" },
-    { href: "/cashout", icon: <Wallet size={24} color="#01D676" />, title: "Cash Out", description: "Withdraw your earnings" },
+    {
+      href: "/earn",
+      icon: <Gift size={26} color="#01D676" />,
+      title: "Complete Offers",
+      description: "Earn coins by completing tasks",
+      primary: true,
+    },
+    {
+      href: "/daily-bonus",
+      icon: <CalendarCheck size={26} color="#01D676" />,
+      title: "Daily Bonus",
+      description: "Claim your daily streak reward",
+      primary: false,
+    },
+    {
+      href: "/cashout",
+      icon: <Wallet size={26} color="#01D676" />,
+      title: "Cash Out",
+      description: "Withdraw earnings as USDT",
+      primary: false,
+    },
+  ];
+
+  const highlights = [
+    { icon: <Trophy size={18} color="#f59e0b" />, label: "Leaderboard", href: "/leaderboard" },
+    { icon: <Users size={18} color="#01D676" />, label: "Referrals", href: "/referrals" },
+    { icon: <Star size={18} color="#a78bfa" />, label: "History", href: "/history" },
   ];
 
   return (
     <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
-      {/* Welcome banner */}
-      <Paper sx={{ mb: 4, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: { xs: 3, sm: 4 } }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 3, bgcolor: "rgba(1,214,118,0.15)", border: "1px solid rgba(1,214,118,0.25)", boxShadow: "0 4px 12px rgba(1,214,118,0.1)" }}>
-            <Zap size={20} color="#01D676" />
+
+      {/* ── HERO WELCOME BANNER ── */}
+      <Paper
+        elevation={0}
+        sx={{
+          mb: 4,
+          borderRadius: 4,
+          border: "1px solid rgba(1,214,118,0.15)",
+          background: "linear-gradient(135deg, #1d1e30 0%, #1a2035 100%)",
+          p: { xs: 3, sm: 4 },
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* background glow */}
+        <Box
+          sx={{
+            pointerEvents: "none",
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 200,
+            height: 200,
+            borderRadius: "50%",
+            background: "rgba(1,214,118,0.07)",
+            filter: "blur(60px)",
+          }}
+        />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+          {/* Avatar */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 52,
+              height: 52,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #01D676 0%, #007e45 100%)",
+              fontWeight: 700,
+              fontSize: "1.1rem",
+              color: "#fff",
+              flexShrink: 0,
+              boxShadow: "0 4px 16px rgba(1,214,118,0.3)",
+            }}
+          >
+            {initials}
           </Box>
-          <Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="h6" isBold>
-              Welcome back, <Box component="span" sx={{ background: colors.text.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{displayName}</Box>
+              Welcome back,{" "}
+              <Box
+                component="span"
+                sx={{
+                  background: "linear-gradient(90deg,#01D676,#00a855)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                {displayName}
+              </Box>{" "}
+              👋
             </Typography>
-            <Typography variant="body2" sx={{ color: colors.text.secondary }}>Here&apos;s your earnings overview</Typography>
+            <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 0.25 }}>
+              Here&apos;s your earnings overview
+            </Typography>
+          </Box>
+
+          {/* Quick nav badges */}
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+            {highlights.map((h) => (
+              <Box
+                key={h.href}
+                component={Link}
+                href={h.href}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.75,
+                  borderRadius: 50,
+                  border: `1px solid ${colors.divider}`,
+                  bgcolor: colors.background.ternary,
+                  px: 1.5,
+                  py: 0.75,
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  color: colors.text.secondary,
+                  textDecoration: "none",
+                  transition: "all 0.2s",
+                  "&:hover": { borderColor: "rgba(1,214,118,0.3)", color: "#fff" },
+                }}
+              >
+                {h.icon}
+                {h.label}
+              </Box>
+            ))}
           </Box>
         </Box>
       </Paper>
 
-      {/* Stats row */}
-      <Grid container spacing={2}>
-        {miniStats.map((s) => (
+      {/* ── STATS ROW ── */}
+      <Grid container spacing={2} sx={{ mb: 4 }}>
+        {stats.map((s) => (
           <Grid size={{ xs: 6, lg: 3 }} key={s.label}>
-            <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 2.5, transition: "all 0.2s", "&:hover": { borderColor: "rgba(1,214,118,0.4)" } }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 3, bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)" }}>
+            <Paper
+              elevation={0}
+              sx={{
+                borderRadius: 4,
+                border: `1px solid ${s.glow ? "rgba(1,214,118,0.2)" : colors.divider}`,
+                bgcolor: colors.background.secondary,
+                p: { xs: 2, sm: 2.5 },
+                height: "100%",
+                transition: "all 0.2s",
+                "&:hover": { borderColor: "rgba(1,214,118,0.35)", boxShadow: "0 4px 20px rgba(1,214,118,0.06)" },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 42,
+                    height: 42,
+                    borderRadius: 3,
+                    bgcolor: s.glow ? "rgba(1,214,118,0.12)" : colors.background.ternary,
+                    border: `1px solid ${s.glow ? "rgba(1,214,118,0.25)" : colors.divider}`,
+                    flexShrink: 0,
+                  }}
+                >
                   {s.icon}
                 </Box>
-                <Box>
-                  <Typography sx={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: colors.text.secondary }}>{s.label}</Typography>
-                  <Typography sx={{ fontSize: "1.25rem", fontWeight: 700, color: s.accent ? "#01D676" : "#fff" }}>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: colors.text.secondary }}>
+                    {s.label}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: { xs: "1.1rem", sm: "1.35rem" },
+                      fontWeight: 800,
+                      color: s.accent ? "#01D676" : "#fff",
+                      lineHeight: 1.2,
+                    }}
+                  >
                     {s.value}
-                    <Box component="span" sx={{ ml: 0.5, fontSize: "0.75rem", fontWeight: 400, color: colors.text.secondary }}>{s.sub}</Box>
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.7rem", color: s.accent ? "rgba(1,214,118,0.6)" : colors.text.secondary, mt: 0.25 }}>
+                    {s.sub}
                   </Typography>
                 </Box>
               </Box>
@@ -195,24 +382,123 @@ export default function DashboardClient({
         ))}
       </Grid>
 
-      {/* Quick actions */}
-      <Grid container spacing={2} sx={{ mt: 4 }}>
+      {/* ── DAILY BONUS CTA ── */}
+      <Paper
+        elevation={0}
+        component={Link}
+        href="/daily-bonus"
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          mb: 4,
+          borderRadius: 4,
+          border: "1px solid rgba(1,214,118,0.25)",
+          background: "linear-gradient(135deg, rgba(1,214,118,0.12) 0%, rgba(0,126,69,0.08) 100%)",
+          p: { xs: 2.5, sm: 3 },
+          textDecoration: "none",
+          color: "inherit",
+          transition: "all 0.25s",
+          position: "relative",
+          overflow: "hidden",
+          "&:hover": { borderColor: "rgba(1,214,118,0.5)", boxShadow: "0 6px 30px rgba(1,214,118,0.12)" },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 52,
+            height: 52,
+            borderRadius: 3,
+            bgcolor: "rgba(1,214,118,0.15)",
+            border: "1px solid rgba(1,214,118,0.3)",
+            flexShrink: 0,
+            animation: "pulse-glow 2.5s ease-in-out infinite",
+          }}
+        >
+          <CalendarCheck size={26} color="#01D676" />
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="body1" isBold sx={{ color: "#01D676" }}>
+            🔥 Day {streak} Streak — Claim Your Daily Bonus!
+          </Typography>
+          <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 0.25 }}>
+            Free coins every day. Come back tomorrow to maintain your streak.
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            display: { xs: "none", sm: "flex" },
+            alignItems: "center",
+            gap: 0.5,
+            borderRadius: 3,
+            background: "linear-gradient(180deg,#01D676,#007e45)",
+            color: "#fff",
+            px: 2.5,
+            py: 1,
+            fontWeight: 700,
+            fontSize: "0.875rem",
+            flexShrink: 0,
+          }}
+        >
+          Claim
+          <ArrowRight size={16} />
+        </Box>
+      </Paper>
+
+      {/* ── QUICK ACTIONS ── */}
+      <Typography variant="subtitle1" isBold sx={{ mb: 2 }}>
+        Quick Actions
+      </Typography>
+      <Grid container spacing={2} sx={{ mb: 4 }}>
         {quickActions.map((a) => (
           <Grid size={{ xs: 12, sm: 4 }} key={a.href}>
             <Paper
               component={Link}
               href={a.href}
+              elevation={0}
               sx={{
-                display: "flex", alignItems: "center", gap: 2, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 2.5, textDecoration: "none", color: "inherit",
-                transition: "all 0.3s", "&:hover": { borderColor: "rgba(1,214,118,0.3)", boxShadow: "0 4px 20px rgba(1,214,118,0.05)" },
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                borderRadius: 4,
+                border: `1px solid ${a.primary ? "rgba(1,214,118,0.25)" : colors.divider}`,
+                bgcolor: a.primary ? "rgba(1,214,118,0.07)" : colors.background.secondary,
+                p: 2.5,
+                textDecoration: "none",
+                color: "inherit",
+                transition: "all 0.25s",
+                "&:hover": {
+                  borderColor: "rgba(1,214,118,0.4)",
+                  boxShadow: "0 4px 20px rgba(1,214,118,0.07)",
+                  transform: "translateY(-1px)",
+                },
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 48, height: 48, borderRadius: 3, bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}`, flexShrink: 0 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 48,
+                  height: 48,
+                  borderRadius: 3,
+                  bgcolor: a.primary ? "rgba(1,214,118,0.15)" : colors.background.ternary,
+                  border: `1px solid ${a.primary ? "rgba(1,214,118,0.25)" : colors.divider}`,
+                  flexShrink: 0,
+                }}
+              >
                 {a.icon}
               </Box>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>{a.title}</Typography>
-                <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>{a.description}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                  {a.title}
+                </Typography>
+                <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
+                  {a.description}
+                </Typography>
               </Box>
               <ArrowRight size={16} color={colors.text.secondary} />
             </Paper>
@@ -220,12 +506,30 @@ export default function DashboardClient({
         ))}
       </Grid>
 
-      {/* Recent activity */}
-      <Box sx={{ mt: 4 }}>
+      {/* ── RECENT ACTIVITY ── */}
+      <Box>
         <Box sx={{ mb: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Typography variant="subtitle1" isBold>Recent Activity</Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Clock size={18} color="#01D676" />
+            <Typography variant="subtitle1" isBold>
+              Recent Activity
+            </Typography>
+          </Box>
           {completions.length > 0 && (
-            <Box component={Link} href="/history" sx={{ display: "flex", alignItems: "center", gap: 0.5, fontSize: "0.875rem", color: "#01D676", textDecoration: "none", "&:hover": { filter: "brightness(1.1)" } }}>
+            <Box
+              component={Link}
+              href="/history"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                color: "#01D676",
+                textDecoration: "none",
+                "&:hover": { filter: "brightness(1.15)" },
+              }}
+            >
               View All
               <ArrowRight size={14} />
             </Box>
@@ -233,43 +537,120 @@ export default function DashboardClient({
         </Box>
 
         {completions.length === 0 ? (
-          <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 4, textAlign: "center" }}>
-            <Box sx={{ mx: "auto", mb: 1.5, display: "flex", alignItems: "center", justifyContent: "center", width: 48, height: 48, borderRadius: 3, bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}` }}>
-              <Gift size={24} color="rgba(169,169,202,0.4)" />
+          <Paper
+            elevation={0}
+            sx={{
+              borderRadius: 4,
+              border: `1px solid ${colors.divider}`,
+              bgcolor: colors.background.secondary,
+              p: 5,
+              textAlign: "center",
+            }}
+          >
+            <Box
+              sx={{
+                mx: "auto",
+                mb: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 56,
+                height: 56,
+                borderRadius: 3,
+                bgcolor: colors.background.ternary,
+                border: `1px solid ${colors.divider}`,
+              }}
+            >
+              <Gift size={26} color="rgba(169,169,202,0.35)" />
             </Box>
-            <Typography variant="body2" sx={{ color: colors.text.secondary }}>
+            <Typography variant="body2" sx={{ color: colors.text.secondary, mb: 2 }}>
               No completions yet. Complete your first offer to see activity here.
             </Typography>
-            <Box component={Link} href="/earn" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, mt: 2, fontSize: "0.875rem", fontWeight: 500, color: "#01D676", textDecoration: "none", "&:hover": { filter: "brightness(1.1)" } }}>
+            <Button
+              component={Link}
+              href="/earn"
+              variant="contained"
+              endIcon={<ArrowRight size={16} />}
+              sx={{
+                background: "linear-gradient(180deg,#01D676,#007e45)",
+                borderRadius: 3,
+                px: 3,
+                py: 1,
+                fontWeight: 700,
+                fontSize: "0.875rem",
+                textTransform: "none",
+                "&:hover": { filter: "brightness(1.1)" },
+              }}
+            >
               Browse Offers
-              <ArrowRight size={14} />
-            </Box>
+            </Button>
           </Paper>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {completions.map((c) => {
+            {completions.map((c, i) => {
               const Icon = offerIcon(c.program_id);
               return (
-                <Box
-                  key={c.id}
-                  sx={{
-                    display: "flex", alignItems: "center", gap: 2, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, px: 2.5, py: 2,
-                    transition: "all 0.2s", "&:hover": { borderColor: "rgba(1,214,118,0.4)" },
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 3, bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}`, flexShrink: 0 }}>
-                    <Icon size={20} color="#01D676" />
+                <Box key={c.id}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      borderRadius: 3,
+                      border: `1px solid ${colors.divider}`,
+                      bgcolor: colors.background.secondary,
+                      px: 2.5,
+                      py: 2,
+                      transition: "all 0.2s",
+                      "&:hover": { borderColor: "rgba(1,214,118,0.3)", bgcolor: colors.background.ternary },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 42,
+                        height: 42,
+                        borderRadius: 3,
+                        bgcolor: colors.background.ternary,
+                        border: `1px solid ${colors.divider}`,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon size={20} color="#01D676" />
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }} truncate>
+                        Program {c.program_id}
+                      </Typography>
+                      <Typography sx={{ fontSize: "0.72rem", color: colors.text.secondary }}>
+                        {timeAgo(c.created_at)}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                        borderRadius: 50,
+                        bgcolor: "rgba(1,214,118,0.1)",
+                        border: "1px solid rgba(1,214,118,0.2)",
+                        px: 1.5,
+                        py: 0.5,
+                        fontSize: "0.875rem",
+                        fontWeight: 700,
+                        color: "#01D676",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Zap size={13} />
+                      +{c.coins_awarded}
+                    </Box>
                   </Box>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500 }} truncate>Program {c.program_id}</Typography>
-                    <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
-                      {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, borderRadius: 50, bgcolor: colors.background.secondary, border: "1px solid rgba(1,214,118,0.2)", px: 1.5, py: 0.5, fontSize: "0.875rem", fontWeight: 600, color: "#01D676" }}>
-                    <CheckCircle size={14} />
-                    +{c.coins_awarded}
-                  </Box>
+                  {i < completions.length - 1 && (
+                    <Divider sx={{ borderColor: "transparent", my: 0 }} />
+                  )}
                 </Box>
               );
             })}

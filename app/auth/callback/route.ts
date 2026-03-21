@@ -8,6 +8,10 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const ref = searchParams.get("ref");
 
+  // Check for terms accepted cookie from Google OAuth signup
+  const cookies = request.headers.get("cookie") || "";
+  const termsAccepted = cookies.includes("oauth_terms_accepted=true");
+
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -44,6 +48,9 @@ export async function GET(request: Request) {
             email: user.email,
             referral_code: randomBytes(4).toString("hex"),
             referred_by: referred_by_id,
+            email_verified: true, // Google OAuth users are already verified
+            accepted_terms: termsAccepted,
+            accepted_at: termsAccepted ? new Date().toISOString() : null,
           });
         }
 
@@ -51,7 +58,12 @@ export async function GET(request: Request) {
         await supabase.rpc("update_streak");
       }
 
-      return NextResponse.redirect(`${origin}/dashboard`);
+      // Create response and clear cookie if terms were accepted
+      const response = NextResponse.redirect(`${origin}/dashboard`);
+      if (termsAccepted) {
+        response.headers.append("Set-Cookie", "oauth_terms_accepted=; path=/; max-age=0");
+      }
+      return response;
     }
   }
 

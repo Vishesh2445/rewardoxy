@@ -6,9 +6,11 @@ import {
   Box, Button, Paper, TextField, CircularProgress, Avatar,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
 } from "@mui/material";
-import { Settings, Save, CheckCircle, Wallet, TrendingUp, Flame, Mail, User, Calendar } from "lucide-react";
+import { Settings, Save, CheckCircle, Wallet, TrendingUp, Flame, Mail, User, Calendar, AlertCircle, Send } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 const NETWORKS = ["TRC-20", "BEP-20", "SOL"] as const;
 
@@ -40,6 +42,7 @@ interface ProfileClientProps {
   totalCompletions: number;
   totalWithdrawals: number;
   memberSince: string;
+  emailVerified: boolean;
 }
 
 function stringAvatar(name: string, size: number = 100) {
@@ -77,6 +80,7 @@ export default function ProfileClient({
   totalCompletions,
   totalWithdrawals,
   memberSince,
+  emailVerified: initialEmailVerified,
 }: ProfileClientProps) {
   const [name, setName] = useState(initialName);
   const [address, setAddress] = useState(initialAddress);
@@ -89,6 +93,9 @@ export default function ProfileClient({
   const [completions, setCompletions] = useState<Completion[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(initialEmailVerified);
+  const [resendingVerification, setResendingVerification] = useState(false);
+  const [showVerificationToast, setShowVerificationToast] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -167,6 +174,58 @@ export default function ProfileClient({
                 </Typography>
                 <TextField fullWidth value={email} slotProps={{ input: { readOnly: true } }}
                   sx={{ ...textFieldSx, "& .MuiOutlinedInput-root": { ...textFieldSx["& .MuiOutlinedInput-root"], color: colors.text.secondary } }} />
+                {/* Email Verification Status */}
+                <Box sx={{ mt: 1.5, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  {emailVerified ? (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: colors.secondary }}>
+                      <CheckCircle size={16} />
+                      <Typography variant="body2" sx={{ color: colors.secondary, fontWeight: 600 }}>Email Verified</Typography>
+                    </Box>
+                  ) : (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                      <AlertCircle size={16} color="#facc15" />
+                      <Typography variant="body2" sx={{ color: "#facc15", fontWeight: 600 }}>Email not verified</Typography>
+                    </Box>
+                  )}
+                  {!emailVerified && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={async () => {
+                        setResendingVerification(true);
+                        try {
+                          const res = await fetch("/api/resend-verification", { method: "POST" });
+                          if (res.ok) {
+                            setShowVerificationToast(true);
+                          } else {
+                            const data = await res.json();
+                            setError(data.error || "Failed to send verification email");
+                          }
+                        } catch (err) {
+                          setError("Failed to send verification email");
+                        } finally {
+                          setResendingVerification(false);
+                        }
+                      }}
+                      disabled={resendingVerification}
+                      startIcon={<Send size={14} />}
+                      sx={{
+                        borderColor: colors.secondary,
+                        color: colors.secondary,
+                        fontSize: "0.75rem",
+                        textTransform: "none",
+                        py: 0.5,
+                        px: 1.5,
+                        "&:hover": {
+                          borderColor: colors.secondary,
+                          bgcolor: "rgba(1,214,118,0.1)",
+                        },
+                      }}
+                    >
+                      {resendingVerification ? "Sending..." : "Resend"}
+                    </Button>
+                  )}
+                </Box>
               </Box>
               <Box>
                 <Typography variant="body2" sx={{ mb: 0.75, display: "flex", alignItems: "center", gap: 0.75, fontWeight: 500, color: colors.text.secondary }}>
@@ -420,6 +479,27 @@ export default function ProfileClient({
           )}
         </>
       )}
+
+      {/* Success toast for verification email sent */}
+      <Snackbar
+        open={showVerificationToast}
+        autoHideDuration={4000}
+        onClose={() => setShowVerificationToast(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setShowVerificationToast(false)}
+          severity="success"
+          sx={{
+            bgcolor: "rgba(1,214,118,0.1)",
+            border: "1px solid rgba(1,214,118,0.3)",
+            color: colors.secondary,
+            "& .MuiAlert-icon": { color: colors.secondary },
+          }}
+        >
+          Verification email sent!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

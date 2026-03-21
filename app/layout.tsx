@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   title: "Rewardoxy — Get Paid to Complete Simple Tasks",
   description:
     "Complete tasks. Earn rewards. Withdraw crypto. Join thousands earning USDT by completing offers, surveys and games.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export const viewport: Viewport = {

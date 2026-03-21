@@ -1,13 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { randomBytes } from "crypto";
-
-const INSERT_ATTEMPTS = 3;
-const INSERT_RETRY_DELAY_MS = 500;
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { createClient } from "@/lib/supabase/server";
 
 async function sendVerificationEmail(email: string, token: string) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rewardoxy.app";
@@ -113,94 +105,76 @@ async function sendVerificationEmail(email: string, token: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { user_id, email, referred_by, accepted_terms, is_google_oauth } = body as {
-    user_id: string;
-    email: string;
-    referred_by?: string;
-    accepted_terms?: boolean;
-    is_google_oauth?: boolean;
-  };
+  const supabase = await createClient();
 
-  if (!user_id || !email) {
+  // Check if user is authenticated
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
     return NextResponse.json(
-      { error: "user_id and email are required" },
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  // Check if user's email is already verified
+  const { data: userData, error: userError } = await supabase
+    .from("users")
+    .select("email_verified, email")
+    .eq("id", user.id)
+    .single();
+
+  if (userError) {
+    console.error("Error fetching user data:", userError);
+    return NextResponse.json(
+      { error: "Failed to fetch user data" },
+      { status: 500 }
+    );
+  }
+
+  if (userData?.email_verified) {
+    return NextResponse.json(
+      { error: "Email is already verified" },
       { status: 400 }
     );
   }
 
-  const referral_code = randomBytes(4).toString("hex"); // 8-char alphanumeric
+  // Delete old tokens for this user
+  await supabase
+    .from("email_verification_tokens")
+    .delete()
+    .eq("user_id", user.id);
 
-  const admin = createAdminClient();
+  // Create new token
+  const { data: newToken, error: tokenError } = await supabase
+    .from("email_verification_tokens")
+    .insert({
+      user_id: user.id,
+    })
+    .select("token")
+    .single();
 
-  // Validate referred_by: must be a real user's referral_code
-  let referred_by_id: string | null = null;
-  if (referred_by) {
-    const { data: referrer } = await admin
-      .from("users")
-      .select("id")
-      .eq("referral_code", referred_by)
-      .single();
-
-    if (referrer) {
-      referred_by_id = referrer.id;
-    }
-  }
-
-  let lastError: string | null = null;
-
-  for (let attempt = 1; attempt <= INSERT_ATTEMPTS; attempt++) {
-    const { data: authData, error: authError } = await admin.auth.admin.getUserById(
-      user_id
+  if (tokenError || !newToken) {
+    console.error("Error creating token:", tokenError);
+    return NextResponse.json(
+      { error: "Failed to create verification token" },
+      { status: 500 }
     );
-
-    if (authError || !authData.user) {
-      lastError = authError?.message ?? "Auth user not found";
-    } else {
-      const { error } = await admin.from("users").insert({
-        id: user_id,
-        email,
-        referral_code,
-        referred_by: referred_by_id,
-        email_verified: is_google_oauth ?? false,
-        accepted_terms: accepted_terms ?? false,
-        accepted_at: accepted_terms ? new Date().toISOString() : null,
-      });
-
-      if (!error) {
-        // Create email verification token for non-Google users
-        if (!is_google_oauth) {
-          // Create token
-          const { data: tokenData, error: tokenError } = await admin
-            .from("email_verification_tokens")
-            .insert({
-              user_id: user_id,
-            })
-            .select("token")
-            .single();
-
-          if (!tokenError && tokenData) {
-            try {
-              await sendVerificationEmail(email, tokenData.token);
-            } catch (emailError) {
-              console.error("Failed to send verification email:", emailError);
-            }
-          }
-        }
-        
-        return NextResponse.json({ success: true, needsVerification: !is_google_oauth });
-      }
-
-      lastError = error.message;
-    }
-
-    if (attempt < INSERT_ATTEMPTS) {
-      await sleep(INSERT_RETRY_DELAY_MS);
-    }
   }
 
-  return NextResponse.json(
-    { error: lastError ?? "Failed to create user profile" },
-    { status: 500 }
-  );
+  // Send verification email
+  try {
+    await sendVerificationEmail(userData.email, newToken.token);
+  } catch (emailError) {
+    console.error("Error sending verification email:", emailError);
+    return NextResponse.json(
+      { error: "Failed to send verification email" },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ success: true });
 }

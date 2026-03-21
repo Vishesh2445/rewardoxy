@@ -2,6 +2,7 @@
 
 import { Box } from "@mui/material";
 import Link from "next/link";
+import Image from "next/image";
 
 const Logo = ({ href = "/" }: { href?: string }) => {
   return (
@@ -11,19 +12,18 @@ const Logo = ({ href = "/" }: { href?: string }) => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          position: "relative",
           width: 33,
           height: 28,
-          borderRadius: "8px",
-          background: "linear-gradient(135deg, #01D676 0%, #007e45 100%)",
-          boxShadow: "0 4px 12px rgba(1, 214, 118, 0.2)",
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M12 2L14.09 8.26L20 9.27L15.55 13.97L16.91 20L12 16.9L7.09 20L8.45 13.97L4 9.27L9.91 8.26L12 2Z"
-            fill="white"
-          />
-        </svg>
+        <Image
+          src="/logo.png"
+          alt="Rewardoxy"
+          width={33}
+          height={28}
+          style={{ objectFit: "contain" }}
+        />
       </Box>
       <Box sx={{ display: { xs: "none", md: "inline-flex" }, alignItems: "center" }}>
         <Box
