@@ -167,10 +167,10 @@ export default function Home() {
   async function handleGoogleSignup() {
     setSignupError(null);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+        redirectTo: 'https://rewardoxy.app/auth/callback'
+      }
     });
     if (oauthError) {
       setSignupError(oauthError.message);
