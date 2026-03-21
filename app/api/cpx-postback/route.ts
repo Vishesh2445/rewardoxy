@@ -24,9 +24,10 @@ async function handleCpxPostback(request: NextRequest) {
 
     // 1. IP Whitelisting Validation (Optional but recommended by CPX)
     // CPX IPs: 188.40.3.73, 2a01:4f8:d0a:30ff::2, 157.90.97.92
-    const clientIp = request.headers.get('x-forwarded-for') || request.ip;
+    const clientIp = request.headers.get('x-forwarded-for') || 'unknown';
     const allowedIps = ['188.40.3.73', '2a01:4f8:d0a:30ff::2', '157.90.97.92'];
     log(`Incoming request from IP: ${clientIp}`);
+
     // You can enable IP blocking here if needed:
     // if (clientIp && !allowedIps.includes(clientIp)) {
     //   return ok({ error: 'invalid_ip', logs });
