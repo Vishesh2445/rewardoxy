@@ -98,10 +98,10 @@ export default function PrivacyPage() {
           portable format. To exercise these rights, contact us at{" "}
           <Box
             component="a"
-            href="mailto:support@rewardoxy.com"
+            href="mailto:support@rewardoxy.app"
             sx={{ color: colors.green, textDecoration: "none" }}
           >
-            support@rewardoxy.com
+            support@rewardoxy.app
           </Box>
           .
         </Section>
@@ -129,10 +129,10 @@ export default function PrivacyPage() {
           For privacy-related questions or data requests, contact us at{" "}
           <Box
             component="a"
-            href="mailto:support@rewardoxy.com"
+            href="mailto:support@rewardoxy.app"
             sx={{ color: colors.green, textDecoration: "none" }}
           >
-            support@rewardoxy.com
+            support@rewardoxy.app
           </Box>
           .
         </Section>

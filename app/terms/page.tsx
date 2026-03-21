@@ -112,10 +112,10 @@ export default function TermsPage() {
           For questions about these Terms, contact us at{" "}
           <Box
             component="a"
-            href="mailto:support@rewardoxy.com"
+            href="mailto:support@rewardoxy.app"
             sx={{ color: colors.green, textDecoration: "none" }}
           >
-            support@rewardoxy.com
+            support@rewardoxy.app
           </Box>
           .
         </Section>

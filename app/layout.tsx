@@ -5,6 +5,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import theme from "@/theme";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -35,6 +36,7 @@ export default function RootLayout({
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
+            <NextTopLoader color="#01D676" showSpinner={false} />
             {children}
             <ToastContainer
               autoClose={3000}

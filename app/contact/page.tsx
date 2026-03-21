@@ -49,11 +49,11 @@ export default function ContactPage() {
       `Name: ${name}\nEmail: ${email}\n\n${message}`
     );
     window.open(
-      `mailto:support@rewardoxy.com?subject=${mailtoSubject}&body=${mailtoBody}`,
+      `mailto:support@rewardoxy.app?subject=${mailtoSubject}&body=${mailtoBody}`,
       "_self"
     );
 
-    setFeedback({ type: "success", text: "Your email client should open shortly. If not, email us directly at support@rewardoxy.com" });
+    setFeedback({ type: "success", text: "Your email client should open shortly. If not, email us directly at support@rewardoxy.app" });
     setSending(false);
   }
 
@@ -122,10 +122,10 @@ export default function ContactPage() {
             <Typography sx={{ fontWeight: 600, fontSize: "0.95rem" }}>Email</Typography>
             <Box
               component="a"
-              href="mailto:support@rewardoxy.com"
+              href="mailto:support@rewardoxy.app"
               sx={{ fontSize: "0.85rem", color: colors.green, textDecoration: "none" }}
             >
-              support@rewardoxy.com
+              support@rewardoxy.app
             </Box>
           </Paper>
 
