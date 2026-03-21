@@ -1,3 +1,5 @@
+"use client";
+
 import { Box, Typography, Button } from "@mui/material";
 import { ShieldAlert } from "lucide-react";
 import Link from "next/link";
