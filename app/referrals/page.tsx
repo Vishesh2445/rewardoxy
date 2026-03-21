@@ -25,7 +25,7 @@ export default async function ReferralsPage() {
   const [userResult, referredUsersResult] = await Promise.all([
     supabase
       .from("users")
-      .select("referral_code, coins_balance, total_earned")
+      .select("referral_code, coins_balance, total_earned, pending_referral_earnings")
       .eq("id", user.id)
       .single(),
 
@@ -40,6 +40,7 @@ export default async function ReferralsPage() {
   const referralCode = userResult.data?.referral_code ?? "";
   const coins = userResult.data?.coins_balance ?? 0;
   const totalReferrals = referredUsersResult.data?.length ?? 0;
+  const pendingReferralEarnings = userResult.data?.pending_referral_earnings ?? 0;
 
   // Calculate total coins earned from referrals (5% of each referral's total_earned)
   const totalCoins = (referredUsersResult.data ?? []).reduce(
@@ -60,6 +61,7 @@ export default async function ReferralsPage() {
         totalReferrals={totalReferrals}
         totalCoins={totalCoins}
         referrals={referrals}
+        pendingEarnings={pendingReferralEarnings}
       />
     </AppShell>
   );

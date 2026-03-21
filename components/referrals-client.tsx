@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Button, Paper, TextField } from "@mui/material";
-import { Users, Coins, Copy, Check, Link2, UserPlus, Gift, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Box, Button, Paper, TextField, CircularProgress } from "@mui/material";
+import { Users, Coins, Copy, Check, Link2, UserPlus, Gift, ArrowRight, Gift as GiftIcon } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 
@@ -17,6 +18,7 @@ interface ReferralsClientProps {
   totalReferrals: number;
   totalCoins: number;
   referrals: Referral[];
+  pendingEarnings: number;
 }
 
 export default function ReferralsClient({
@@ -24,14 +26,40 @@ export default function ReferralsClient({
   totalReferrals,
   totalCoins,
   referrals,
+  pendingEarnings,
 }: ReferralsClientProps) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const [claiming, setClaiming] = useState(false);
+  const [claimSuccess, setClaimSuccess] = useState(false);
   const referralLink = `https://rewardoxy.app/auth/signup?ref=${referralCode}`;
 
   async function handleCopy() {
     await navigator.clipboard.writeText(referralLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleClaim() {
+    setClaiming(true);
+    try {
+      const res = await fetch("/api/referrals/claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setClaimSuccess(true);
+        setTimeout(() => {
+          router.refresh();
+        }, 1500);
+      } else {
+        alert(data.error || "Failed to claim earnings");
+      }
+    } catch (err) {
+      alert("Failed to claim earnings");
+    }
+    setClaiming(false);
   }
 
   return (
@@ -217,26 +245,78 @@ export default function ReferralsClient({
         </Box>
       </Paper>
 
+      {/* Pending Earnings Claim */}
+      {pendingEarnings > 0 && (
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 4,
+            borderRadius: 4,
+            border: "1px solid rgba(1,214,118,0.3)",
+            bgcolor: "rgba(1,214,118,0.1)",
+            p: 3,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                bgcolor: "rgba(1,214,118,0.2)",
+              }}
+            >
+              <GiftIcon size={24} color="#01D676" />
+            </Box>
+            <Box>
+              <Typography sx={{ fontWeight: 700, fontSize: "1.1rem" }}>
+                You have {pendingEarnings.toLocaleString()} coins to claim!
+              </Typography>
+              <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary }}>
+                Click the button to add these coins to your balance
+              </Typography>
+            </Box>
+          </Box>
+          <Button
+            variant="contained"
+            onClick={handleClaim}
+            disabled={claiming || claimSuccess}
+            startIcon={claiming ? <CircularProgress size={16} /> : claimSuccess ? <Check size={16} /> : <GiftIcon size={16} />}
+            sx={{
+              background: claimSuccess ? "#01D676" : colors.background.gradient,
+              fontWeight: 700,
+              px: 3,
+              py: 1,
+              borderRadius: 2,
+              textTransform: "none",
+              "&:hover": { filter: "brightness(1.1)" },
+            }}
+          >
+            {claimSuccess ? "Claimed!" : claiming ? "Claiming..." : "Claim Now"}
+          </Button>
+        </Paper>
+      )}
+
       {/* Stats */}
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 4 }}>
         {[
           {
             icon: <Users size={22} color="#01D676" />,
-            label: "Total Referrals",
-            value: totalReferrals.toString(),
-            sub: "friends joined",
-            color: "#01D676",
           },
           {
-            icon: <Coins size={22} color="#f59e0b" />,
-            label: "Coins Earned",
-            value: totalCoins.toLocaleString(),
-            sub: "from referrals",
-            color: "#f59e0b",
+            icon: <Coins size={22} color="#f59e0b" />
           },
-        ].map((s) => (
+        ].map((s, idx) => (
           <Paper
-            key={s.label}
+            key={idx}
             elevation={0}
             sx={{
               borderRadius: 4,
@@ -263,13 +343,13 @@ export default function ReferralsClient({
               {s.icon}
             </Box>
             <Typography sx={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: colors.text.secondary }}>
-              {s.label}
+              {idx === 0 ? "Total Referrals" : "Total Earned"}
             </Typography>
-            <Typography sx={{ fontSize: "2rem", fontWeight: 900, color: s.color, lineHeight: 1.1, mt: 0.25 }}>
-              {s.value}
+            <Typography sx={{ fontSize: "2rem", fontWeight: 900, color: idx === 0 ? "#01D676" : "#f59e0b", lineHeight: 1.1, mt: 0.25 }}>
+              {idx === 0 ? totalReferrals.toString() : totalCoins.toLocaleString()}
             </Typography>
             <Typography sx={{ fontSize: "0.72rem", color: colors.text.secondary, mt: 0.25 }}>
-              {s.sub}
+              {idx === 0 ? "friends joined" : "5% of referrals' earnings"}
             </Typography>
           </Paper>
         ))}
