@@ -99,10 +99,8 @@ export default function SignupClient() {
     document.cookie = "oauth_terms_accepted=true; path=/; max-age=3600";
     
     setError(null);
-    // Use window.location.origin, but fallback to env var if on localhost
-    const appUrl = window.location.origin.includes('localhost') 
-      ? process.env.NEXT_PUBLIC_APP_URL || 'https://rewardoxy.app'
-      : window.location.origin;
+    // Always use production URL for OAuth redirect to avoid localhost issues
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://rewardoxy.app';
     
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",

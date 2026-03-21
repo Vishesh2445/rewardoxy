@@ -35,6 +35,26 @@ export async function POST() {
     return NextResponse.json({ error: "Already claimed today" }, { status: 400 });
   }
 
+  // Check if user earned at least $1 today
+  const { data: todayCompletions } = await supabase
+    .from("completions")
+    .select("payout_decimal")
+    .eq("player_id", user.id)
+    .eq("program_id", "ssr34")
+    .gte("created_at", todayStart.toISOString());
+
+  const todayEarnings = todayCompletions?.reduce(
+    (sum, c) => sum + (c.payout_decimal || 0),
+    0
+  ) || 0;
+
+  if (todayEarnings < 1) {
+    return NextResponse.json(
+      { error: "Earn at least $1 today to claim bonus" },
+      { status: 400 }
+    );
+  }
+
   // Get last claim to check streak
   const { data: lastClaim } = await supabase
     .from("daily_bonus_claims")

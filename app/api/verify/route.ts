@@ -50,6 +50,14 @@ export async function GET(request: NextRequest) {
     .delete()
     .eq("id", tokenData.id);
 
+  // Add notification for email verified
+  await admin.from("notifications").insert({
+    user_id: tokenData.user_id,
+    title: "Email Verified",
+    message: "Your email has been successfully verified! You now earn 5% referral commission on all your referrals' earnings.",
+    read: false,
+  });
+
   // Redirect to dashboard with success
   return NextResponse.redirect(new URL("/dashboard?verified=true", request.url));
 }

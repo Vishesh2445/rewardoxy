@@ -31,6 +31,7 @@ interface DailyBonusClientProps {
   todayReward: number | null;
   todayStreak: number | null;
   recentClaims: Claim[];
+  todayEarnings: number;
 }
 
 export default function DailyBonusClient({
@@ -39,6 +40,7 @@ export default function DailyBonusClient({
   todayReward: initialReward,
   todayStreak: initialStreak,
   recentClaims,
+  todayEarnings,
 }: DailyBonusClientProps) {
   const router = useRouter();
   const [claimed, setClaimed] = useState(initialClaimed);
@@ -312,6 +314,12 @@ export default function DailyBonusClient({
               +{nextReward}
               <Box component="span" sx={{ fontSize: "1rem", fontWeight: 600, color: colors.text.secondary, ml: 1 }}>coins</Box>
             </Typography>
+            {todayEarnings < 1 && (
+              <Box sx={{ mb: 2, borderRadius: 3, bgcolor: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)", px: 2, py: 1.5, fontSize: "0.875rem", color: "#f97316", display: "flex", alignItems: "center", gap: 1 }}>
+                <TrendingUp size={16} />
+                Earn $1 today to unlock bonus!
+              </Box>
+            )}
             {error && (
               <Box sx={{ mb: 2, borderRadius: 3, bgcolor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1, fontSize: "0.875rem", color: "#f87171" }}>
                 {error}
@@ -320,22 +328,28 @@ export default function DailyBonusClient({
             <Button
               variant="contained"
               onClick={handleClaim}
-              disabled={loading}
+              disabled={loading || todayEarnings < 1}
               startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <Gift size={18} />}
               sx={{
-                background: "linear-gradient(180deg,#01D676,#007e45)",
+                background: todayEarnings < 1 
+                  ? "linear-gradient(180deg,#4a5568,#2d3748)" 
+                  : "linear-gradient(180deg,#01D676,#007e45)",
                 borderRadius: 3,
                 px: 6,
                 py: 1.75,
                 fontWeight: 800,
                 fontSize: "1.1rem",
                 textTransform: "none",
-                boxShadow: "0 6px 24px rgba(1,214,118,0.3)",
-                "&:hover": { filter: "brightness(1.1)", transform: "translateY(-1px)", boxShadow: "0 8px 30px rgba(1,214,118,0.35)" },
+                boxShadow: todayEarnings < 1 ? "none" : "0 6px 24px rgba(1,214,118,0.3)",
+                "&:hover": { filter: todayEarnings < 1 ? "none" : "brightness(1.1)", transform: todayEarnings < 1 ? "none" : "translateY(-1px)", boxShadow: todayEarnings < 1 ? "none" : "0 8px 30px rgba(1,214,118,0.35)" },
                 transition: "all 0.2s",
+                "&.Mui-disabled": {
+                  background: "linear-gradient(180deg,#4a5568,#2d3748)",
+                  color: "rgba(255,255,255,0.5)",
+                }
               }}
             >
-              {loading ? "Claiming..." : "Claim Bonus"}
+              {loading ? "Claiming..." : todayEarnings < 1 ? "Earn $1 to Unlock" : "Claim Bonus"}
             </Button>
           </Box>
         )}

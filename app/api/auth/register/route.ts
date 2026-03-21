@@ -186,6 +186,14 @@ export async function POST(request: NextRequest) {
               console.error("Failed to send verification email:", emailError);
             }
           }
+
+          // Add notification to verify email
+          await admin.from("notifications").insert({
+            user_id: user_id,
+            title: "Verify your email",
+            message: "Please verify your email to start earning! Verified users earn 5% referral commission on their referrals' earnings.",
+            read: false,
+          });
         }
         
         return NextResponse.json({ success: true, needsVerification: !is_google_oauth });

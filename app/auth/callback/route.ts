@@ -52,6 +52,14 @@ export async function GET(request: Request) {
             accepted_terms: termsAccepted,
             accepted_at: termsAccepted ? new Date().toISOString() : null,
           });
+
+          // Add welcome notification for Google OAuth users
+          await admin.from("notifications").insert({
+            user_id: user.id,
+            title: "Welcome to Rewardoxy!",
+            message: "Your Google account is connected. Start earning by completing offers!",
+            read: false,
+          });
         }
 
         // Update login streak for returning OAuth users

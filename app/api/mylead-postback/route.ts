@@ -125,7 +125,32 @@ async function handlePostback(request: NextRequest) {
     const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
     log(`Credited ${amount} coins. New balance: ${newBalance}, New total: ${newTotal}`);
 
-    // 8. Verify
+    // 8. Check for referrer and award 5% commission if referrer exists and referred user has verified email
+    const { data: userWithReferrer, error: referrerError } = await supabase
+      .from('users')
+      .select('referred_by, email_verified')
+      .eq('id', player_id)
+      .single();
+
+    if (!referrerError && userWithReferrer?.referred_by && userWithReferrer?.email_verified === true) {
+      // Award 5% commission to referrer
+      const commissionAmount = Math.round(amount * 0.05);
+      if (commissionAmount > 0) {
+        const { error: commissionError } = await supabase.rpc('increment_coins', {
+          uid: userWithReferrer.referred_by,
+          amount: commissionAmount,
+        });
+        if (commissionError) {
+          log(`Referral commission failed: ${commissionError.message}`);
+        } else {
+          log(`Referral commission: ${commissionAmount} coins awarded to referrer ${userWithReferrer.referred_by}`);
+        }
+      }
+    } else if (userWithReferrer?.referred_by && userWithReferrer?.email_verified !== true) {
+      log(`Referral commission skipped: referred user email not verified`);
+    }
+
+    // 9. Verify
     const { data: verifyData, error: verifyError } = await supabase
       .from('users')
       .select('*')

@@ -44,6 +44,19 @@ export default async function DailyBonusPage() {
     .order("claimed_at", { ascending: false })
     .limit(7);
 
+  // Get today's earnings (for ssr34 program)
+  const { data: todayCompletions } = await supabase
+    .from("completions")
+    .select("payout_decimal")
+    .eq("player_id", user.id)
+    .eq("program_id", "ssr34")
+    .gte("created_at", todayStart.toISOString());
+
+  const todayEarnings = todayCompletions?.reduce(
+    (sum, c) => sum + (c.payout_decimal || 0),
+    0
+  ) || 0;
+
   return (
     <AppShell coins={coins}>
       <DailyBonusClient
@@ -52,6 +65,7 @@ export default async function DailyBonusPage() {
         todayReward={todayClaim?.coins_awarded ?? null}
         todayStreak={todayClaim?.streak_day ?? null}
         recentClaims={recentClaims ?? []}
+        todayEarnings={todayEarnings}
       />
     </AppShell>
   );
