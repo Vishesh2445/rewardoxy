@@ -92,11 +92,6 @@ async function handleCpxPostback(request: NextRequest) {
     if (status === '2') {
       log('Status is 2 (canceled/chargeback). Need to deduct coins if previously credited.');
       
-      // We can implement deduct logic here using a modified RPC or updating balance directly.
-      // Often, networks send trans_id that we already marked completed, we should reverse it.
-      // As a basic implementation, we just deduct the amount:
-      
-      // Check if it was already deducted / reversed (we can track via a table)
       const { data: cancelExisting } = await supabase
           .from('completions')
           .select('id')
@@ -109,18 +104,40 @@ async function handleCpxPostback(request: NextRequest) {
           return ok({ status: 'duplicate_cancel', logs });
       }
 
+      const absCoins = Math.abs(amountCoins);
+      const absPayoutUsd = Math.abs(payoutUsd);
+
       await supabase.rpc('credit_postback', {
         p_user_id: user_id,
-        p_amount: -amountCoins, // negative amount to deduct
+        p_amount: -absCoins, // absolute negative amount to deduct safely
       });
       
       await supabase.from('completions').insert({
         player_id: user_id,
         program_id: `cpx_cancel_${trans_id}`,
-        payout_decimal: -payoutUsd,
-        coins_awarded: -amountCoins,
+        payout_decimal: -absPayoutUsd,
+        coins_awarded: -absCoins,
         source: 'cpx'
       });
+
+      // 6.5 Revert Referral Commission if applicable
+      const { data: userWithReferrer } = await supabase
+        .from('users')
+        .select('referred_by')
+        .eq('id', user_id)
+        .single();
+
+      if (userWithReferrer?.referred_by) {
+        const commissionAmount = Math.round(absCoins * 0.05); // 5%
+        if (commissionAmount > 0) {
+          // Negative amount to increment_pending_referral_earnings will deduct the pending balance
+          await supabase.rpc('increment_pending_referral_earnings', {
+            uid: userWithReferrer.referred_by,
+            amount: -commissionAmount,
+          });
+          log(`Reverted 5% commission (${commissionAmount}) from referral ${userWithReferrer.referred_by}`);
+        }
+      }
 
       return ok({ status: 'canceled_processed', trans_id, logs });
     }
