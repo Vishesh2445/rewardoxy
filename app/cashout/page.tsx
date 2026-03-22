@@ -21,7 +21,7 @@ export default async function CashoutPage() {
   const [userResult, withdrawalsResult] = await Promise.all([
     supabase
       .from("users")
-      .select("coins_balance, is_banned")
+      .select("coins_balance, is_banned, email_verified")
       .eq("id", user.id)
       .single(),
 
@@ -37,6 +37,7 @@ export default async function CashoutPage() {
 
   const coins = userResult.data?.coins_balance ?? 0;
   const isBanned = userResult.data?.is_banned ?? false;
+  const emailVerified = userResult.data?.email_verified ?? false;
   const withdrawals = withdrawalsResult.data ?? [];
   const total = withdrawalsResult.count ?? 0;
 
@@ -48,6 +49,7 @@ export default async function CashoutPage() {
         initialWithdrawals={withdrawals}
         initialTotal={total}
         isBanned={isBanned}
+        emailVerified={emailVerified}
       />
     </AppShell>
   );

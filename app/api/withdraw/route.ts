@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
   // Get current balance
   const { data: userData, error: userError } = await supabase
     .from("users")
-    .select("coins_balance, is_banned")
+    .select("coins_balance, is_banned, email_verified")
     .eq("id", user.id)
     .single();
 
@@ -81,6 +81,10 @@ export async function POST(request: NextRequest) {
 
   if (userData.is_banned) {
     return NextResponse.json({ error: "Your account has been suspended" }, { status: 403 });
+  }
+
+  if (!userData.email_verified) {
+    return NextResponse.json({ error: "Please verify your email address to cash out" }, { status: 403 });
   }
 
   const { coins_balance: coins } = userData;

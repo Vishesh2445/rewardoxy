@@ -60,6 +60,7 @@ interface CashoutClientProps {
   initialWithdrawals: Withdrawal[];
   initialTotal: number;
   isBanned?: boolean;
+  emailVerified?: boolean;
 }
 
 export default function CashoutClient({
@@ -68,6 +69,7 @@ export default function CashoutClient({
   initialWithdrawals,
   initialTotal,
   isBanned = false,
+  emailVerified = false,
 }: CashoutClientProps) {
   const router = useRouter();
   const [coins, setCoins] = useState(initialCoins);
@@ -198,7 +200,6 @@ export default function CashoutClient({
             {[
               { label: "Minimum cashout", value: `${MIN_COINS.toLocaleString()} coins ($${(MIN_COINS / COINS_PER_USD).toFixed(2)})` },
               { label: "Rate", value: "1,000 coins = $1 USD" },
-              { label: "Processing", value: "Instant" },
             ].map((row) => (
               <Box key={row.label} sx={{ display: "flex", gap: 1, fontSize: "0.75rem" }}>
                 <Typography sx={{ color: colors.text.secondary, fontSize: "inherit" }}>{row.label}:</Typography>
@@ -228,6 +229,25 @@ export default function CashoutClient({
             You cannot cash out because your account is suspended. If you believe this is a mistake, please contact support.
           </Typography>
         </Paper>
+      ) : !emailVerified ? (
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 4,
+            borderRadius: 4,
+            border: "1px solid rgba(245,158,11,0.3)",
+            bgcolor: "rgba(245,158,11,0.08)",
+            p: { xs: 3, sm: 4 },
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h6" sx={{ color: "#f59e0b", mb: 1, fontWeight: 700 }}>
+            Email Verification Required
+          </Typography>
+          <Typography variant="body2" sx={{ color: colors.text.secondary }}>
+            You must verify your email address before you can submit a withdrawal. Please check your inbox for a verification link or resend verification link via profile.
+          </Typography>
+        </Paper>
       ) : (
         <>
           {/* Withdrawal form */}
@@ -247,7 +267,7 @@ export default function CashoutClient({
             </Typography>
 
             <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              
+
               <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 3 }}>
                 <Box>
                   <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: colors.text.secondary, display: "flex", justifyContent: "space-between" }}>
