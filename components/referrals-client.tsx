@@ -32,6 +32,7 @@ export default function ReferralsClient({
   const [copied, setCopied] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(5);
   const referralLink = `https://rewardoxy.app/auth/signup?ref=${referralCode}`;
 
   async function handleCopy() {
@@ -398,7 +399,7 @@ export default function ReferralsClient({
           </Paper>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {referrals.map((r) => (
+            {referrals.slice(0, visibleCount).map((r) => (
               <Box
                 key={r.id}
                 sx={{
@@ -446,6 +447,16 @@ export default function ReferralsClient({
                 </Typography>
               </Box>
             ))}
+            {visibleCount < referrals.length && (
+              <Box sx={{ textAlign: "center", mt: 2 }}>
+                <Button
+                  onClick={() => setVisibleCount((prev) => prev + 5)}
+                  sx={{ textTransform: "none", color: colors.text.secondary, border: `1px solid ${colors.divider}`, borderRadius: 2, px: 3, "&:hover": { bgcolor: colors.background.ternary, color: "#fff" } }}
+                >
+                  Load More
+                </Button>
+              </Box>
+            )}
           </Box>
         )}
       </Box>

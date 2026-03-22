@@ -27,7 +27,7 @@ import {
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5;
 
 interface Completion {
   id: string;
@@ -140,6 +140,12 @@ export default function HistoryClient({
           <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1.5 }}>
             {completions.map((c) => {
               const Icon = offerIcon(c.program_id);
+              const isChargeback = c.coins_awarded < 0;
+              const displayAmount = isChargeback ? String(c.coins_awarded) : `+${c.coins_awarded}`;
+              const amtColor = isChargeback ? "#f87171" : "#01D676";
+              const amtBg = isChargeback ? "rgba(239,68,68,0.1)" : "rgba(1,214,118,0.1)";
+              const amtBorder = isChargeback ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(1,214,118,0.2)";
+
               return (
                 <Box
                   key={c.id}
@@ -197,16 +203,16 @@ export default function HistoryClient({
                         alignItems: "center",
                         gap: 0.5,
                         borderRadius: 50,
-                        bgcolor: "rgba(1,214,118,0.1)",
-                        border: "1px solid rgba(1,214,118,0.2)",
+                        bgcolor: amtBg,
+                        border: amtBorder,
                         px: 1.25,
                         py: 0.35,
                         fontSize: "0.85rem",
                         fontWeight: 700,
-                        color: "#01D676",
+                        color: amtColor,
                       }}
                     >
-                      <CheckCircle size={13} />+{c.coins_awarded}
+                      {!isChargeback && <CheckCircle size={13} />}{displayAmount}
                     </Box>
                   </Box>
                 </Box>
@@ -250,6 +256,12 @@ export default function HistoryClient({
               <TableBody>
                 {completions.map((c, i) => {
                   const Icon = offerIcon(c.program_id);
+                  const isChargeback = c.coins_awarded < 0;
+                  const displayAmount = isChargeback ? String(c.coins_awarded) : `+${c.coins_awarded}`;
+                  const amtColor = isChargeback ? "#f87171" : "#01D676";
+                  const amtBg = isChargeback ? "rgba(239,68,68,0.1)" : "rgba(1,214,118,0.1)";
+                  const amtBorder = isChargeback ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(1,214,118,0.2)";
+
                   return (
                     <TableRow
                       key={c.id}
@@ -290,16 +302,16 @@ export default function HistoryClient({
                             alignItems: "center",
                             gap: 0.5,
                             borderRadius: 50,
-                            bgcolor: "rgba(1,214,118,0.1)",
-                            border: "1px solid rgba(1,214,118,0.2)",
+                            bgcolor: amtBg,
+                            border: amtBorder,
                             px: 1.25,
                             py: 0.35,
                             fontSize: "0.82rem",
                             fontWeight: 700,
-                            color: "#01D676",
+                            color: amtColor,
                           }}
                         >
-                          +{c.coins_awarded}
+                          {!isChargeback && <CheckCircle size={13} />}{displayAmount}
                         </Box>
                       </TableCell>
                     </TableRow>

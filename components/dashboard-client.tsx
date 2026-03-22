@@ -590,6 +590,12 @@ export default function DashboardClient({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {completions.map((c, i) => {
               const Icon = offerIcon(c.program_id);
+              const isChargeback = c.coins_awarded < 0;
+              const displayAmount = isChargeback ? String(c.coins_awarded) : `+${c.coins_awarded}`;
+              const amtColor = isChargeback ? "#f87171" : "#01D676";
+              const amtBg = isChargeback ? "rgba(239,68,68,0.1)" : "rgba(1,214,118,0.1)";
+              const amtBorder = isChargeback ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(1,214,118,0.2)";
+
               return (
                 <Box key={c.id}>
                   <Box
@@ -640,18 +646,18 @@ export default function DashboardClient({
                         alignItems: "center",
                         gap: 0.5,
                         borderRadius: 50,
-                        bgcolor: "rgba(1,214,118,0.1)",
-                        border: "1px solid rgba(1,214,118,0.2)",
+                        bgcolor: amtBg,
+                        border: amtBorder,
                         px: 1.5,
                         py: 0.5,
                         fontSize: "0.875rem",
                         fontWeight: 700,
-                        color: "#01D676",
+                        color: amtColor,
                         flexShrink: 0,
                       }}
                     >
-                      <Zap size={13} />
-                      +{c.coins_awarded}
+                      {!isChargeback && <Zap size={13} />}
+                      {displayAmount}
                     </Box>
                   </Box>
                   {i < completions.length - 1 && (

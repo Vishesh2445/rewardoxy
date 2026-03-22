@@ -6,7 +6,7 @@ import {
   Box, Button, Paper, TextField, CircularProgress, Avatar,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
 } from "@mui/material";
-import { Settings, Save, CheckCircle, Wallet, TrendingUp, Flame, Mail, User, Calendar, AlertCircle, Send } from "lucide-react";
+import { Settings, Save, CheckCircle, Wallet, TrendingUp, Flame, Mail, User, Calendar, AlertCircle, Send, Plus } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 import Snackbar from "@mui/material/Snackbar";
@@ -73,6 +73,8 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
   failed: { bg: "rgba(239,68,68,0.1)", color: "#f87171" },
 };
 
+const PAGE_SIZE = 5;
+
 export default function ProfileClient({
   userId,
   email,
@@ -93,29 +95,89 @@ export default function ProfileClient({
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+
+  // Pagination states for Completions
   const [completions, setCompletions] = useState<Completion[]>([]);
+  const [completionsPage, setCompletionsPage] = useState(1);
+  const [hasMoreCompletions, setHasMoreCompletions] = useState(true);
+  const [loadingCompletions, setLoadingCompletions] = useState(true);
+
+  // Pagination states for Withdrawals
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [withdrawalsPage, setWithdrawalsPage] = useState(1);
+  const [hasMoreWithdrawals, setHasMoreWithdrawals] = useState(true);
+  const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
+
   const [emailVerified, setEmailVerified] = useState(initialEmailVerified);
   const [resendingVerification, setResendingVerification] = useState(false);
   const [showVerificationToast, setShowVerificationToast] = useState(false);
 
+  // Initial Fetch
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
+    async function fetchInitialData() {
       const supabase = createClient();
+      
+      const compTarget = PAGE_SIZE - 1;
+      const withTarget = PAGE_SIZE - 1;
+
       const [compRes, withRes] = await Promise.all([
         supabase.from("completions").select("id, program_id, coins_awarded, created_at, source")
-          .eq("player_id", userId).order("created_at", { ascending: false }).limit(50),
+          .eq("player_id", userId).order("created_at", { ascending: false }).range(0, compTarget),
         supabase.from("withdrawals").select("id, coins, amount_usd, status, tx_hash, requested_at")
-          .eq("user_id", userId).order("requested_at", { ascending: false }).limit(50),
+          .eq("user_id", userId).order("requested_at", { ascending: false }).range(0, withTarget),
       ]);
-      setCompletions(compRes.data ?? []);
-      setWithdrawals(withRes.data ?? []);
-      setLoading(false);
+      
+      const comps = compRes.data ?? [];
+      setCompletions(comps);
+      setHasMoreCompletions(comps.length === PAGE_SIZE);
+      setLoadingCompletions(false);
+
+      const withs = withRes.data ?? [];
+      setWithdrawals(withs);
+      setHasMoreWithdrawals(withs.length === PAGE_SIZE);
+      setLoadingWithdrawals(false);
     }
-    fetchData();
+    fetchInitialData();
   }, [userId]);
+
+  // Load More Completions
+  async function loadMoreCompletions() {
+    setLoadingCompletions(true);
+    const supabase = createClient();
+    const from = completionsPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const { data } = await supabase.from("completions").select("id, program_id, coins_awarded, created_at, source")
+      .eq("player_id", userId).order("created_at", { ascending: false }).range(from, to);
+    
+    if (data && data.length > 0) {
+      setCompletions(prev => [...prev, ...data]);
+      setHasMoreCompletions(data.length === PAGE_SIZE);
+      setCompletionsPage(prev => prev + 1);
+    } else {
+      setHasMoreCompletions(false);
+    }
+    setLoadingCompletions(false);
+  }
+
+  // Load More Withdrawals
+  async function loadMoreWithdrawals() {
+    setLoadingWithdrawals(true);
+    const supabase = createClient();
+    const from = withdrawalsPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const { data } = await supabase.from("withdrawals").select("id, coins, amount_usd, status, tx_hash, requested_at")
+      .eq("user_id", userId).order("requested_at", { ascending: false }).range(from, to);
+    
+    if (data && data.length > 0) {
+      setWithdrawals(prev => [...prev, ...data]);
+      setHasMoreWithdrawals(data.length === PAGE_SIZE);
+      setWithdrawalsPage(prev => prev + 1);
+    } else {
+      setHasMoreWithdrawals(false);
+    }
+    setLoadingWithdrawals(false);
+  }
+
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -340,7 +402,11 @@ export default function ProfileClient({
         ))}
       </Box>
 
-      {loading ? (
+      {activeTab === 0 && loadingCompletions && completions.length === 0 ? (
+        <Box sx={{ textAlign: "center", py: 6 }}>
+          <CircularProgress size={28} sx={{ color: colors.secondary }} />
+        </Box>
+      ) : activeTab === 1 && loadingWithdrawals && withdrawals.length === 0 ? (
         <Box sx={{ textAlign: "center", py: 6 }}>
           <CircularProgress size={28} sx={{ color: colors.secondary }} />
         </Box>
@@ -356,27 +422,35 @@ export default function ProfileClient({
               <>
                 {/* Mobile cards */}
                 <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1 }}>
-                   {completions.map((c) => (
-                    <Box key={c.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, px: 2, py: 1.5 }}>
-                      <Box sx={{ minWidth: 0 }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }} truncate>{c.program_id}</Typography>
-                          <Box sx={{ borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1, py: 0.1, fontSize: '0.6rem', fontWeight: 700, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'uppercase', flexShrink: 0 }}>
-                            {c.source || 'unknown'}
+                   {completions.map((c) => {
+                     const isChargeback = c.coins_awarded < 0;
+                     const displayAmount = isChargeback ? String(c.coins_awarded) : `+${c.coins_awarded}`;
+                     const amtColor = isChargeback ? "#f87171" : "#01D676";
+                     const amtBg = isChargeback ? "rgba(239,68,68,0.1)" : "rgba(1,214,118,0.1)";
+                     const amtBorder = isChargeback ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(1,214,118,0.2)";
+
+                     return (
+                      <Box key={c.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, px: 2, py: 1.5 }}>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }} truncate>{c.program_id}</Typography>
+                            <Box sx={{ borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1, py: 0.1, fontSize: '0.6rem', fontWeight: 700, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'uppercase', flexShrink: 0 }}>
+                              {c.source || 'unknown'}
+                            </Box>
                           </Box>
+                          <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
+                            {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </Typography>
                         </Box>
-                        <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
-                          {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </Typography>
+                        <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, borderRadius: 50, bgcolor: amtBg, border: amtBorder, px: 1.5, py: 0.25, fontSize: "0.8rem", fontWeight: 600, color: amtColor, flexShrink: 0 }}>
+                          {displayAmount}
+                        </Box>
                       </Box>
-                      <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, borderRadius: 50, bgcolor: colors.background.secondary, border: "1px solid rgba(1,214,118,0.2)", px: 1.5, py: 0.25, fontSize: "0.8rem", fontWeight: 600, color: "#01D676", flexShrink: 0 }}>
-                        +{c.coins_awarded}
-                      </Box>
-                    </Box>
-                  ))}
+                     );
+                   })}
                 </Box>
                 {/* Desktop table */}
-                <TableContainer component={Paper} sx={{ display: { xs: "none", sm: "block" }, borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: "transparent" }}>
+                <TableContainer component={Paper} sx={{ display: { xs: "none", sm: "block" }, borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: "transparent", mb: 2 }}>
                   <Table>
                     <TableHead>
                       <TableRow>
@@ -388,27 +462,48 @@ export default function ProfileClient({
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {completions.map((c) => (
-                        <TableRow key={c.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
-                          <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontSize: "0.875rem" }}>{c.program_id}</TableCell>
-                          <TableCell sx={{ borderColor: colors.divider }}>
-                            <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1.5, py: 0.25, fontSize: '0.75rem', fontWeight: 600, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'capitalize' }}>
-                              {c.source || 'unknown'}
-                            </Box>
-                          </TableCell>
-                          <TableCell sx={{ borderColor: colors.divider }}>
-                            <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, borderRadius: 50, bgcolor: colors.background.secondary, border: "1px solid rgba(1,214,118,0.2)", px: 1.5, py: 0.25, fontSize: "0.8rem", fontWeight: 600, color: "#01D676" }}>
-                              +{c.coins_awarded}
-                            </Box>
-                          </TableCell>
-                          <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.8rem", whiteSpace: "nowrap" }}>
-                            {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {completions.map((c) => {
+                         const isChargeback = c.coins_awarded < 0;
+                         const displayAmount = isChargeback ? String(c.coins_awarded) : `+${c.coins_awarded}`;
+                         const amtColor = isChargeback ? "#f87171" : "#01D676";
+                         const amtBg = isChargeback ? "rgba(239,68,68,0.1)" : "rgba(1,214,118,0.1)";
+                         const amtBorder = isChargeback ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(1,214,118,0.2)";
+
+                         return (
+                          <TableRow key={c.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
+                            <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontSize: "0.875rem" }}>{c.program_id}</TableCell>
+                            <TableCell sx={{ borderColor: colors.divider }}>
+                              <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1.5, py: 0.25, fontSize: '0.75rem', fontWeight: 600, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'capitalize' }}>
+                                {c.source || 'unknown'}
+                              </Box>
+                            </TableCell>
+                            <TableCell sx={{ borderColor: colors.divider }}>
+                              <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, borderRadius: 50, bgcolor: amtBg, border: amtBorder, px: 1.5, py: 0.25, fontSize: "0.8rem", fontWeight: 600, color: amtColor }}>
+                                {displayAmount}
+                              </Box>
+                            </TableCell>
+                            <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+                              {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </TableContainer>
+
+                {hasMoreCompletions && (
+                  <Box sx={{ textAlign: "center", mt: 2 }}>
+                    <Button
+                      onClick={loadMoreCompletions}
+                      disabled={loadingCompletions}
+                      startIcon={loadingCompletions ? <CircularProgress size={16} color="inherit" /> : <Plus size={16} />}
+                      sx={{ textTransform: "none", color: colors.text.secondary, border: `1px solid ${colors.divider}`, borderRadius: 2, px: 3, "&:hover": { bgcolor: colors.background.ternary, color: "#fff" } }}
+                    >
+                      {loadingCompletions ? "Loading..." : "Load More"}
+                    </Button>
+                  </Box>
+                )}
               </>
             )
           )}
@@ -446,7 +541,7 @@ export default function ProfileClient({
                   })}
                 </Box>
                 {/* Desktop table */}
-                <TableContainer component={Paper} sx={{ display: { xs: "none", sm: "block" }, borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: "transparent" }}>
+                <TableContainer component={Paper} sx={{ display: { xs: "none", sm: "block" }, borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: "transparent", mb: 2 }}>
                   <Table>
                     <TableHead>
                       <TableRow>
@@ -478,6 +573,19 @@ export default function ProfileClient({
                     </TableBody>
                   </Table>
                 </TableContainer>
+
+                {hasMoreWithdrawals && (
+                  <Box sx={{ textAlign: "center", mt: 2 }}>
+                    <Button
+                      onClick={loadMoreWithdrawals}
+                      disabled={loadingWithdrawals}
+                      startIcon={loadingWithdrawals ? <CircularProgress size={16} color="inherit" /> : <Plus size={16} />}
+                      sx={{ textTransform: "none", color: colors.text.secondary, border: `1px solid ${colors.divider}`, borderRadius: 2, px: 3, "&:hover": { bgcolor: colors.background.ternary, color: "#fff" } }}
+                    >
+                      {loadingWithdrawals ? "Loading..." : "Load More"}
+                    </Button>
+                  </Box>
+                )}
               </>
             )
           )}

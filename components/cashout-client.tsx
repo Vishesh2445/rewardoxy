@@ -34,7 +34,7 @@ import colors from "@/theme/colors";
 
 const MIN_COINS = 2000;
 const COINS_PER_USD = 1000;
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 const EXPLORER_URLS = "https://litecoin.info/tx/";
 
