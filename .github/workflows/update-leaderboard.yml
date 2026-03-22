@@ -91,7 +91,7 @@ jobs:
               if (userError) throw new Error(`Fetch users failed: ${userError.message}`);
               
               for (const u of users) {
-                const name = u.display_name || (u.email ? u.email.split("@")[0].slice(0, 2) + "****" : "Anonymous");
+                const name = u.display_name || (u.email ? u.email.split("@")[0] : "Anonymous");
                 nameMap.set(u.id, name);
               }
             }
