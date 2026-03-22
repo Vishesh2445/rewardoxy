@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   const [completionsRes, withdrawalsRes] = await Promise.all([
     adminSupabase
       .from("completions")
-      .select("id, program_id, coins_awarded, payout_decimal, created_at")
+      .select("id, program_id, coins_awarded, payout_decimal, created_at, source")
       .eq("player_id", userId)
       .order("created_at", { ascending: false })
       .limit(20),
@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
     coins: c.coins_awarded || 0,
     status: 'completed',
     completed_at: c.created_at,
+    source: c.source || 'unknown',
   }));
 
   return NextResponse.json({

@@ -18,20 +18,12 @@ import colors from "@/theme/colors";
 
 const STREAK_REWARDS = [0, 10, 20, 30, 40, 50, 75, 100];
 
-interface Claim {
-  id: string;
-  streak_day: number;
-  coins_awarded: number;
-  claimed_at: string;
-}
-
 interface DailyBonusClientProps {
   streakCount: number;
   alreadyClaimed: boolean;
   todayReward: number | null;
   todayStreak: number | null;
-  recentClaims: Claim[];
-  todayEarnings: number;
+  todayCoinsEarned: number;
 }
 
 export default function DailyBonusClient({
@@ -39,8 +31,7 @@ export default function DailyBonusClient({
   alreadyClaimed: initialClaimed,
   todayReward: initialReward,
   todayStreak: initialStreak,
-  recentClaims,
-  todayEarnings,
+  todayCoinsEarned,
 }: DailyBonusClientProps) {
   const router = useRouter();
   const [claimed, setClaimed] = useState(initialClaimed);
@@ -68,7 +59,8 @@ export default function DailyBonusClient({
   const nextDay = Math.min(streakCount + 1, 7);
   const nextReward = STREAK_REWARDS[nextDay];
   const currentDay = claimed ? (streak ?? 0) : streakCount;
-  const totalCoinsEarned = recentClaims.reduce((acc, c) => acc + c.coins_awarded, 0);
+  const isUnlocked = todayCoinsEarned >= 1000;
+  const coinsProgress = Math.min(todayCoinsEarned, 1000);
 
   return (
     <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
@@ -87,8 +79,8 @@ export default function DailyBonusClient({
       <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 2, mb: 4 }}>
         {[
           { icon: <Flame size={20} color="#f97316" />, label: "Current Streak", value: `${currentDay} days`, color: "#f97316" },
-          { icon: <Coins size={20} color="#01D676" />, label: "Total from Bonuses", value: `${totalCoinsEarned.toLocaleString()} coins`, color: "#01D676" },
-          { icon: <TrendingUp size={20} color="#a78bfa" />, label: "Bonuses Claimed", value: `${recentClaims.length}`, color: "#a78bfa" },
+          { icon: <Coins size={20} color="#01D676" />, label: "Today's Coins", value: `${todayCoinsEarned.toLocaleString()} / 1000`, color: "#01D676" },
+          { icon: <TrendingUp size={20} color="#a78bfa" />, label: "Status", value: isUnlocked ? "Unlocked ✓" : "Locked", color: isUnlocked ? "#01D676" : "#f97316" },
         ].map((s) => (
           <Paper
             key={s.label}
@@ -314,10 +306,12 @@ export default function DailyBonusClient({
               +{nextReward}
               <Box component="span" sx={{ fontSize: "1rem", fontWeight: 600, color: colors.text.secondary, ml: 1 }}>coins</Box>
             </Typography>
-            {todayEarnings < 1 && (
-              <Box sx={{ mb: 2, borderRadius: 3, bgcolor: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)", px: 2, py: 1.5, fontSize: "0.875rem", color: "#f97316", display: "flex", alignItems: "center", gap: 1 }}>
-                <TrendingUp size={16} />
-                Earn $1 today to unlock bonus!
+            {!isUnlocked && (
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ borderRadius: 3, bgcolor: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)", px: 2, py: 1.5, fontSize: "0.875rem", color: "#f97316", display: "flex", alignItems: "center", gap: 1, justifyContent: "center" }}>
+                  <TrendingUp size={16} />
+                  Earn {(1000 - coinsProgress).toLocaleString()} more coins to unlock! ({coinsProgress.toLocaleString()}/1000)
+                </Box>
               </Box>
             )}
             {error && (
@@ -328,10 +322,10 @@ export default function DailyBonusClient({
             <Button
               variant="contained"
               onClick={handleClaim}
-              disabled={loading || todayEarnings < 1}
+              disabled={loading || !isUnlocked}
               startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <Gift size={18} />}
               sx={{
-                background: todayEarnings < 1 
+                background: !isUnlocked 
                   ? "linear-gradient(180deg,#4a5568,#2d3748)" 
                   : "linear-gradient(180deg,#01D676,#007e45)",
                 borderRadius: 3,
@@ -340,8 +334,8 @@ export default function DailyBonusClient({
                 fontWeight: 800,
                 fontSize: "1.1rem",
                 textTransform: "none",
-                boxShadow: todayEarnings < 1 ? "none" : "0 6px 24px rgba(1,214,118,0.3)",
-                "&:hover": { filter: todayEarnings < 1 ? "none" : "brightness(1.1)", transform: todayEarnings < 1 ? "none" : "translateY(-1px)", boxShadow: todayEarnings < 1 ? "none" : "0 8px 30px rgba(1,214,118,0.35)" },
+                boxShadow: !isUnlocked ? "none" : "0 6px 24px rgba(1,214,118,0.3)",
+                "&:hover": { filter: !isUnlocked ? "none" : "brightness(1.1)", transform: !isUnlocked ? "none" : "translateY(-1px)", boxShadow: !isUnlocked ? "none" : "0 8px 30px rgba(1,214,118,0.35)" },
                 transition: "all 0.2s",
                 "&.Mui-disabled": {
                   background: "linear-gradient(180deg,#4a5568,#2d3748)",
@@ -349,58 +343,11 @@ export default function DailyBonusClient({
                 }
               }}
             >
-              {loading ? "Claiming..." : todayEarnings < 1 ? "Earn $1 to Unlock" : "Claim Bonus"}
+              {loading ? "Claiming..." : !isUnlocked ? `Earn ${(1000 - coinsProgress).toLocaleString()} More Coins` : "Claim Bonus"}
             </Button>
           </Box>
         )}
       </Paper>
-
-      {/* Recent claims */}
-      {recentClaims.length > 0 && (
-        <Box>
-          <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-            <Clock size={18} color="#01D676" />
-            Recent Claims
-          </Typography>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {recentClaims.map((c) => (
-              <Box
-                key={c.id}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  borderRadius: 3,
-                  border: `1px solid ${colors.divider}`,
-                  bgcolor: colors.background.secondary,
-                  px: 2.5,
-                  py: 1.75,
-                  transition: "all 0.2s",
-                  "&:hover": { bgcolor: colors.background.ternary, borderColor: "rgba(1,214,118,0.2)" },
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)" }}>
-                    <CalendarCheck size={16} color="#01D676" />
-                  </Box>
-                  <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      Day {c.streak_day} Bonus
-                    </Typography>
-                    <Typography sx={{ fontSize: "0.72rem", color: colors.text.secondary }}>
-                      {new Date(c.claimed_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, borderRadius: 50, bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)", px: 1.5, py: 0.5, fontSize: "0.875rem", fontWeight: 700, color: "#01D676" }}>
-                  <Coins size={14} />
-                  +{c.coins_awarded}
-                </Box>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      )}
     </Box>
   );
 }

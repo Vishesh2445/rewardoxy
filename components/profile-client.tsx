@@ -29,6 +29,7 @@ interface Completion {
   program_id: string;
   coins_awarded: number;
   created_at: string;
+  source: string;
 }
 
 interface ReferrerInfo {
@@ -110,7 +111,7 @@ export default function ProfileClient({
       setLoading(true);
       const supabase = createClient();
       const [compRes, withRes] = await Promise.all([
-        supabase.from("completions").select("id, program_id, coins_awarded, created_at")
+        supabase.from("completions").select("id, program_id, coins_awarded, created_at, source")
           .eq("player_id", userId).order("created_at", { ascending: false }).limit(50),
         supabase.from("withdrawals").select("id, coins, amount_usd, network, status, tx_hash, requested_at")
           .eq("user_id", userId).order("requested_at", { ascending: false }).limit(50),
@@ -378,7 +379,12 @@ export default function ProfileClient({
                   {completions.map((c) => (
                     <Box key={c.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, px: 2, py: 1.5 }}>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }} truncate>{c.program_id}</Typography>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }} truncate>{c.program_id}</Typography>
+                          <Box sx={{ borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1, py: 0.1, fontSize: '0.6rem', fontWeight: 700, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'uppercase', flexShrink: 0 }}>
+                            {c.source || 'unknown'}
+                          </Box>
+                        </Box>
                         <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
                           {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </Typography>
@@ -394,7 +400,7 @@ export default function ProfileClient({
                   <Table>
                     <TableHead>
                       <TableRow>
-                        {["Program", "Coins Awarded", "Date"].map((h) => (
+                        {["Program", "Source", "Coins Awarded", "Date"].map((h) => (
                           <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.primary }}>
                             {h}
                           </TableCell>
@@ -405,6 +411,11 @@ export default function ProfileClient({
                       {completions.map((c) => (
                         <TableRow key={c.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
                           <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontSize: "0.875rem" }}>{c.program_id}</TableCell>
+                          <TableCell sx={{ borderColor: colors.divider }}>
+                            <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1.5, py: 0.25, fontSize: '0.75rem', fontWeight: 600, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'capitalize' }}>
+                              {c.source || 'unknown'}
+                            </Box>
+                          </TableCell>
                           <TableCell sx={{ borderColor: colors.divider }}>
                             <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, borderRadius: 50, bgcolor: colors.background.secondary, border: "1px solid rgba(1,214,118,0.2)", px: 1.5, py: 0.25, fontSize: "0.8rem", fontWeight: 600, color: "#01D676" }}>
                               +{c.coins_awarded}

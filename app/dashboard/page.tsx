@@ -25,7 +25,7 @@ export default async function DashboardPage() {
 
     supabase
       .from("completions")
-      .select("id, program_id, coins_awarded, created_at")
+      .select("id, program_id, coins_awarded, created_at, source")
       .eq("player_id", user.id)
       .order("created_at", { ascending: false })
       .limit(10),

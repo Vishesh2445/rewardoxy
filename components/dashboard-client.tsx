@@ -31,6 +31,7 @@ interface Completion {
   program_id: string;
   coins_awarded: number;
   created_at: string;
+  source: string;
 }
 
 interface DashboardProps {
@@ -140,7 +141,7 @@ export default function DashboardClient({
 
       const { data: recent } = await supabase
         .from("completions")
-        .select("id, program_id, coins_awarded, created_at")
+        .select("id, program_id, coins_awarded, created_at, source")
         .eq("player_id", userId)
         .order("created_at", { ascending: false })
         .limit(10);
@@ -621,9 +622,14 @@ export default function DashboardClient({
                       <Icon size={20} color="#01D676" />
                     </Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }} truncate>
-                        Program {c.program_id}
-                      </Typography>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }} truncate>
+                          Program {c.program_id}
+                        </Typography>
+                        <Box sx={{ borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1, py: 0.1, fontSize: '0.6rem', fontWeight: 700, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'uppercase', flexShrink: 0 }}>
+                          {c.source || 'unknown'}
+                        </Box>
+                      </Box>
                       <Typography sx={{ fontSize: "0.72rem", color: colors.text.secondary }}>
                         {timeAgo(c.created_at)}
                       </Typography>

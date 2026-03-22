@@ -35,6 +35,7 @@ interface Completion {
   payout_decimal: number | null;
   coins_awarded: number;
   created_at: string;
+  source: string;
 }
 
 interface HistoryClientProps {
@@ -74,9 +75,8 @@ export default function HistoryClient({
     const to = from + PAGE_SIZE - 1;
     const { data, count } = await supabase
       .from("completions")
-      .select("id, program_id, payout_decimal, coins_awarded, created_at", { count: "exact" })
+      .select("id, program_id, payout_decimal, coins_awarded, created_at, source", { count: "exact" })
       .eq("player_id", userId)
-      .eq("program_id", "ssr34")
       .order("created_at", { ascending: false })
       .range(from, to);
     if (data) setCompletions(data);
@@ -172,9 +172,14 @@ export default function HistoryClient({
                     <Icon size={20} color="#01D676" />
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }} truncate>
-                      ssr34
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }} truncate>
+                        {c.program_id}
+                      </Typography>
+                      <Box sx={{ borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1, py: 0.1, fontSize: '0.6rem', fontWeight: 700, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'uppercase', flexShrink: 0 }}>
+                        {c.source || 'unknown'}
+                      </Box>
+                    </Box>
                     <Typography sx={{ fontSize: "0.72rem", color: colors.text.secondary }}>
                       {new Date(c.created_at).toLocaleDateString("en-US", {
                         month: "short",
@@ -224,7 +229,7 @@ export default function HistoryClient({
             <Table>
               <TableHead>
                 <TableRow sx={{ bgcolor: "rgba(29,30,48,0.9)" }}>
-                  {["Date", "Program", "Coins"].map((h) => (
+                  {["Date", "Program", "Source", "Coins"].map((h) => (
                     <TableCell
                       key={h}
                       align={h === "Coins" ? "right" : "left"}
@@ -268,8 +273,13 @@ export default function HistoryClient({
                             <Icon size={15} color="#01D676" />
                           </Box>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            ssr34
+                            {c.program_id}
                           </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ borderColor: colors.divider }}>
+                        <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1.5, py: 0.25, fontSize: '0.75rem', fontWeight: 600, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'capitalize' }}>
+                          {c.source || 'unknown'}
                         </Box>
                       </TableCell>
                       <TableCell align="right" sx={{ borderColor: colors.divider }}>

@@ -36,23 +36,15 @@ export default async function DailyBonusPage() {
     .limit(1)
     .maybeSingle();
 
-  // Get recent claims for history
-  const { data: recentClaims } = await supabase
-    .from("daily_bonus_claims")
-    .select("id, streak_day, coins_awarded, claimed_at")
-    .eq("user_id", user.id)
-    .order("claimed_at", { ascending: false })
-    .limit(7);
-
-  // Get today's earnings (from ALL sources: MyLead, CPX, etc.)
+  // Get today's coins earned (from ALL sources: MyLead, CPX, etc.)
   const { data: todayCompletions } = await supabase
     .from("completions")
-    .select("payout_decimal")
+    .select("coins_awarded")
     .eq("player_id", user.id)
     .gte("created_at", todayStart.toISOString());
 
-  const todayEarnings = todayCompletions?.reduce(
-    (sum, c) => sum + (c.payout_decimal || 0),
+  const todayCoinsEarned = todayCompletions?.reduce(
+    (sum, c) => sum + (c.coins_awarded || 0),
     0
   ) || 0;
 
@@ -63,8 +55,7 @@ export default async function DailyBonusPage() {
         alreadyClaimed={!!todayClaim}
         todayReward={todayClaim?.coins_awarded ?? null}
         todayStreak={todayClaim?.streak_day ?? null}
-        recentClaims={recentClaims ?? []}
-        todayEarnings={todayEarnings}
+        todayCoinsEarned={todayCoinsEarned}
       />
     </AppShell>
   );

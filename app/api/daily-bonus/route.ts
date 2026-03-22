@@ -35,21 +35,21 @@ export async function POST() {
     return NextResponse.json({ error: "Already claimed today" }, { status: 400 });
   }
 
-  // Check if user earned at least $1 today (from ALL sources)
+  // Check if user earned at least 1000 coins ($1) today (from ALL sources)
   const { data: todayCompletions } = await supabase
     .from("completions")
-    .select("payout_decimal")
+    .select("coins_awarded")
     .eq("player_id", user.id)
     .gte("created_at", todayStart.toISOString());
 
-  const todayEarnings = todayCompletions?.reduce(
-    (sum, c) => sum + (c.payout_decimal || 0),
+  const todayCoinsEarned = todayCompletions?.reduce(
+    (sum, c) => sum + (c.coins_awarded || 0),
     0
   ) || 0;
 
-  if (todayEarnings < 1) {
+  if (todayCoinsEarned < 1000) {
     return NextResponse.json(
-      { error: "Earn at least $1 today to claim bonus" },
+      { error: "Earn at least 1000 coins ($1) today to claim bonus" },
       { status: 400 }
     );
   }

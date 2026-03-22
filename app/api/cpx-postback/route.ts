@@ -118,7 +118,8 @@ async function handleCpxPostback(request: NextRequest) {
         player_id: user_id,
         program_id: `cpx_cancel_${trans_id}`,
         payout_decimal: -payoutUsd,
-        coins_awarded: -amountCoins
+        coins_awarded: -amountCoins,
+        source: 'cpx'
       });
 
       return ok({ status: 'canceled_processed', trans_id, logs });
@@ -150,7 +151,8 @@ async function handleCpxPostback(request: NextRequest) {
         player_id: user_id,
         program_id: `cpx_${trans_id}`,
         payout_decimal: payoutUsd,
-        coins_awarded: amountCoins
+        coins_awarded: amountCoins,
+        source: 'cpx'
       });
 
     if (completionError) {

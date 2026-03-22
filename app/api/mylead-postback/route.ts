@@ -93,7 +93,8 @@ async function handlePostback(request: NextRequest) {
         player_id,
         program_id,
         payout_decimal: payout,
-        coins_awarded: amount
+        coins_awarded: amount,
+        source: 'mylead'
       });
 
     if (completionError) {
