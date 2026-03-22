@@ -74,8 +74,9 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
 
   const handleCloseToast = () => setToast((prev) => ({ ...prev, open: false }));
 
-  function copyUid(uid: string) {
-    navigator.clipboard.writeText(uid);
+  function copyText(text: string, label: string) {
+    navigator.clipboard.writeText(text);
+    setToast({ open: true, message: `${label} copied!`, severity: "success" });
   }
 
   async function fetchWithdrawals(p: number, status: string) {
@@ -190,7 +191,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
                 <Typography sx={{ fontSize: "0.6rem", color: colors.text.secondary, fontFamily: "monospace" }}>
                   {w.user_id.slice(0, 8)}...{w.user_id.slice(-4)}
                 </Typography>
-                <IconButton size="small" onClick={() => copyUid(w.user_id)} sx={{ p: 0.25, bgcolor: "transparent" }}>
+                <IconButton size="small" onClick={() => copyText(w.user_id, "User ID")} sx={{ p: 0.25, bgcolor: "transparent" }}>
                   <Copy size={10} color={colors.text.secondary} />
                 </IconButton>
               </Box>
@@ -200,7 +201,12 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
                 </Typography>
               </Box>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>{w.coins.toLocaleString()} coins (${w.amount_usd.toFixed(2)})</Typography>
-              <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, mt: 0.5 }}>LTC - {w.crypto_address.slice(0, 12)}...</Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
+                <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, fontFamily: "monospace" }}>LTC: {w.crypto_address.slice(0, 6)}...{w.crypto_address.slice(-4)}</Typography>
+                <IconButton size="small" onClick={() => copyText(w.crypto_address, "Address")} sx={{ p: 0.25 }}>
+                  <Copy size={12} color={colors.text.secondary} />
+                </IconButton>
+              </Box>
               {w.status === "pending" && (
                 <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
                   <Button size="small" onClick={() => { setApproveDialog(w.id); setTxHash(""); }} disabled={actionLoading === w.id}
@@ -241,7 +247,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
                     <Typography truncate sx={{ fontSize: "0.8rem", color: "#fff", fontWeight: 500 }}>{w.user_email}</Typography>
                     <Tooltip title="Click to copy full UID" arrow>
                       <Box
-                        onClick={() => copyUid(w.user_id)}
+                        onClick={() => copyText(w.user_id, "User ID")}
                         sx={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 0.5, fontSize: "0.65rem", fontFamily: "monospace", color: colors.text.secondary, "&:hover": { color: "#01D676" } }}
                       >
                         {w.user_id.slice(0, 8)}...
@@ -255,8 +261,16 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
                   <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontWeight: 600 }}>{w.coins.toLocaleString()}</TableCell>
                   <TableCell sx={{ borderColor: colors.divider, color: "#01D676", fontWeight: 600 }}>${w.amount_usd.toFixed(2)}</TableCell>
 
-                  <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.75rem", maxWidth: 120 }}>
-                    <Typography truncate sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>{w.crypto_address}</Typography>
+                  <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.75rem", maxWidth: 160 }}>
+                    <Tooltip title="Copy full address" arrow>
+                      <Box
+                        onClick={() => copyText(w.crypto_address, "Address")}
+                        sx={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 0.5, fontFamily: "monospace", "&:hover": { color: "#01D676" } }}
+                      >
+                        {w.crypto_address.slice(0, 10)}...{w.crypto_address.slice(-6)}
+                        <Copy size={11} />
+                      </Box>
+                    </Tooltip>
                   </TableCell>
                   <TableCell sx={{ borderColor: colors.divider }}>
                     <Box sx={{ display: "inline-block", borderRadius: 50, px: 1.25, py: 0.25, fontSize: "0.7rem", fontWeight: 600, bgcolor: sc.bg, color: sc.color, textTransform: "capitalize" }}>
