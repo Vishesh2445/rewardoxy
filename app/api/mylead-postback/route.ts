@@ -133,7 +133,7 @@ async function handlePostback(request: NextRequest) {
       .eq('id', player_id)
       .single();
 
-    if (!referrerError && userWithReferrer?.referred_by) {
+    if (!referrerError && userWithReferrer?.referred_by && userWithReferrer?.email_verified) {
       // Add 5% commission to referrer's pending earnings (no email verification required)
       const commissionAmount = Math.round(amount * 0.05);
       if (commissionAmount > 0) {

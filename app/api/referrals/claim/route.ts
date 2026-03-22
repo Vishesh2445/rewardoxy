@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     // Get user's pending referral earnings
     const { data: userData, error: fetchError } = await supabase
       .from("users")
-      .select("pending_referral_earnings, coins_balance")
+      .select("pending_referral_earnings, coins_balance, total_earned")
       .eq("id", user.id)
       .single();
 
@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
       .from("users")
       .update({
         coins_balance: (userData.coins_balance ?? 0) + pendingEarnings,
+        total_earned: (userData.total_earned ?? 0) + pendingEarnings,
         pending_referral_earnings: 0,
       })
       .eq("id", user.id);

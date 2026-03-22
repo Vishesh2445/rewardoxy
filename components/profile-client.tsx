@@ -44,6 +44,7 @@ interface ProfileClientProps {
   streakCount: number;
   totalCompletions: number;
   totalWithdrawals: number;
+  monthEarned: number;
   memberSince: string;
   emailVerified: boolean;
   referredBy: ReferrerInfo | null;
@@ -84,6 +85,7 @@ export default function ProfileClient({
   streakCount,
   totalCompletions,
   totalWithdrawals,
+  monthEarned,
   referredBy,
   memberSince,
   emailVerified: initialEmailVerified,
@@ -209,6 +211,7 @@ export default function ProfileClient({
 
   const stats = [
     { icon: <TrendingUp size={18} color="#01D676" />, label: "Total Earned", value: `${totalEarned.toLocaleString()} coins` },
+    { icon: <Calendar size={18} color="#01D676" />, label: "This Month", value: `${monthEarned.toLocaleString()} coins` },
     { icon: <CheckCircle size={18} color="#01D676" />, label: "Completed Offers", value: String(totalCompletions) },
     { icon: <Wallet size={18} color="#01D676" />, label: "Withdrawals", value: String(totalWithdrawals) },
     { icon: <Flame size={18} color="#01D676" />, label: "Streak", value: `${streakCount} days` },

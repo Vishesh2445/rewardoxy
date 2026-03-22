@@ -49,6 +49,18 @@ export default async function ProfilePage() {
     .select("*", { count: "exact", head: true })
     .eq("user_id", user.id);
 
+  // Get this month's earnings
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  
+  const { data: monthlyCompletions } = await supabase
+    .from("completions")
+    .select("coins_awarded")
+    .eq("player_id", user.id)
+    .gte("created_at", startOfMonth);
+
+  const monthEarned = monthlyCompletions?.reduce((sum, c) => sum + (c.coins_awarded || 0), 0) || 0;
+
   const coins = userData?.coins_balance ?? 0;
 
   return (
@@ -62,6 +74,7 @@ export default async function ProfilePage() {
         streakCount={userData?.streak_count ?? 0}
         totalCompletions={completionCount ?? 0}
         totalWithdrawals={withdrawalCount ?? 0}
+        monthEarned={monthEarned}
         memberSince={userData?.created_at ?? user.created_at}
         emailVerified={userData?.email_verified ?? false}
         referredBy={referrerInfo}

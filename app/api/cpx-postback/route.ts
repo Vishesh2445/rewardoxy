@@ -123,11 +123,11 @@ async function handleCpxPostback(request: NextRequest) {
       // 6.5 Revert Referral Commission if applicable
       const { data: userWithReferrer } = await supabase
         .from('users')
-        .select('referred_by')
+        .select('referred_by, email_verified')
         .eq('id', user_id)
         .single();
 
-      if (userWithReferrer?.referred_by) {
+      if (userWithReferrer?.referred_by && userWithReferrer?.email_verified) {
         const commissionAmount = Math.round(absCoins * 0.05); // 5%
         if (commissionAmount > 0) {
           // Negative amount to increment_pending_referral_earnings will deduct the pending balance
@@ -193,11 +193,11 @@ async function handleCpxPostback(request: NextRequest) {
     // 8. Referral commission logic
     const { data: userWithReferrer, error: referrerError } = await supabase
       .from('users')
-      .select('referred_by')
+      .select('referred_by, email_verified')
       .eq('id', user_id)
       .single();
 
-    if (!referrerError && userWithReferrer?.referred_by) {
+    if (!referrerError && userWithReferrer?.referred_by && userWithReferrer?.email_verified) {
       const commissionAmount = Math.round(amountCoins * 0.05); // 5%
       if (commissionAmount > 0) {
         await supabase.rpc('increment_pending_referral_earnings', {

@@ -143,7 +143,7 @@ export default async function LeaderboardPage() {
               Leaderboard
             </Typography>
             <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 0.5 }}>
-              Top earners this week. Compete for exclusive rewards!
+              Top earners this month. Compete for exclusive rewards!
             </Typography>
           </Box>
           <Box
@@ -188,7 +188,7 @@ export default async function LeaderboardPage() {
             {top3.length > 0 && (
               <Box sx={{ mb: 4 }}>
                 <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: colors.text.secondary, fontSize: "0.7rem" }}>
-                  🏆 Top Earners This Week
+                  🏆 Top Earners This Month
                 </Typography>
                 <Box
                   sx={{
@@ -333,7 +333,7 @@ export default async function LeaderboardPage() {
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, borderRadius: 50, bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)", px: 1.75, py: 0.5, fontSize: "0.875rem", fontWeight: 700, color: "#01D676" }}>
                   <Coins size={14} />
-                  {myRank.weekly_coins.toLocaleString()} coins this week
+                  {myRank.weekly_coins.toLocaleString()} coins this month
                 </Box>
               </Paper>
             )}
@@ -433,7 +433,7 @@ export default async function LeaderboardPage() {
                           Player
                         </TableCell>
                         <TableCell align="right" sx={{ color: colors.text.secondary, fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700, borderColor: colors.divider }}>
-                          Weekly Coins
+                          Monthly Coins
                         </TableCell>
                       </TableRow>
                     </TableHead>

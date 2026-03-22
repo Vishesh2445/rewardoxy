@@ -32,7 +32,7 @@ export default async function ReferralsPage() {
     // Get users who were referred by this user (using referred_by field)
     supabase
       .from("users")
-      .select("id, email, created_at, total_earned")
+      .select("id, email, created_at, total_earned, email_verified")
       .eq("referred_by", user.id)
       .order("created_at", { ascending: false }),
   ]);
@@ -42,9 +42,9 @@ export default async function ReferralsPage() {
   const totalReferrals = referredUsersResult.data?.length ?? 0;
   const pendingReferralEarnings = userResult.data?.pending_referral_earnings ?? 0;
 
-  // Calculate total coins earned from referrals (5% of each referral's total_earned)
+  // Calculate total coins earned from referrals (5% of each verified referral's total_earned)
   const totalCoins = (referredUsersResult.data ?? []).reduce(
-    (sum, row) => sum + Math.round((row.total_earned ?? 0) * 0.05),
+    (sum, row) => sum + (row.email_verified ? Math.round((row.total_earned ?? 0) * 0.05) : 0),
     0
   );
 
