@@ -35,12 +35,11 @@ export async function POST() {
     return NextResponse.json({ error: "Already claimed today" }, { status: 400 });
   }
 
-  // Check if user earned at least $1 today
+  // Check if user earned at least $1 today (from ALL sources)
   const { data: todayCompletions } = await supabase
     .from("completions")
     .select("payout_decimal")
     .eq("player_id", user.id)
-    .eq("program_id", "ssr34")
     .gte("created_at", todayStart.toISOString());
 
   const todayEarnings = todayCompletions?.reduce(

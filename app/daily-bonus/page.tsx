@@ -44,12 +44,11 @@ export default async function DailyBonusPage() {
     .order("claimed_at", { ascending: false })
     .limit(7);
 
-  // Get today's earnings (for ssr34 program)
+  // Get today's earnings (from ALL sources: MyLead, CPX, etc.)
   const { data: todayCompletions } = await supabase
     .from("completions")
     .select("payout_decimal")
     .eq("player_id", user.id)
-    .eq("program_id", "ssr34")
     .gte("created_at", todayStart.toISOString());
 
   const todayEarnings = todayCompletions?.reduce(
