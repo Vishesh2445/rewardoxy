@@ -15,6 +15,7 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
+  InputAdornment,
 } from "@mui/material";
 import {
   Coins,
@@ -31,14 +32,11 @@ import {
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 
-const NETWORKS = ["LTC"] as const;
 const MIN_COINS = 2000;
 const COINS_PER_USD = 1000;
 const PAGE_SIZE = 10;
 
-const EXPLORER_URLS: Record<string, string> = {
-  LTC: "https://litecoin.info/tx/",
-};
+const EXPLORER_URLS = "https://litecoin.info/tx/";
 
 const STATUS_COLORS: Record<string, { bg: string; color: string; border: string }> = {
   pending: { bg: "rgba(245,158,11,0.1)", color: "#fbbf24", border: "rgba(245,158,11,0.2)" },
@@ -47,24 +45,11 @@ const STATUS_COLORS: Record<string, { bg: string; color: string; border: string 
   failed: { bg: "rgba(239,68,68,0.1)", color: "#f87171", border: "rgba(239,68,68,0.2)" },
 };
 
-const NETWORK_DETAILS = [
-  {
-    id: "LTC",
-    name: "LTC",
-    network: "Litecoin",
-    icon: "L",
-    iconBg: "linear-gradient(135deg,#345d9d,#8b92a5)",
-    desc: "Popular, low fees",
-    badge: "Available",
-  },
-];
-
 interface Withdrawal {
   id: string;
   requested_at: string;
   coins: number;
   amount_usd: number;
-  network: string;
   status: string;
   tx_hash: string | null;
 }
@@ -87,7 +72,7 @@ export default function CashoutClient({
   const router = useRouter();
   const [coins, setCoins] = useState(initialCoins);
   const [address, setAddress] = useState("");
-  const [network, setNetwork] = useState<string>(NETWORKS[0]);
+  const [amountCoins, setAmountCoins] = useState<number | "">(initialCoins >= MIN_COINS ? initialCoins : "");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -96,7 +81,8 @@ export default function CashoutClient({
   const [page, setPage] = useState(0);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
-  const usd = coins / COINS_PER_USD;
+  const availableUsd = coins / COINS_PER_USD;
+  const withdrawUsd = typeof amountCoins === "number" ? amountCoins / COINS_PER_USD : 0;
 
   async function fetchPage(newPage: number) {
     const supabase = createClient();
@@ -104,7 +90,7 @@ export default function CashoutClient({
     const to = from + PAGE_SIZE - 1;
     const { data, count } = await supabase
       .from("withdrawals")
-      .select("id, requested_at, coins, amount_usd, network, status, tx_hash", { count: "exact" })
+      .select("id, requested_at, coins, amount_usd, status, tx_hash", { count: "exact" })
       .eq("user_id", userId)
       .order("requested_at", { ascending: false })
       .range(from, to);
@@ -117,19 +103,25 @@ export default function CashoutClient({
     e.preventDefault();
     setError(null);
     setSuccess(null);
-    if (coins < MIN_COINS) {
-      setError(`Minimum withdrawal is ${MIN_COINS} coins ($${(MIN_COINS / COINS_PER_USD).toFixed(2)})`);
+
+    if (typeof amountCoins !== "number" || amountCoins < MIN_COINS) {
+      setError(`Minimum withdrawal is ${MIN_COINS.toLocaleString()} coins`);
+      return;
+    }
+    if (amountCoins > coins) {
+      setError(`You only have ${coins.toLocaleString()} coins available`);
       return;
     }
     if (!address.trim() || address.trim().length < 10) {
-      setError("Enter a valid crypto address");
+      setError("Enter a valid LTC wallet address");
       return;
     }
+
     setLoading(true);
     const res = await fetch("/api/withdraw", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ network }),
+      body: JSON.stringify({ amount_coins: amountCoins, address: address.trim() }),
     });
     const body = await res.json();
     if (!res.ok) {
@@ -138,14 +130,13 @@ export default function CashoutClient({
       return;
     }
     setSuccess(`Withdrawal of $${body.amount_usd.toFixed(2)} submitted`);
-    setCoins(0);
+    setCoins((prev) => prev - body.coins);
     setAddress("");
+    setAmountCoins("");
     setLoading(false);
     await fetchPage(0);
     router.refresh();
   }
-
-  const selectedNet = NETWORK_DETAILS.find((n) => n.id === network)!;
 
   return (
     <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
@@ -156,7 +147,7 @@ export default function CashoutClient({
           Cash Out
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
-          Withdraw your coins as USDT or SOL crypto instantly
+          Withdraw your coins directly to your LTC wallet instantly
         </Typography>
       </Box>
 
@@ -196,9 +187,9 @@ export default function CashoutClient({
               <Box>
                 <Typography sx={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: colors.text.secondary }}>USD Value</Typography>
                 <Typography sx={{ fontSize: "2rem", fontWeight: 800, lineHeight: 1.1 }}>
-                  ${usd.toFixed(2)}
+                  ${availableUsd.toFixed(2)}
                 </Typography>
-                <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary }}>USDT</Typography>
+                <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary }}>USD</Typography>
               </Box>
             </Box>
           </Box>
@@ -206,7 +197,7 @@ export default function CashoutClient({
           <Box sx={{ ml: { sm: "auto" }, display: "flex", flexDirection: "column", gap: 0.75 }}>
             {[
               { label: "Minimum cashout", value: `${MIN_COINS.toLocaleString()} coins ($${(MIN_COINS / COINS_PER_USD).toFixed(2)})` },
-              { label: "Rate", value: "1,000 coins = $1.00 USDT" },
+              { label: "Rate", value: "1,000 coins = $1 USD" },
               { label: "Processing", value: "Instant" },
             ].map((row) => (
               <Box key={row.label} sx={{ display: "flex", gap: 1, fontSize: "0.75rem" }}>
@@ -239,167 +230,178 @@ export default function CashoutClient({
         </Paper>
       ) : (
         <>
-          {/* Network selector */}
-          <Typography variant="subtitle1" isBold sx={{ mb: 2 }}>Select Withdrawal Method</Typography>
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(3,1fr)" }, gap: 2, mb: 4 }}>
-        {NETWORK_DETAILS.map((net) => {
-          const isSelected = network === net.id;
-          return (
-            <Box
-              key={net.id}
-              onClick={() => setNetwork(net.id)}
-              sx={{
-                borderRadius: 4,
-                border: `1px solid ${isSelected ? "rgba(1,214,118,0.5)" : colors.divider}`,
-                bgcolor: isSelected ? "rgba(1,214,118,0.07)" : colors.background.secondary,
-                p: 2.5,
-                cursor: "pointer",
-                transition: "all 0.2s",
-                position: "relative",
-                boxShadow: isSelected ? "0 0 0 1px rgba(1,214,118,0.3), 0 6px 20px rgba(1,214,118,0.08)" : "none",
-                "&:hover": { borderColor: "rgba(1,214,118,0.35)" },
-              }}
-            >
-              {net.badge && (
-                <Box sx={{ position: "absolute", top: 10, right: 10, borderRadius: 50, bgcolor: "rgba(1,214,118,0.12)", border: "1px solid rgba(1,214,118,0.25)", px: 1, py: 0.25, fontSize: "9px", fontWeight: 700, color: "#01D676", textTransform: "uppercase" }}>
-                  {net.badge}
-                </Box>
-              )}
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: 3, background: net.iconBg, fontWeight: 800, fontSize: "1.1rem", color: "#fff", flexShrink: 0 }}>
-                  {net.icon}
-                </Box>
-                <Box>
-                  <Typography sx={{ fontWeight: 700, fontSize: "0.95rem", color: isSelected ? "#01D676" : "#fff" }}>{net.name}</Typography>
-                  <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary }}>{net.network}</Typography>
-                </Box>
-              </Box>
-              <Typography sx={{ mt: 1.5, fontSize: "0.75rem", color: colors.text.secondary }}>{net.desc}</Typography>
-              {isSelected && (
-                <Box sx={{ position: "absolute", bottom: 12, right: 12, display: "flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%", bgcolor: "#01D676" }}>
-                  <Check size={12} color="#000" />
-                </Box>
-              )}
-            </Box>
-          );
-        })}
-      </Box>
-
-      {/* Withdrawal form */}
-      <Paper
-        elevation={0}
-        sx={{
-          mb: 4,
-          borderRadius: 4,
-          border: `1px solid ${colors.divider}`,
-          bgcolor: colors.background.secondary,
-          p: { xs: 3, sm: 4 },
-        }}
-      >
-        <Typography variant="subtitle1" isBold sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
-          <Wallet size={20} color="#01D676" />
-          Withdrawal Details
-        </Typography>
-
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          <Box>
-            <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: colors.text.secondary }}>
-              {selectedNet.id === "SOL" ? "SOL" : "USDT"} Wallet Address ({selectedNet.id})
-            </Typography>
-            <TextField
-              fullWidth
-              required
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder={`Your ${selectedNet.id} wallet address`}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  bgcolor: colors.background.ternary,
-                  borderRadius: 2,
-                  fontSize: "0.875rem",
-                  color: "#fff",
-                  "& fieldset": { borderColor: colors.divider },
-                  "&:hover fieldset": { borderColor: "rgba(1,214,118,0.3)" },
-                  "&.Mui-focused fieldset": { borderColor: "#01D676", borderWidth: "1px" },
-                  "& input::placeholder": { color: `${colors.text.secondary}80`, opacity: 1 },
-                },
-              }}
-            />
-          </Box>
-
-          {/* Summary box */}
-          <Box
+          {/* Withdrawal form */}
+          <Paper
+            elevation={0}
             sx={{
-              borderRadius: 3,
-              bgcolor: colors.background.ternary,
+              mb: 4,
+              borderRadius: 4,
               border: `1px solid ${colors.divider}`,
-              p: 2.5,
+              bgcolor: colors.background.secondary,
+              p: { xs: 3, sm: 4 },
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-              <Info size={15} color={colors.text.secondary} />
-              <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: colors.text.secondary }}>Withdrawal Summary</Typography>
-            </Box>
-            {[
-              { label: "Coins to withdraw", value: `${coins.toLocaleString()} coins`, accent: true },
-              { label: "Exchange rate", value: "1,000 coins = $1.00" },
-              { label: "You receive", value: `$${usd.toFixed(2)} ${selectedNet.id === "SOL" ? "SOL" : "USDT"}`, accent: true },
-              { label: "Network fee", value: "Free 🎉" },
-            ].map((row, i) => (
+            <Typography variant="subtitle1" isBold sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
+              <Wallet size={20} color="#01D676" />
+              Withdrawal Details
+            </Typography>
+
+            <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              
+              <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 3 }}>
+                <Box>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: colors.text.secondary, display: "flex", justifyContent: "space-between" }}>
+                    <span>Amount (Coins)</span>
+                    <Box
+                      component="span"
+                      onClick={() => setAmountCoins(coins)}
+                      sx={{ color: "#01D676", fontSize: "0.8rem", cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
+                    >
+                      Max: {coins.toLocaleString()}
+                    </Box>
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    required
+                    type="number"
+                    value={amountCoins}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "") {
+                        setAmountCoins("");
+                        return;
+                      }
+                      const num = parseInt(val, 10);
+                      if (!isNaN(num) && num >= 0) {
+                        setAmountCoins(num);
+                      }
+                    }}
+                    placeholder={`Min. ${MIN_COINS.toLocaleString()}`}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Coins size={18} color={colors.text.secondary} />
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        bgcolor: colors.background.ternary,
+                        borderRadius: 2,
+                        fontSize: "0.875rem",
+                        color: "#fff",
+                        "& fieldset": { borderColor: colors.divider },
+                        "&:hover fieldset": { borderColor: "rgba(1,214,118,0.3)" },
+                        "&.Mui-focused fieldset": { borderColor: "#01D676", borderWidth: "1px" },
+                        "& input::placeholder": { color: `${colors.text.secondary}80`, opacity: 1 },
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: colors.text.secondary }}>
+                    LTC Wallet Address
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    required
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Your LTC wallet address"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        bgcolor: colors.background.ternary,
+                        borderRadius: 2,
+                        fontSize: "0.875rem",
+                        color: "#fff",
+                        "& fieldset": { borderColor: colors.divider },
+                        "&:hover fieldset": { borderColor: "rgba(1,214,118,0.3)" },
+                        "&.Mui-focused fieldset": { borderColor: "#01D676", borderWidth: "1px" },
+                        "& input::placeholder": { color: `${colors.text.secondary}80`, opacity: 1 },
+                      },
+                    }}
+                  />
+                </Box>
+              </Box>
+
+              {/* Summary box */}
               <Box
-                key={row.label}
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  py: 0.75,
-                  borderTop: i > 0 ? `1px solid ${colors.divider}` : undefined,
+                  borderRadius: 3,
+                  bgcolor: colors.background.ternary,
+                  border: `1px solid ${colors.divider}`,
+                  p: 2.5,
                 }}
               >
-                <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary }}>{row.label}</Typography>
-                <Typography sx={{ fontSize: "0.8rem", fontWeight: 700, color: row.accent ? "#01D676" : "#fff" }}>{row.value}</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                  <Info size={15} color={colors.text.secondary} />
+                  <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: colors.text.secondary }}>Withdrawal Summary</Typography>
+                </Box>
+                {[
+                  { label: "Coins to withdraw", value: `${(amountCoins || 0).toLocaleString()} coins`, accent: true },
+                  { label: "Exchange rate", value: "1,000 coins = $1.00 USD" },
+                  { label: "You receive", value: `$${withdrawUsd.toFixed(2)} USD in LTC`, accent: true },
+                  { label: "Network fee", value: "Free 🎉" },
+                ].map((row, i) => (
+                  <Box
+                    key={row.label}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      py: 0.75,
+                      borderTop: i > 0 ? `1px solid ${colors.divider}` : undefined,
+                    }}
+                  >
+                    <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary }}>{row.label}</Typography>
+                    <Typography sx={{ fontSize: "0.8rem", fontWeight: 700, color: row.accent ? "#01D676" : "#fff" }}>{row.value}</Typography>
+                  </Box>
+                ))}
+                {coins < MIN_COINS ? (
+                  <Box sx={{ mt: 1.5, borderRadius: 2, bgcolor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1, fontSize: "0.75rem", color: "#f87171" }}>
+                    ⚠ You need at least {MIN_COINS.toLocaleString()} coins (${(MIN_COINS / COINS_PER_USD).toFixed(2)}) to withdraw
+                  </Box>
+                ) : (typeof amountCoins === "number" && amountCoins > coins) ? (
+                  <Box sx={{ mt: 1.5, borderRadius: 2, bgcolor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1, fontSize: "0.75rem", color: "#f87171" }}>
+                    ⚠ You do not have enough coins
+                  </Box>
+                ) : null}
               </Box>
-            ))}
-            {coins < MIN_COINS && (
-              <Box sx={{ mt: 1.5, borderRadius: 2, bgcolor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1, fontSize: "0.75rem", color: "#f87171" }}>
-                ⚠ Minimum {MIN_COINS.toLocaleString()} coins (${(MIN_COINS / COINS_PER_USD).toFixed(2)}) required
-              </Box>
-            )}
-          </Box>
 
-          {error && (
-            <Box sx={{ borderRadius: 2, bgcolor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: "#f87171" }}>
-              {error}
-            </Box>
-          )}
-          {success && (
-            <Box sx={{ borderRadius: 2, bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: "#01D676" }}>
-              ✓ {success}
-            </Box>
-          )}
+              {error && (
+                <Box sx={{ borderRadius: 2, bgcolor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: "#f87171" }}>
+                  {error}
+                </Box>
+              )}
+              {success && (
+                <Box sx={{ borderRadius: 2, bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: "#01D676" }}>
+                  ✓ {success}
+                </Box>
+              )}
 
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            disabled={loading || coins < MIN_COINS}
-            endIcon={!loading ? <ArrowRight size={16} /> : undefined}
-            sx={{
-              py: 1.5,
-              borderRadius: 3,
-              background: "linear-gradient(180deg,#01D676,#007e45)",
-              fontWeight: 700,
-              fontSize: "1rem",
-              textTransform: "none",
-              boxShadow: "0 4px 16px rgba(1,214,118,0.25)",
-              "&:hover": { filter: "brightness(1.1)" },
-              "&.Mui-disabled": { opacity: 0.4, color: "#fff" },
-            }}
-          >
-            {loading ? <CircularProgress size={20} color="inherit" /> : "Withdraw Now"}
-          </Button>
-        </Box>
-      </Paper>
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                disabled={loading || coins < MIN_COINS || (typeof amountCoins !== "number") || (amountCoins > coins) || (amountCoins < MIN_COINS)}
+                endIcon={!loading ? <ArrowRight size={16} /> : undefined}
+                sx={{
+                  py: 1.5,
+                  borderRadius: 3,
+                  background: "linear-gradient(180deg,#01D676,#007e45)",
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                  textTransform: "none",
+                  boxShadow: "0 4px 16px rgba(1,214,118,0.25)",
+                  "&:hover": { filter: "brightness(1.1)" },
+                  "&.Mui-disabled": { opacity: 0.4, color: "#fff" },
+                }}
+              >
+                {loading ? <CircularProgress size={20} color="inherit" /> : `Withdraw ${typeof amountCoins === "number" && amountCoins >= MIN_COINS ? `$${withdrawUsd.toFixed(2)}` : "Now"}`}
+              </Button>
+            </Box>
+          </Paper>
         </>
       )}
 
@@ -439,10 +441,10 @@ export default function CashoutClient({
                     <Box sx={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 700 }}>{w.coins.toLocaleString()} coins</Typography>
-                        <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>${w.amount_usd.toFixed(2)} via {w.network}</Typography>
+                        <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>${w.amount_usd.toFixed(2)} via LTC</Typography>
                       </Box>
                       {w.tx_hash && (
-                        <Box component="a" href={`${EXPLORER_URLS[w.network] ?? ""}${w.tx_hash}`} target="_blank" rel="noopener noreferrer"
+                        <Box component="a" href={`${EXPLORER_URLS}${w.tx_hash}`} target="_blank" rel="noopener noreferrer"
                           sx={{ display: "flex", alignItems: "center", gap: 0.5, fontSize: "0.75rem", color: "#01D676", textDecoration: "none", "&:hover": { opacity: 0.8 } }}>
                           Tx <ExternalLink size={12} />
                         </Box>
@@ -475,7 +477,7 @@ export default function CashoutClient({
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600, color: "#fff", borderColor: colors.divider }}>{w.coins.toLocaleString()}</TableCell>
                         <TableCell sx={{ fontWeight: 600, color: "#01D676", borderColor: colors.divider }}>${w.amount_usd.toFixed(2)}</TableCell>
-                        <TableCell sx={{ color: colors.text.secondary, borderColor: colors.divider, fontSize: "0.8rem" }}>{w.network}</TableCell>
+                        <TableCell sx={{ color: colors.text.secondary, borderColor: colors.divider, fontSize: "0.8rem" }}>LTC</TableCell>
                         <TableCell sx={{ borderColor: colors.divider }}>
                           <Box component="span" sx={{ borderRadius: 50, border: `1px solid ${st.border}`, bgcolor: st.bg, color: st.color, px: 1.25, py: 0.35, fontSize: "10px", fontWeight: 700, textTransform: "uppercase" }}>
                             {w.status}
@@ -483,7 +485,7 @@ export default function CashoutClient({
                         </TableCell>
                         <TableCell sx={{ borderColor: colors.divider }}>
                           {w.tx_hash ? (
-                            <Box component="a" href={`${EXPLORER_URLS[w.network] ?? ""}${w.tx_hash}`} target="_blank" rel="noopener noreferrer"
+                            <Box component="a" href={`${EXPLORER_URLS}${w.tx_hash}`} target="_blank" rel="noopener noreferrer"
                               sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#01D676", textDecoration: "none", fontSize: "0.8rem", "&:hover": { opacity: 0.8 } }}>
                               {w.tx_hash.slice(0, 8)}... <ExternalLink size={12} />
                             </Box>

@@ -12,13 +12,10 @@ import colors from "@/theme/colors";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 
-const NETWORKS = ["TRC-20", "BEP-20", "SOL"] as const;
-
 interface Withdrawal {
   id: string;
   coins: number;
   amount_usd: number;
-  network: string;
   status: string;
   tx_hash: string | null;
   requested_at: string;
@@ -43,7 +40,6 @@ interface ProfileClientProps {
   email: string;
   displayName: string;
   cryptoAddress: string;
-  preferredNetwork: string;
   totalEarned: number;
   streakCount: number;
   totalCompletions: number;
@@ -82,7 +78,6 @@ export default function ProfileClient({
   email,
   displayName: initialName,
   cryptoAddress: initialAddress,
-  preferredNetwork: initialNetwork,
   totalEarned,
   streakCount,
   totalCompletions,
@@ -93,7 +88,6 @@ export default function ProfileClient({
 }: ProfileClientProps) {
   const [name, setName] = useState(initialName);
   const [address, setAddress] = useState(initialAddress);
-  const [network, setNetwork] = useState(initialNetwork);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -113,7 +107,7 @@ export default function ProfileClient({
       const [compRes, withRes] = await Promise.all([
         supabase.from("completions").select("id, program_id, coins_awarded, created_at, source")
           .eq("player_id", userId).order("created_at", { ascending: false }).limit(50),
-        supabase.from("withdrawals").select("id, coins, amount_usd, network, status, tx_hash, requested_at")
+        supabase.from("withdrawals").select("id, coins, amount_usd, status, tx_hash, requested_at")
           .eq("user_id", userId).order("requested_at", { ascending: false }).limit(50),
       ]);
       setCompletions(compRes.data ?? []);
@@ -131,7 +125,7 @@ export default function ProfileClient({
     const supabase = createClient();
     const { error: updateError } = await supabase
       .from("users")
-      .update({ display_name: name.trim() || null, crypto_address: address.trim() || null, preferred_network: network })
+      .update({ display_name: name.trim() || null, crypto_address: address.trim() || null })
       .eq("id", userId);
     setSaving(false);
     if (updateError) { setError("Failed to save profile"); return; }
@@ -262,24 +256,10 @@ export default function ProfileClient({
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Box>
-                <Typography variant="body2" sx={{ mb: 0.75, fontWeight: 500, color: colors.text.secondary }}>Preferred Network</Typography>
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  {NETWORKS.map((n) => (
-                    <Button key={n} variant="outlined" onClick={() => setNetwork(n)}
-                      sx={{
-                        borderRadius: 2, px: 2, py: 1.25, fontSize: "0.875rem", fontWeight: 500, textTransform: "none",
-                        ...(network === n
-                          ? { borderColor: "rgba(1,214,118,0.5)", bgcolor: colors.background.secondary, color: "#01D676", "&:hover": { borderColor: "rgba(1,214,118,0.5)", bgcolor: colors.background.secondary } }
-                          : { borderColor: colors.divider, bgcolor: colors.background.primary, color: colors.text.secondary, "&:hover": { color: "#fff", borderColor: "rgba(1,214,118,0.3)", bgcolor: colors.background.primary } }),
-                      }}>{n}</Button>
-                  ))}
-                </Box>
-              </Box>
-              <Box>
                 <Typography variant="body2" sx={{ mb: 0.75, fontWeight: 500, color: colors.text.secondary }}>
-                  {network === "SOL" ? "SOL" : "USDT"} Address
+                  LTC Address
                 </Typography>
-                <TextField fullWidth value={address} onChange={(e) => setAddress(e.target.value)} placeholder={`Your ${network} address`} sx={textFieldSx} />
+                <TextField fullWidth value={address} onChange={(e) => setAddress(e.target.value)} placeholder={`Your LTC address`} sx={textFieldSx} />
               </Box>
             </Box>
           </Paper>
@@ -376,7 +356,7 @@ export default function ProfileClient({
               <>
                 {/* Mobile cards */}
                 <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1 }}>
-                  {completions.map((c) => (
+                   {completions.map((c) => (
                     <Box key={c.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, px: 2, py: 1.5 }}>
                       <Box sx={{ minWidth: 0 }}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -458,7 +438,7 @@ export default function ProfileClient({
                         <Box sx={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
                           <Box>
                             <Typography variant="body2" sx={{ fontWeight: 500 }}>{w.coins.toLocaleString()} coins</Typography>
-                            <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>${w.amount_usd.toFixed(2)} via {w.network}</Typography>
+                            <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>${w.amount_usd.toFixed(2)} via LTC</Typography>
                           </Box>
                         </Box>
                       </Box>
@@ -470,7 +450,7 @@ export default function ProfileClient({
                   <Table>
                     <TableHead>
                       <TableRow>
-                        {["Coins", "Amount", "Network", "Status", "Date"].map((h) => (
+                        {["Coins", "Amount", "Status", "Date"].map((h) => (
                           <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.primary }}>
                             {h}
                           </TableCell>
@@ -484,7 +464,6 @@ export default function ProfileClient({
                           <TableRow key={w.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
                             <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontSize: "0.875rem" }}>{w.coins.toLocaleString()}</TableCell>
                             <TableCell sx={{ borderColor: colors.divider, color: "#01D676", fontWeight: 600, fontSize: "0.875rem" }}>${w.amount_usd.toFixed(2)}</TableCell>
-                            <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.8rem" }}>{w.network}</TableCell>
                             <TableCell sx={{ borderColor: colors.divider }}>
                               <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: sc.bg, px: 1.5, py: 0.25, fontSize: "0.75rem", fontWeight: 600, color: sc.color, textTransform: "capitalize" }}>
                                 {w.status}

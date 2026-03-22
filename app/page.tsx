@@ -652,7 +652,7 @@ export default function Home() {
                 step={3}
                 icon={<Wallet size={28} color={colors.green} />}
                 title="Withdraw Crypto"
-                description="Cash out instantly in USDT via TRC-20, BEP-20 or SOL network."
+                description="Cash out instantly to your LTC wallet."
               />
             </Grid>
           </Grid>
@@ -916,7 +916,7 @@ export default function Home() {
             />
             <FaqItem
               q="What is the minimum withdrawal?"
-              a="The minimum withdrawal is 2,000 coins ($2.00 USD). You can withdraw via USDT on TRC-20, BEP-20, or SOL networks."
+              a="The minimum withdrawal is 2,000 coins ($2.00 USD). You can withdraw via your LTC wallet."
             />
             <FaqItem
               q="How quickly will I get paid?"

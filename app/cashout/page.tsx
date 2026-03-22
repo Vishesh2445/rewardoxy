@@ -27,7 +27,7 @@ export default async function CashoutPage() {
 
     supabase
       .from("withdrawals")
-      .select("id, requested_at, coins, amount_usd, network, status, tx_hash", {
+      .select("id, requested_at, coins, amount_usd, status, tx_hash", {
         count: "exact",
       })
       .eq("user_id", user.id)

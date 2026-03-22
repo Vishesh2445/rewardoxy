@@ -12,7 +12,7 @@ export default async function AdminWithdrawalsPage() {
   const { data: withdrawals, count } = await adminSupabase
     .from("withdrawals")
     .select(
-      "id, user_id, coins, amount_usd, network, crypto_address, status, tx_hash, requested_at",
+      "id, user_id, coins, amount_usd, crypto_address, status, tx_hash, requested_at",
       { count: "exact" }
     )
     .order("requested_at", { ascending: false })

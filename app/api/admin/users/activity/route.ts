@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       .limit(20),
     adminSupabase
       .from("withdrawals")
-      .select("id, coins, amount_usd, network, status, requested_at")
+      .select("id, coins, amount_usd, status, requested_at")
       .eq("user_id", userId)
       .order("requested_at", { ascending: false })
       .limit(20),

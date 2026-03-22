@@ -31,7 +31,7 @@ interface Withdrawal {
   user_id: string;
   coins: number;
   amount_usd: number;
-  network: string;
+
   crypto_address: string;
   status: string;
   tx_hash: string | null;
@@ -200,7 +200,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
                 </Typography>
               </Box>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>{w.coins.toLocaleString()} coins (${w.amount_usd.toFixed(2)})</Typography>
-              <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, mt: 0.5 }}>{w.network} - {w.crypto_address.slice(0, 12)}...</Typography>
+              <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, mt: 0.5 }}>LTC - {w.crypto_address.slice(0, 12)}...</Typography>
               {w.status === "pending" && (
                 <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
                   <Button size="small" onClick={() => { setApproveDialog(w.id); setTxHash(""); }} disabled={actionLoading === w.id}
@@ -225,7 +225,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
         <Table>
           <TableHead>
             <TableRow>
-              {["User", "Date", "Coins", "USD", "Network", "Address", "Status", "TX Hash", "Actions"].map((h) => (
+              {["User", "Date", "Coins", "USD", "Address", "Status", "TX Hash", "Actions"].map((h) => (
                 <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.primary }}>
                   {h}
                 </TableCell>
@@ -254,7 +254,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
                   </TableCell>
                   <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontWeight: 600 }}>{w.coins.toLocaleString()}</TableCell>
                   <TableCell sx={{ borderColor: colors.divider, color: "#01D676", fontWeight: 600 }}>${w.amount_usd.toFixed(2)}</TableCell>
-                  <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.8rem" }}>{w.network}</TableCell>
+
                   <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.75rem", maxWidth: 120 }}>
                     <Typography truncate sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>{w.crypto_address}</Typography>
                   </TableCell>

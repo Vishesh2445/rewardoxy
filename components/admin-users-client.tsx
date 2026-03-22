@@ -46,7 +46,7 @@ interface Withdrawal {
   id: string;
   coins: number;
   amount_usd: number;
-  network: string;
+
   status: string;
   requested_at: string;
 }
@@ -220,7 +220,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
                     <Box key={w.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", bgcolor: colors.primary, borderRadius: 2, px: 1.5, py: 0.75, fontSize: "0.8rem" }}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Typography sx={{ fontSize: "0.8rem", fontWeight: 500 }}>${w.amount_usd.toFixed(2)}</Typography>
-                        <Box sx={{ fontSize: "0.65rem", color: colors.text.secondary }}>{w.network}</Box>
+                        <Box sx={{ fontSize: "0.65rem", color: colors.text.secondary }}>LTC</Box>
                       </Box>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexShrink: 0 }}>
                         <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary }}>{w.coins.toLocaleString()} coins</Typography>

@@ -18,7 +18,7 @@ export default async function ProfilePage() {
 
   const { data: userData } = await supabase
     .from("users")
-    .select("coins_balance, display_name, crypto_address, preferred_network, total_earned, streak_count, created_at, email_verified, referred_by")
+    .select("coins_balance, display_name, crypto_address, total_earned, streak_count, created_at, email_verified, referred_by")
     .eq("id", user.id)
     .single();
 
@@ -58,7 +58,6 @@ export default async function ProfilePage() {
         email={user.email ?? ""}
         displayName={userData?.display_name ?? ""}
         cryptoAddress={userData?.crypto_address ?? ""}
-        preferredNetwork={userData?.preferred_network ?? "TRC-20"}
         totalEarned={userData?.total_earned ?? 0}
         streakCount={userData?.streak_count ?? 0}
         totalCompletions={completionCount ?? 0}

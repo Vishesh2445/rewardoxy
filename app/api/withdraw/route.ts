@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const VALID_NETWORKS = ["TRC-20", "BEP-20", "SOL"] as const;
 const MIN_COINS = 2000;
 const COINS_PER_USD = 1000;
 
@@ -10,7 +9,6 @@ async function sendTelegramNotification(details: {
   email: string;
   coins: number;
   amount_usd: number;
-  network: string;
   address: string;
 }) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -24,8 +22,7 @@ async function sendTelegramNotification(details: {
     `*User ID:* \`${details.userId}\``,
     `*Coins:* ${details.coins.toLocaleString()}`,
     `*Amount:* $${details.amount_usd.toFixed(2)}`,
-    `*Network:* ${details.network}`,
-    `*Address:* \`${details.address}\``,
+    `*Address (LTC):* \`${details.address}\``,
   ].join("\n");
 
   try {
@@ -55,19 +52,26 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { network } = body as { network?: string };
+  const { amount_coins, address } = body as { amount_coins?: number; address?: string };
 
-  if (!network || !VALID_NETWORKS.includes(network as (typeof VALID_NETWORKS)[number])) {
+  if (!address || typeof address !== "string" || address.trim().length < 10) {
     return NextResponse.json(
-      { error: "Invalid network. Choose TRC-20, BEP-20 or SOL" },
+      { error: "Please enter a valid LTC wallet address" },
       { status: 400 }
     );
   }
 
-  // Get current balance and saved crypto address
+  if (!amount_coins || typeof amount_coins !== "number" || amount_coins < MIN_COINS) {
+    return NextResponse.json(
+      { error: `Minimum withdrawal is ${MIN_COINS} coins` },
+      { status: 400 }
+    );
+  }
+
+  // Get current balance
   const { data: userData, error: userError } = await supabase
     .from("users")
-    .select("coins_balance, crypto_address, is_banned")
+    .select("coins_balance, is_banned")
     .eq("id", user.id)
     .single();
 
@@ -79,30 +83,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Your account has been suspended" }, { status: 403 });
   }
 
-  const { coins_balance: coins, crypto_address } = userData;
+  const { coins_balance: coins } = userData;
 
-  if (!crypto_address || typeof crypto_address !== "string" || crypto_address.trim().length < 10) {
+  if (coins < amount_coins) {
     return NextResponse.json(
-      { error: "Save a crypto address on your profile before withdrawing" },
+      { error: "Insufficient coin balance" },
       { status: 400 }
     );
   }
 
-  if (coins < MIN_COINS) {
-    return NextResponse.json(
-      { error: `Minimum withdrawal is ${MIN_COINS} coins` },
-      { status: 400 }
-    );
-  }
+  const amount_usd = amount_coins / COINS_PER_USD;
 
-  const amount_usd = coins / COINS_PER_USD;
-
-  // Deduct coins (gte guard prevents race conditions)
+  // Deduct requested coins (gte guard prevents race conditions)
   const { error: deductError } = await supabase
     .from("users")
-    .update({ coins_balance: 0 })
+    .update({ coins_balance: coins - amount_coins })
     .eq("id", user.id)
-    .gte("coins_balance", coins);
+    .gte("coins_balance", amount_coins);
 
   if (deductError) {
     return NextResponse.json({ error: "Failed to deduct balance" }, { status: 500 });
@@ -110,10 +107,9 @@ export async function POST(request: NextRequest) {
 
   const { error: insertError } = await supabase.from("withdrawals").insert({
     user_id: user.id,
-    coins,
+    coins: amount_coins,
     amount_usd,
-    network: network.trim(),
-    crypto_address: crypto_address.trim(),
+    crypto_address: address.trim(),
     status: "pending",
   });
 
@@ -127,15 +123,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to create withdrawal" }, { status: 500 });
   }
 
+  // Update user's crypto address for future convenience if they want to
+  await supabase
+    .from("users")
+    .update({ crypto_address: address.trim() })
+    .eq("id", user.id);
+
   // Best-effort Telegram notification
   sendTelegramNotification({
     userId: user.id,
     email: user.email ?? "unknown",
-    coins,
+    coins: amount_coins,
     amount_usd,
-    network: network.trim(),
-    address: crypto_address.trim(),
+    address: address.trim(),
   });
 
-  return NextResponse.json({ success: true, amount_usd, coins });
+  return NextResponse.json({ success: true, amount_usd, coins: amount_coins });
 }
