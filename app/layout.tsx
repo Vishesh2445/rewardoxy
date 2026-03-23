@@ -13,8 +13,21 @@ export const metadata: Metadata = {
   description:
     "Complete tasks. Earn rewards. Withdraw crypto. Join thousands earning USDT by completing offers, surveys and games.",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/logo-256.png", sizes: "256x256", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
+  openGraph: {
+    title: "Rewardoxy — Get Paid to Complete Simple Tasks",
+    description:
+      "Complete tasks. Earn rewards. Withdraw crypto. Join thousands earning USDT by completing offers, surveys and games.",
+    siteName: "Rewardoxy",
+    images: [{ url: "/logo.png", width: 512, height: 512, alt: "Rewardoxy Logo" }],
+    type: "website",
   },
 };
 
