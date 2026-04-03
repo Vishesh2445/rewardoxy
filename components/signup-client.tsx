@@ -21,6 +21,7 @@ import DialogActions from "@mui/material/DialogActions";
 import Typography from "@/components/ui/Typography";
 import Icons from "@/components/icons";
 import colors from "@/theme/colors";
+import Turnstile from "@/components/turnstile";
 
 export default function SignupClient() {
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function SignupClient() {
   const [googleTermsAccepted, setGoogleTermsAccepted] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [referralFromUrl, setReferralFromUrl] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const supabase = createClient();
 
@@ -53,6 +55,11 @@ export default function SignupClient() {
 
     if (!acceptedTerms) {
       setError("You must accept the Terms of Service and Privacy Policy to continue");
+      return;
+    }
+
+    if (!turnstileToken) {
+      setError("Please complete the Turnstile verification");
       return;
     }
 
@@ -79,6 +86,7 @@ export default function SignupClient() {
           referred_by: ref || referralCode || undefined,
           accepted_terms: true,
           is_google_oauth: false,
+          turnstile_token: turnstileToken,
         }),
       });
 
@@ -394,6 +402,19 @@ export default function SignupClient() {
                 </Typography>
               }
               sx={{ alignItems: "flex-start", mt: 1 }}
+            />
+
+            {/* Turnstile Verification */}
+            <Turnstile
+              onVerify={(token) => setTurnstileToken(token)}
+              onError={() => {
+                setError("Verification failed. Please try again.");
+                setTurnstileToken(null);
+              }}
+              onExpire={() => {
+                setError("Verification expired. Please verify again.");
+                setTurnstileToken(null);
+              }}
             />
 
             {/* Error */}

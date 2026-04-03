@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 async function sendPasswordResetEmail(email: string, resetToken: string) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rewardoxy.app";
@@ -110,13 +111,24 @@ async function sendPasswordResetEmail(email: string, resetToken: string) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email } = body as { email: string };
+    const { email, turnstile_token } = body as { email: string; turnstile_token?: string };
 
     if (!email) {
       return NextResponse.json(
         { error: "Email is required" },
         { status: 400 }
       );
+    }
+
+    // Verify Turnstile token
+    if (turnstile_token) {
+      const isValidToken = await verifyTurnstileToken(turnstile_token);
+      if (!isValidToken) {
+        return NextResponse.json(
+          { error: "Verification failed. Please try again." },
+          { status: 400 }
+        );
+      }
     }
 
     const admin = createAdminClient();

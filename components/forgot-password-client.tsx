@@ -12,23 +12,31 @@ import Alert from "@mui/material/Alert";
 import Typography from "@/components/ui/Typography";
 import Icons from "@/components/icons";
 import colors from "@/theme/colors";
+import Turnstile from "@/components/turnstile";
 
 export default function ForgotPasswordClient() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!turnstileToken) {
+      setError("Please complete the Turnstile verification");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, turnstile_token: turnstileToken }),
       });
 
       const data = await res.json();
@@ -277,6 +285,19 @@ export default function ForgotPasswordClient() {
                 {error}
               </Alert>
             )}
+
+            {/* Turnstile Verification */}
+            <Turnstile
+              onVerify={(token) => setTurnstileToken(token)}
+              onError={() => {
+                setError("Verification failed. Please try again.");
+                setTurnstileToken(null);
+              }}
+              onExpire={() => {
+                setError("Verification expired. Please verify again.");
+                setTurnstileToken(null);
+              }}
+            />
 
             {/* Submit */}
             <Button

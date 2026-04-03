@@ -15,6 +15,7 @@ import Divider from "@mui/material/Divider";
 import Typography from "@/components/ui/Typography";
 import Icons from "@/components/icons";
 import colors from "@/theme/colors";
+import Turnstile from "@/components/turnstile";
 
 export default function LoginClient() {
   const router = useRouter();
@@ -23,12 +24,19 @@ export default function LoginClient() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const supabase = createClient();
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!turnstileToken) {
+      setError("Please complete the Turnstile verification");
+      return;
+    }
+
     setLoading(true);
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -297,6 +305,19 @@ export default function LoginClient() {
                 {error}
               </Alert>
             )}
+
+            {/* Turnstile Verification */}
+            <Turnstile
+              onVerify={(token) => setTurnstileToken(token)}
+              onError={() => {
+                setError("Verification failed. Please try again.");
+                setTurnstileToken(null);
+              }}
+              onExpire={() => {
+                setError("Verification expired. Please verify again.");
+                setTurnstileToken(null);
+              }}
+            />
 
             {/* Submit */}
             <Button

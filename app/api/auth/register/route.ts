@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { randomBytes } from "crypto";
 import { getIPInfo, getRealIP } from "@/lib/fraud-check";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 const INSERT_ATTEMPTS = 3;
 const INSERT_RETRY_DELAY_MS = 500;
@@ -117,12 +118,13 @@ async function sendVerificationEmail(email: string, token: string) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { user_id, email, referred_by, accepted_terms, is_google_oauth } = body as {
+  const { user_id, email, referred_by, accepted_terms, is_google_oauth, turnstile_token } = body as {
     user_id: string;
     email: string;
     referred_by?: string;
     accepted_terms?: boolean;
     is_google_oauth?: boolean;
+    turnstile_token?: string;
   };
 
   if (!user_id || !email) {
@@ -130,6 +132,17 @@ export async function POST(request: NextRequest) {
       { error: "user_id and email are required" },
       { status: 400 }
     );
+  }
+
+  // Verify Turnstile token
+  if (!is_google_oauth && turnstile_token) {
+    const isValidToken = await verifyTurnstileToken(turnstile_token);
+    if (!isValidToken) {
+      return NextResponse.json(
+        { error: "Verification failed. Please try again." },
+        { status: 400 }
+      );
+    }
   }
 
   // VPN/Proxy/Tor check at signup
