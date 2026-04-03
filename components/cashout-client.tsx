@@ -16,6 +16,7 @@ import {
   TableRow,
   CircularProgress,
   InputAdornment,
+  IconButton,
 } from "@mui/material";
 import {
   Coins,
@@ -28,6 +29,9 @@ import {
   Clock,
   Check,
   Info,
+  X,
+  AlertTriangle,
+  MessageCircle,
 } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
@@ -61,6 +65,8 @@ interface CashoutClientProps {
   initialTotal: number;
   isBanned?: boolean;
   emailVerified?: boolean;
+  fraudStatus?: string;
+  fraudNotification?: { id: string; message: string } | null;
 }
 
 export default function CashoutClient({
@@ -70,6 +76,8 @@ export default function CashoutClient({
   initialTotal,
   isBanned = false,
   emailVerified = false,
+  fraudStatus = "clean",
+  fraudNotification = null,
 }: CashoutClientProps) {
   const router = useRouter();
   const [coins, setCoins] = useState(initialCoins);
@@ -81,10 +89,28 @@ export default function CashoutClient({
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>(initialWithdrawals);
   const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(0);
+  const [showFraudBanner, setShowFraudBanner] = useState(!!fraudNotification);
+  const [fraudNotifId] = useState(fraudNotification?.id || null);
+  const isFraudBlocked = fraudStatus === "cashout_blocked" || fraudStatus === "suspended";
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const availableUsd = coins / COINS_PER_USD;
   const withdrawUsd = typeof amountCoins === "number" ? amountCoins / COINS_PER_USD : 0;
+
+  async function dismissFraudBanner() {
+    setShowFraudBanner(false);
+    if (fraudNotifId) {
+      try {
+        await fetch("/api/notifications/dismiss", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notificationId: fraudNotifId }),
+        });
+      } catch {
+        // silent
+      }
+    }
+  }
 
   async function fetchPage(newPage: number) {
     const supabase = createClient();
@@ -127,7 +153,13 @@ export default function CashoutClient({
     });
     const body = await res.json();
     if (!res.ok) {
-      setError(body.error || "Withdrawal failed");
+      if (body.fraud) {
+        // Fraud block detected at cashout time - show banner
+        setShowFraudBanner(true);
+        setError(null);
+      } else {
+        setError(body.error || "Withdrawal failed");
+      }
       setLoading(false);
       return;
     }
@@ -142,6 +174,78 @@ export default function CashoutClient({
 
   return (
     <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
+      {/* Fraud Detection Banner */}
+      {(showFraudBanner || isFraudBlocked) && (
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 4,
+            borderRadius: 4,
+            border: "1px solid rgba(245,158,11,0.4)",
+            bgcolor: "rgba(245,158,11,0.06)",
+            p: { xs: 2.5, sm: 3 },
+            position: "relative",
+          }}
+        >
+          <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: 2,
+                bgcolor: "rgba(245,158,11,0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <AlertTriangle size={20} color="#f59e0b" />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#fbbf24", mb: 0.5 }}>
+                Cashouts Paused
+              </Typography>
+              <Typography sx={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>
+                Hey! 👋 We have noticed some unusual activity in your account. As a result, we&apos;ve paused cashouts for now. If this doesn&apos;t seem right, please contact support so we can help clear it up.
+              </Typography>
+              <Box sx={{ mt: 2, display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+                <Button
+                  size="small"
+                  href="/contact"
+                  startIcon={<MessageCircle size={14} />}
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.8rem",
+                    fontWeight: 600,
+                    color: "#f59e0b",
+                    bgcolor: "rgba(245,158,11,0.12)",
+                    border: "1px solid rgba(245,158,11,0.25)",
+                    borderRadius: 2,
+                    px: 2,
+                    "&:hover": { bgcolor: "rgba(245,158,11,0.2)" },
+                  }}
+                >
+                  Message Support
+                </Button>
+              </Box>
+            </Box>
+            {showFraudBanner && (
+              <IconButton
+                size="small"
+                onClick={dismissFraudBanner}
+                sx={{
+                  color: "rgba(245,158,11,0.6)",
+                  "&:hover": { color: "#f59e0b", bgcolor: "rgba(245,158,11,0.1)" },
+                }}
+              >
+                <X size={18} />
+              </IconButton>
+            )}
+          </Box>
+        </Paper>
+      )}
+
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>

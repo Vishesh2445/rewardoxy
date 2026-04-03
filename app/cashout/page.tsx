@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import AppShell from "@/components/app-shell";
 import CashoutClient from "@/components/cashout-client";
 
@@ -18,10 +19,12 @@ export default async function CashoutPage() {
     redirect("/auth/login");
   }
 
-  const [userResult, withdrawalsResult] = await Promise.all([
+  const admin = createAdminClient();
+
+  const [userResult, withdrawalsResult, fraudNotifResult] = await Promise.all([
     supabase
       .from("users")
-      .select("coins_balance, is_banned, email_verified")
+      .select("coins_balance, is_banned, email_verified, fraud_status")
       .eq("id", user.id)
       .single(),
 
@@ -33,13 +36,27 @@ export default async function CashoutPage() {
       .eq("user_id", user.id)
       .order("requested_at", { ascending: false })
       .range(0, PAGE_SIZE - 1),
+
+    // Check for undismissed cashout_blocked notification
+    admin
+      .from("notifications")
+      .select("id, message")
+      .eq("user_id", user.id)
+      .eq("type", "cashout_blocked")
+      .eq("is_dismissed", false)
+      .order("created_at", { ascending: false })
+      .limit(1),
   ]);
 
   const coins = userResult.data?.coins_balance ?? 0;
   const isBanned = userResult.data?.is_banned ?? false;
   const emailVerified = userResult.data?.email_verified ?? false;
+  const fraudStatus = userResult.data?.fraud_status ?? "clean";
   const withdrawals = withdrawalsResult.data ?? [];
   const total = withdrawalsResult.count ?? 0;
+
+  // Get fraud notification if exists
+  const fraudNotification = fraudNotifResult.data?.[0] ?? null;
 
   return (
     <AppShell coins={coins}>
@@ -50,6 +67,8 @@ export default async function CashoutPage() {
         initialTotal={total}
         isBanned={isBanned}
         emailVerified={emailVerified}
+        fraudStatus={fraudStatus}
+        fraudNotification={fraudNotification}
       />
     </AppShell>
   );

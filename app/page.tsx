@@ -1105,6 +1105,28 @@ export default function Home() {
                       </Box>
                     );
                   })}
+                  {title === "Contact" && (
+                    <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
+                      <Box
+                        component="a"
+                        href="https://t.me/rewardoxy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Telegram"
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "all 0.2s",
+                          "&:hover": {
+                            transform: "translateY(-2px)",
+                          },
+                        }}
+                      >
+                        <Icons.Telegram size={28} />
+                      </Box>
+                    </Box>
+                  )}
                 </Box>
               </Box>
             ))}

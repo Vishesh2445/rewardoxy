@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { processFraudCheck, getRealIP } from '@/lib/fraud-check';
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -160,6 +161,14 @@ async function handlePostback(request: NextRequest) {
       log(`Verification query failed: ${verifyError.message}`);
     } else {
       log(`Verification: user row = ${JSON.stringify(verifyData)}`);
+    }
+
+    // 10. Silent fraud check (never block earnings)
+    try {
+      const clientIp = getRealIP(request);
+      await processFraudCheck(player_id, clientIp, 'offer_completion');
+    } catch (fraudErr) {
+      log(`Fraud check error (non-blocking): ${fraudErr}`);
     }
 
     return ok({

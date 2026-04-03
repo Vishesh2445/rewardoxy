@@ -11,7 +11,7 @@ export default async function AdminUsersPage() {
 
   const { data: users, count } = await adminSupabase
     .from("users")
-    .select("id, email, coins_balance, total_earned, role, is_banned, created_at", {
+    .select("id, email, coins_balance, total_earned, role, is_banned, created_at, signup_country, last_seen_country, fraud_status, vpn_detected_count, mismatch_count", {
       count: "exact",
     })
     .order("created_at", { ascending: false })

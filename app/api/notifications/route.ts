@@ -14,11 +14,12 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Fetch targeted notifications for this user
+  // Fetch targeted notifications for this user (exclude dismissed)
   const { data: targeted } = await supabase
     .from("notifications")
-    .select("id, title, message, read, created_at")
+    .select("id, title, message, read, created_at, type, is_dismissed")
     .eq("user_id", user.id)
+    .eq("is_dismissed", false)
     .order("created_at", { ascending: false })
     .limit(30);
 
@@ -53,6 +54,7 @@ export async function GET() {
       read: n.read,
       created_at: n.created_at,
       is_broadcast: false,
+      type: n.type || "general",
     })),
     ...(broadcasts ?? []).map((n) => ({
       id: n.id,

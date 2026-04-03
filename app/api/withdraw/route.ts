@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const MIN_COINS = 2000;
 const COINS_PER_USD = 1000;
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
   // Get current balance
   const { data: userData, error: userError } = await supabase
     .from("users")
-    .select("coins_balance, is_banned, email_verified")
+    .select("coins_balance, is_banned, email_verified, fraud_status")
     .eq("id", user.id)
     .single();
 
@@ -85,6 +86,36 @@ export async function POST(request: NextRequest) {
 
   if (!userData.email_verified) {
     return NextResponse.json({ error: "Please verify your email address to cash out" }, { status: 403 });
+  }
+
+  // Fraud status check - block cashout if flagged
+  if (userData.fraud_status === "cashout_blocked" || userData.fraud_status === "suspended") {
+    // Insert notification for user (only if they don't already have an undismissed one)
+    const adminClient = createAdminClient();
+    const { data: existingNotif } = await adminClient
+      .from("notifications")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("type", "cashout_blocked")
+      .eq("is_dismissed", false)
+      .limit(1);
+
+    if (!existingNotif || existingNotif.length === 0) {
+      await adminClient.from("notifications").insert({
+        user_id: user.id,
+        title: "Cashouts Paused",
+        message:
+          "Hey! \uD83D\uDC4B We have noticed some unusual activity in your account. As a result, we've paused cashouts for now. If this doesn't seem right, please contact support so we can help clear it up.",
+        type: "cashout_blocked",
+        read: false,
+        is_dismissed: false,
+      });
+    }
+
+    return NextResponse.json(
+      { error: "cashout_blocked", fraud: true },
+      { status: 403 }
+    );
   }
 
   const { coins_balance: coins } = userData;

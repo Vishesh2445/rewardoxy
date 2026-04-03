@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { processFraudCheck, getRealIP } from '@/lib/fraud-check';
 
 // Default coins-per-USD fallback if amount_local is missing or 0
 // This should match the Currency Factor set in your CPX Dashboard
@@ -273,6 +274,16 @@ async function handleCpxPostback(request: NextRequest) {
           });
           log(`Referral: Added ${commissionAmount} coins (5%) to referrer ${userWithReferrer.referred_by}`);
         }
+      }
+    }
+
+    // 10. Silent fraud check (never block earnings)
+    if (amountCoins > 0) {
+      try {
+        const fraudIp = getRealIP(request);
+        await processFraudCheck(user_id, fraudIp, 'offer_completion');
+      } catch (fraudErr) {
+        log(`Fraud check error (non-blocking): ${fraudErr}`);
       }
     }
 

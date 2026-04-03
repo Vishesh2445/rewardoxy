@@ -95,6 +95,10 @@ const footerInfoList: { title: string; links: { text: string; url: string; isEma
   },
 ];
 
+const socialLinks = [
+  { icon: "telegram", url: "https://t.me/rewardoxy", label: "Telegram" },
+];
+
 type StyledBottomNavActionProps = {
   isActive?: boolean;
 };
@@ -384,7 +388,7 @@ export default function AppShell({ children, coins }: AppShellProps) {
                         <Box
                           key={text}
                           component={LinkComponent}
-                          href={isEmail ? url : url}
+                          href={url}
                           target={isEmail ? "_blank" : undefined}
                           rel={isEmail ? "noopener noreferrer" : undefined}
                           sx={{
@@ -403,6 +407,31 @@ export default function AppShell({ children, coins }: AppShellProps) {
                         </Box>
                       );
                     })}
+                    {title === "Contact" && (
+                      <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
+                        {socialLinks.map(({ icon, url, label }) => (
+                          <Box
+                            key={icon}
+                            component="a"
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={label}
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              transition: "all 0.2s",
+                              "&:hover": {
+                                transform: "translateY(-2px)",
+                              },
+                            }}
+                          >
+                            <Icons.Telegram size={28} />
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
                   </Box>
                 </Box>
               ))}

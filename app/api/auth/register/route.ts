@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { randomBytes } from "crypto";
+import { getIPInfo, getRealIP } from "@/lib/fraud-check";
 
 const INSERT_ATTEMPTS = 3;
 const INSERT_RETRY_DELAY_MS = 500;
@@ -112,36 +113,7 @@ async function sendVerificationEmail(email: string, token: string) {
   return true;
 }
 
-// Helper function to get country from IP
-async function getCountryFromRequest(request: NextRequest): Promise<string | null> {
-  try {
-    // Get client IP from headers
-    const forwardedFor = request.headers.get("x-forwarded-for");
-    const realIp = request.headers.get("x-real-ip");
-    const ip = forwardedFor?.split(",")[0]?.trim() || realIp || "";
-
-    // Skip localhost
-    if (!ip || ip === "127.0.0.1" || ip === "::1" || ip === "localhost") {
-      return "US"; // Default for localhost
-    }
-
-    // Use free IP geolocation API
-    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,countryCode`, {
-      headers: { "Accept": "application/json" },
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data.status === "success") {
-        return data.countryCode;
-      }
-    }
-    return null;
-  } catch (error) {
-    console.error("Failed to get country from IP:", error);
-    return null;
-  }
-}
+// VPN/country check at signup using fraud-check utility
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -160,12 +132,30 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // VPN/Proxy/Tor check at signup
+  const clientIp = getRealIP(request);
+  const ipInfo = await getIPInfo(clientIp);
+
+  if (ipInfo.isVPN || ipInfo.isProxy || ipInfo.isTor) {
+    // Block account creation - delete the auth user that was just created
+    const adminForCleanup = createAdminClient();
+    try {
+      await adminForCleanup.auth.admin.deleteUser(user_id);
+    } catch (e) {
+      console.error("Failed to cleanup auth user after VPN block:", e);
+    }
+    return NextResponse.json(
+      { error: "Please turn off your VPN or proxy to create an account on Rewardoxy." },
+      { status: 403 }
+    );
+  }
+
   const referral_code = randomBytes(4).toString("hex"); // 8-char alphanumeric
 
   const admin = createAdminClient();
 
-  // Get country from IP
-  const country = await getCountryFromRequest(request);
+  // Country from the VPN check we already did
+  const country = ipInfo.country || null;
 
   // Validate referred_by: must be a real user's referral_code
   let referred_by_id: string | null = null;
@@ -200,6 +190,8 @@ export async function POST(request: NextRequest) {
         accepted_terms: accepted_terms ?? false,
         accepted_at: accepted_terms ? new Date().toISOString() : null,
         country: country,
+        signup_country: country,
+        signup_ip: clientIp,
       });
 
       if (!error) {

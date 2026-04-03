@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { randomBytes } from "crypto";
+import { getIPInfo, getRealIP } from "@/lib/fraud-check";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const ref = searchParams.get("ref");
@@ -31,6 +32,23 @@ export async function GET(request: Request) {
           .single();
 
         if (!existing) {
+          // VPN/Proxy/Tor check for new OAuth users
+          const clientIp = getRealIP(request);
+          const ipInfo = await getIPInfo(clientIp);
+
+          if (ipInfo.isVPN || ipInfo.isProxy || ipInfo.isTor) {
+            // Block: sign out and redirect with error
+            await supabase.auth.signOut();
+            try {
+              await admin.auth.admin.deleteUser(user.id);
+            } catch (e) {
+              console.error("Failed to cleanup auth user after VPN block:", e);
+            }
+            return NextResponse.redirect(
+              `${origin}/auth/signup?error=${encodeURIComponent("Please turn off your VPN or proxy to create an account on Rewardoxy.")}`
+            );
+          }
+
           let referred_by_id: string | null = null;
           if (ref) {
             const { data: referrer } = await admin
@@ -48,9 +66,12 @@ export async function GET(request: Request) {
             email: user.email,
             referral_code: randomBytes(4).toString("hex"),
             referred_by: referred_by_id,
-            email_verified: true, // Google OAuth users are already verified
+            email_verified: true,
             accepted_terms: termsAccepted,
             accepted_at: termsAccepted ? new Date().toISOString() : null,
+            country: ipInfo.country || null,
+            signup_country: ipInfo.country || null,
+            signup_ip: clientIp,
           });
 
           // Create referral record if user was referred
