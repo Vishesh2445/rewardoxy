@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
   // Get current balance
   const { data: userData, error: userError } = await supabase
     .from("users")
-    .select("coins_balance, is_banned, email_verified, fraud_status")
+    .select("coins_balance, is_banned, email_verified, fraud_status, vpn_detected_count, mismatch_count")
     .eq("id", user.id)
     .single();
 
@@ -88,8 +88,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Please verify your email address to cash out" }, { status: 403 });
   }
 
+  const hasExistingFraudHits =
+    (userData.vpn_detected_count || 0) > 0 ||
+    (userData.mismatch_count || 0) > 0;
+
+  if (hasExistingFraudHits && userData.fraud_status !== "cashout_blocked") {
+    const adminClient = createAdminClient();
+    await adminClient
+      .from("users")
+      .update({ fraud_status: "cashout_blocked" })
+      .eq("id", user.id);
+  }
+
   // Fraud status check - block cashout if flagged
-  if (userData.fraud_status === "cashout_blocked" || userData.fraud_status === "suspended") {
+  if (userData.fraud_status === "cashout_blocked" || userData.fraud_status === "suspended" || hasExistingFraudHits) {
     // Insert notification for user (only if they don't already have an undismissed one)
     const adminClient = createAdminClient();
     const { data: existingNotif } = await adminClient

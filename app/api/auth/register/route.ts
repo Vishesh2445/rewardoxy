@@ -155,7 +155,27 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient();
 
   // Country from the VPN check we already did
-  const country = ipInfo.country || null;
+  let country = ipInfo.country;
+
+  // If country detection failed, try the fallback get-country API
+  if (!country && clientIp !== "127.0.0.1") {
+    try {
+      const countryRes = await fetch(
+        `https://${request.headers.get("host") || "rewardoxy.app"}/api/get-country`,
+        {
+          headers: {
+            "x-forwarded-for": clientIp,
+          },
+        }
+      );
+      if (countryRes.ok) {
+        const countryData = await countryRes.json();
+        country = countryData.country || null;
+      }
+    } catch (err) {
+      console.error("Failed to get country from fallback API:", err);
+    }
+  }
 
   // Validate referred_by: must be a real user's referral_code
   let referred_by_id: string | null = null;

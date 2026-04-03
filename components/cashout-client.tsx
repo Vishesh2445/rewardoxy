@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -92,6 +92,16 @@ export default function CashoutClient({
   const [showFraudBanner, setShowFraudBanner] = useState(!!fraudNotification);
   const [fraudNotifId] = useState(fraudNotification?.id || null);
   const isFraudBlocked = fraudStatus === "cashout_blocked" || fraudStatus === "suspended";
+
+  useEffect(() => {
+    // Fire-and-forget page-view fraud check; this should never interrupt UX.
+    fetch("/api/cashout/page-view-fraud-check", {
+      method: "POST",
+      credentials: "same-origin",
+    }).catch(() => {
+      // silent
+    });
+  }, []);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const availableUsd = coins / COINS_PER_USD;

@@ -1,14 +1,14 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
 interface IPInfo {
-  country: string;
+  country: string | null;
   isVPN: boolean;
   isProxy: boolean;
   isTor: boolean;
 }
 
 /**
- * Get IP info from vpnapi.io with fallback to ipapi.co
+ * Get IP info from vpnapi.io with fallback to ipapi.co and ipinfo.io
  */
 export async function getIPInfo(ip: string): Promise<IPInfo> {
   const apiKey = process.env.VPNAPI_KEY;
@@ -27,7 +27,7 @@ export async function getIPInfo(ip: string): Promise<IPInfo> {
       if (res.ok) {
         const data = await res.json();
         return {
-          country: data?.location?.country_code || "UNKNOWN",
+          country: data?.location?.country_code || null,
           isVPN: data?.security?.vpn === true,
           isProxy: data?.security?.proxy === true,
           isTor: data?.security?.tor === true,
@@ -38,25 +38,47 @@ export async function getIPInfo(ip: string): Promise<IPInfo> {
     }
   }
 
-  // Fallback: ipapi.co
+  // Fallback 1: ipapi.co
   try {
     const res = await fetch(`https://ipapi.co/${ip}/json/`, {
       signal: AbortSignal.timeout(8000),
     });
     if (res.ok) {
       const data = await res.json();
-      return {
-        country: data?.country_code || "UNKNOWN",
-        isVPN: false,
-        isProxy: false,
-        isTor: false,
-      };
+      if (data?.country_code) {
+        return {
+          country: data.country_code,
+          isVPN: false,
+          isProxy: false,
+          isTor: false,
+        };
+      }
     }
   } catch (err) {
-    console.error("[fraud-check] ipapi.co fallback also failed:", err);
+    console.error("[fraud-check] ipapi.co fallback failed:", err);
   }
 
-  return { country: "UNKNOWN", isVPN: false, isProxy: false, isTor: false };
+  // Fallback 2: ipinfo.io (free tier)
+  try {
+    const res = await fetch(`https://ipinfo.io/${ip}?token=${process.env.IPINFO_TOKEN || ""}`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.country) {
+        return {
+          country: data.country,
+          isVPN: false,
+          isProxy: false,
+          isTor: false,
+        };
+      }
+    }
+  } catch (err) {
+    console.error("[fraud-check] ipinfo.io fallback also failed:", err);
+  }
+
+  return { country: null, isVPN: false, isProxy: false, isTor: false };
 }
 
 /**
@@ -84,18 +106,32 @@ export async function processFraudCheck(
 ): Promise<{ isFraud: boolean; reason: "vpn" | "mismatch" | null }> {
   try {
     const admin = createAdminClient();
-    const ipInfo = await getIPInfo(ip);
-
-    // Get user's signup_country
+    // Check user fraud state first so we can skip external VPN lookups for blocked users.
     const { data: userData } = await admin
       .from("users")
-      .select("signup_country")
+      .select("signup_country, fraud_status, vpn_detected_count, mismatch_count")
       .eq("id", userId)
       .single();
 
     if (!userData) {
       return { isFraud: false, reason: null };
     }
+
+    const hasExistingFraudHits =
+      (userData.vpn_detected_count || 0) > 0 ||
+      (userData.mismatch_count || 0) > 0;
+
+    if (userData.fraud_status === "cashout_blocked" || hasExistingFraudHits) {
+      if (userData.fraud_status !== "cashout_blocked") {
+        await admin
+          .from("users")
+          .update({ fraud_status: "cashout_blocked" })
+          .eq("id", userId);
+      }
+      return { isFraud: true, reason: null };
+    }
+
+    const ipInfo = await getIPInfo(ip);
 
     const signupCountry = userData.signup_country;
     const detectedCountry = ipInfo.country;
@@ -157,7 +193,6 @@ export async function processFraudCheck(
     if (
       signupCountry &&
       detectedCountry &&
-      detectedCountry !== "UNKNOWN" &&
       signupCountry !== detectedCountry
     ) {
       const { data: current } = await admin
