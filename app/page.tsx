@@ -48,6 +48,7 @@ import Icons from "@/components/icons";
 import Typography from "@/components/ui/Typography";
 import OfferwallModal from "@/components/offerwall-modal";
 import { createClient } from "@/lib/supabase/client";
+import Turnstile from "@/components/turnstile";
 
 const colors = {
   bgPage: "#141523",
@@ -108,6 +109,7 @@ export default function Home() {
   const [signupError, setSignupError] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [referralCode, setReferralCode] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -122,6 +124,11 @@ export default function Home() {
     if (!acceptedTerms) {
       setSignupError("You must accept the Terms of Service and Privacy Policy to continue");
       setSignupLoading(false);
+      return;
+    }
+
+    if (!turnstileToken) {
+      setSignupError("Please complete the verification");
       return;
     }
 
@@ -148,6 +155,7 @@ export default function Home() {
           accepted_terms: true,
           is_google_oauth: false,
           referred_by: referralCode || undefined,
+          turnstile_token: turnstileToken,
         }),
       });
 
@@ -562,6 +570,19 @@ export default function Home() {
                         </Typography>
                       }
                       sx={{ alignItems: "flex-start", mt: 1 }}
+                    />
+
+                    {/* Turnstile Verification */}
+                    <Turnstile
+                      onVerify={(token) => setTurnstileToken(token)}
+                      onError={() => {
+                        setSignupError("Verification failed. Please try again.");
+                        setTurnstileToken(null);
+                      }}
+                      onExpire={() => {
+                        setSignupError("Verification expired. Please verify again.");
+                        setTurnstileToken(null);
+                      }}
                     />
 
                     <Button
