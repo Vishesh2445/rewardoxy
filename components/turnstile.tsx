@@ -16,65 +16,74 @@ export default function Turnstile({
 }: TurnstileProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
-  const renderAttempted = useRef(false);
   const uniqueId = useId();
   const containerId = `turnstile-container-${uniqueId.replace(/:/g, "")}`;
 
+  // Store callbacks in refs to avoid re-renders triggering effect
+  const onVerifyRef = useRef(onVerify);
+  const onErrorRef = useRef(onError);
+  const onExpireRef = useRef(onExpire);
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    onVerifyRef.current = onVerify;
+    onErrorRef.current = onError;
+    onExpireRef.current = onExpire;
+  }, [onVerify, onError, onExpire]);
+
   useEffect(() => {
     const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    let checkInterval: NodeJS.Timeout | null = null;
+    let mounted = true;
 
     const renderWidget = () => {
       if (
-        typeof window !== "undefined" &&
-        window.turnstile &&
-        containerRef.current &&
-        !widgetIdRef.current &&
-        !renderAttempted.current &&
-        siteKey
+        !mounted ||
+        typeof window === "undefined" ||
+        !window.turnstile ||
+        !containerRef.current ||
+        widgetIdRef.current ||
+        !siteKey
       ) {
-        renderAttempted.current = true;
-        // Clear any existing content in the container
-        containerRef.current.innerHTML = "";
+        return;
+      }
 
-        try {
-          const id = window.turnstile.render(containerRef.current, {
-            sitekey: siteKey,
-            theme: "dark",
-            callback: (token: string) => onVerify(token),
-            "error-callback": onError,
-            "expired-callback": onExpire,
-          });
-          widgetIdRef.current = id;
-        } catch {
-          // Widget might already exist, ignore error
-          renderAttempted.current = false;
-        }
+      try {
+        const id = window.turnstile.render(containerRef.current, {
+          sitekey: siteKey,
+          theme: "dark",
+          callback: (token: string) => onVerifyRef.current(token),
+          "error-callback": () => onErrorRef.current?.(),
+          "expired-callback": () => onExpireRef.current?.(),
+        });
+        widgetIdRef.current = id;
+      } catch {
+        // Widget might already exist, ignore error
       }
     };
 
-    // Try to render immediately
-    renderWidget();
-
-    // If turnstile isn't loaded yet, wait for it
-    if (!window.turnstile) {
-      const checkInterval = setInterval(() => {
-        if (window.turnstile) {
-          clearInterval(checkInterval);
+    // Try to render immediately if turnstile is available
+    if (window.turnstile) {
+      renderWidget();
+    } else {
+      // Wait for turnstile script to load
+      checkInterval = setInterval(() => {
+        if (window.turnstile && mounted) {
+          if (checkInterval) clearInterval(checkInterval);
           renderWidget();
         }
       }, 100);
 
-      // Clean up interval after 10 seconds
-      const timeout = setTimeout(() => clearInterval(checkInterval), 10000);
-
-      return () => {
-        clearInterval(checkInterval);
-        clearTimeout(timeout);
-      };
+      // Stop checking after 10 seconds
+      setTimeout(() => {
+        if (checkInterval) clearInterval(checkInterval);
+      }, 10000);
     }
 
-    // Cleanup on unmount
+    // Cleanup on unmount only
     return () => {
+      mounted = false;
+      if (checkInterval) clearInterval(checkInterval);
       if (widgetIdRef.current && window.turnstile) {
         try {
           window.turnstile.remove(widgetIdRef.current);
@@ -82,10 +91,9 @@ export default function Turnstile({
           // Widget might already be removed
         }
         widgetIdRef.current = null;
-        renderAttempted.current = false;
       }
     };
-  }, [onVerify, onError, onExpire]);
+  }, []); // Empty dependency array - only run once on mount
 
   return (
     <Box
