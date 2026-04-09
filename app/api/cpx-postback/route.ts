@@ -1,3 +1,42 @@
+/**
+ * CPX Research Postback Handler (S2S)
+ * 
+ * This endpoint receives postback notifications from CPX Research when users complete surveys,
+ * get screened out with bonuses, or when transactions are reversed.
+ * 
+ * IMPORTANT: Configure this URL in CPX Research Dashboard → Apps → Edit → Postback Settings
+ * 
+ * Correct Postback URL Format:
+ * https://rewardoxy.app/api/cpx-postback?userid={user_id}&transid={trans_id}&amountlocal={amount_local}&amountusd={amount_usd}&status={status}&hash={secure_hash}&type={type}&subid1={subid_1}&subid2={subid_2}&offerid={offer_ID}&ipclick={ip_click}
+ * 
+ * Parameter Mapping (CPX placeholder → query param):
+ * - {user_id} → userid (MANDATORY)
+ * - {amount_local} → amountlocal (MANDATORY)
+ * - {amount_usd} → amountusd (MANDATORY)
+ * - {trans_id} → transid (recommended)
+ * - {status} → status (recommended: 1=completed, 2=reversed)
+ * - {secure_hash} → hash (recommended: MD5 hash for verification)
+ * - {type} → type (optional: 'complete', 'out', 'bonus')
+ * - {subid_1} → subid1 (optional)
+ * - {subid_2} → subid2 (optional)
+ * - {offer_ID} → offerid (optional)
+ * - {ip_click} → ipclick (optional)
+ * 
+ * Event Types:
+ * - type=complete, status=1: User completed survey → credit full amount
+ * - type=complete, status=2: Survey reversed → check reversal rate before deducting
+ * - type=out, status=1, amount>0: Screen-out with bonus (0.01-0.05 USD) → credit full amount
+ * - type=out, status=1, amount=0: Normal screen-out → no credit
+ * - type=bonus, status=1: Survey rating bonus (+0.01 USD) → credit full amount
+ * 
+ * Security:
+ * - Hash verification: MD5(transid + "-" + CPX_SECRET_HASH)
+ * - Duplicate prevention: Check transid + status=1 before crediting
+ * - Reversal protection: Only deduct if user's reversal rate >= 5%
+ * 
+ * CRITICAL: Always return HTTP 200, even for errors, to prevent CPX retry storms
+ */
+
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
@@ -37,38 +76,39 @@ async function handleCpxPostback(request: NextRequest) {
     log(`All query params: ${JSON.stringify(allParams)}`);
 
     // ── 1. Extract CPX Research parameters ───────────────────────────────
-    // Parameter names match CPX Research dashboard placeholders exactly
-    const user_id = url.searchParams.get('user_id');           // MANDATORY: {user_id}
-    const amount_local = url.searchParams.get('amount_local'); // MANDATORY: {amount_local}
-    const amount_usd = url.searchParams.get('amount_usd');     // MANDATORY: {amount_usd}
+    // Parameter names match CPX Research specification exactly
+    const userid = url.searchParams.get('userid');             // MANDATORY: {user_id}
+    const amountlocal = url.searchParams.get('amountlocal');   // MANDATORY: {amount_local}
+    const amountusd = url.searchParams.get('amountusd');       // MANDATORY: {amount_usd}
     const status = url.searchParams.get('status');             // recommended: {status} - 1 = completed, 2 = canceled
-    const trans_id = url.searchParams.get('trans_id');         // recommended: {trans_id} - Unique transaction ID
+    const transid = url.searchParams.get('transid');           // recommended: {trans_id} - Unique transaction ID
     const hash = url.searchParams.get('hash');                 // recommended: {secure_hash} - MD5 hash for verification
     const type = url.searchParams.get('type');                 // optional: {type} - 'complete', 'out', 'bonus'
-    const subid1 = url.searchParams.get('sub_id');             // optional: {subid_1} - Sub-identifier
-    const subid2 = url.searchParams.get('sub_id_2');           // optional: {subid_2} - Sub-identifier
-    const offer_id = url.searchParams.get('offer_id');         // optional: {offer_ID} - Survey/offer ID
-    const ip_click = url.searchParams.get('ip_click');         // optional: {ip_click} - User's IP at click time
+    const subid1 = url.searchParams.get('subid1');             // optional: {subid_1} - Sub-identifier
+    const subid2 = url.searchParams.get('subid2');             // optional: {subid_2} - Sub-identifier
+    const offerid = url.searchParams.get('offerid');           // optional: {offer_ID} - Survey/offer ID
+    const ipclick = url.searchParams.get('ipclick');           // optional: {ip_click} - User's IP at click time
 
-    log(`Parsed: user_id=${user_id}, trans_id=${trans_id}, amount_local=${amount_local}, amount_usd=${amount_usd}, status=${status}, type=${type}, hash=${hash}`);
+    log(`Parsed: userid=${userid}, transid=${transid}, amountlocal=${amountlocal}, amountusd=${amountusd}, status=${status}, type=${type}, hash=${hash}`);
 
     // ── 2. Validate minimum required parameters ─────────────────────────
-    if (!user_id || !trans_id || amount_local === null || amount_usd === null) {
-      log(`Missing required params: user_id=${user_id}, trans_id=${trans_id}, amount_local=${amount_local}, amount_usd=${amount_usd}`);
+    if (!userid || !transid || amountlocal === null || amountusd === null) {
+      log(`Missing required params: userid=${userid}, transid=${transid}, amountlocal=${amountlocal}, amountusd=${amountusd}`);
       // ALWAYS return 200 to prevent CPX retry storms
       return ok('missing_params');
     }
 
     // ── 3. Hash Verification (Security — MUST implement) ─────────────────
-    const CPX_SECURE_HASH = process.env.CPX_SECURE_HASH;
+    // Note: Use CPX_SECRET_HASH in production (currently using CPX_SECURE_HASH for backward compatibility)
+    const CPX_SECRET_HASH = process.env.CPX_SECRET_HASH || process.env.CPX_SECURE_HASH;
 
     if (hash && hash.trim() !== '') {
-      if (!CPX_SECURE_HASH) {
-        log('WARNING: CPX_SECURE_HASH env var is not set — cannot validate hash');
+      if (!CPX_SECRET_HASH) {
+        log('WARNING: CPX_SECRET_HASH env var is not set — cannot validate hash');
       } else {
-        const expectedHash = crypto.createHash('md5').update(`${trans_id}-${CPX_SECURE_HASH}`).digest('hex');
+        const expectedHash = crypto.createHash('md5').update(`${transid}-${CPX_SECRET_HASH}`).digest('hex');
         if (hash !== expectedHash) {
-          log(`HASH MISMATCH: trans_id=${trans_id}, received="${hash}", expected="${expectedHash}"`);
+          log(`HASH MISMATCH: transid=${transid}, received="${hash}", expected="${expectedHash}"`);
           // Do NOT credit user, but return 200 to prevent retry storms
           return ok('hash_mismatch');
         }
@@ -79,22 +119,22 @@ async function handleCpxPostback(request: NextRequest) {
     }
 
     // ── 4. Parse amounts ─────────────────────────────────────────────────
-    const amount = parseFloat(amount_local || '0');
-    const amountUsd = parseFloat(amount_usd || '0');
+    const amount = parseFloat(amountlocal || '0');
+    const amountUsd = parseFloat(amountusd || '0');
     const statusInt = parseInt(status || '1');
 
-    log(`Parsed amounts: amount_local=${amount}, amount_usd=${amountUsd}, status=${statusInt}, type=${type}`);
+    log(`Parsed amounts: amountlocal=${amount}, amountusd=${amountUsd}, status=${statusInt}, type=${type}`);
 
     // ── 5. Initialize Supabase ───────────────────────────────────────────
     const supabase = getSupabase();
 
     // ── 6. Handle COMPLETION (status=1) ──────────────────────────────────
     if (statusInt === 1) {
-      // Check for duplicate (same trans_id AND status=1)
+      // Check for duplicate (same transid AND status=1)
       const { data: existing, error: checkError } = await supabase
         .from('cpx_transactions')
         .select('id')
-        .eq('transid', trans_id)
+        .eq('transid', transid)
         .eq('status', 1)
         .limit(1);
 
@@ -103,16 +143,16 @@ async function handleCpxPostback(request: NextRequest) {
       }
 
       if (existing && existing.length > 0) {
-        log(`DUPLICATE IGNORED: trans_id=${trans_id} already processed with status=1`);
+        log(`DUPLICATE IGNORED: transid=${transid} already processed with status=1`);
         return ok('duplicate_ignored');
       }
 
       // Credit user if amount > 0
       if (amount > 0) {
-        log(`Crediting user: user_id=${user_id}, amount=${amount}`);
+        log(`Crediting user: userid=${userid}, amount=${amount}`);
 
         const { error: creditError } = await supabase.rpc('add_user_points', {
-          p_userid: user_id,
+          p_userid: userid,
           p_amount: amount
         });
 
@@ -120,7 +160,7 @@ async function handleCpxPostback(request: NextRequest) {
           log(`Credit RPC failed: ${creditError.message}`);
           // Still log the transaction even if credit fails
         } else {
-          log(`SUCCESS: Credited ${amount} to user ${user_id}`);
+          log(`SUCCESS: Credited ${amount} to user ${userid}`);
         }
       } else {
         log(`Amount is 0, skipping credit (type=${type})`);
@@ -128,16 +168,16 @@ async function handleCpxPostback(request: NextRequest) {
 
       // Log transaction
       const { error: insertError } = await supabase.from('cpx_transactions').insert({
-        transid: trans_id,
-        userid: user_id,
+        transid: transid,
+        userid: userid,
         amount_local: amount,
         amount_usd: amountUsd,
         status: 1,
         type,
         subid1,
         subid2,
-        offerid: offer_id,
-        ipclick: ip_click,
+        offerid: offerid,
+        ipclick: ipclick,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
@@ -147,19 +187,19 @@ async function handleCpxPostback(request: NextRequest) {
         return ok('insert_failed');
       }
 
-      log(`Transaction logged: trans_id=${trans_id}, status=1`);
+      log(`Transaction logged: transid=${transid}, status=1`);
       return ok('OK');
     }
 
     // ── 7. Handle REVERSAL (status=2) ────────────────────────────────────
     if (statusInt === 2) {
-      log(`REVERSAL: trans_id=${trans_id}, user_id=${user_id}, amount=${amount}`);
+      log(`REVERSAL: transid=${transid}, userid=${userid}, amount=${amount}`);
 
       // Find the original completed transaction
       const { data: original, error: findError } = await supabase
         .from('cpx_transactions')
         .select('*')
-        .eq('transid', trans_id)
+        .eq('transid', transid)
         .eq('status', 1)
         .limit(1);
 
@@ -168,7 +208,7 @@ async function handleCpxPostback(request: NextRequest) {
       }
 
       if (!original || original.length === 0) {
-        log(`REVERSAL NO ORIGINAL: trans_id=${trans_id} not found with status=1`);
+        log(`REVERSAL NO ORIGINAL: transid=${transid} not found with status=1`);
         return ok('reversal_no_original');
       }
 
@@ -176,13 +216,13 @@ async function handleCpxPostback(request: NextRequest) {
       const { data: userCompletions } = await supabase
         .from('cpx_transactions')
         .select('id')
-        .eq('userid', user_id)
+        .eq('userid', userid)
         .eq('status', 1);
 
       const { data: userReversals } = await supabase
         .from('cpx_transactions')
         .select('id')
-        .eq('userid', user_id)
+        .eq('userid', userid)
         .eq('status', 2);
 
       const completionCount = userCompletions?.length || 0;
@@ -196,14 +236,14 @@ async function handleCpxPostback(request: NextRequest) {
         log(`Deducting points: reversal rate ${(reversalRate * 100).toFixed(2)}% >= 5%`);
 
         const { error: deductError } = await supabase.rpc('deduct_user_points', {
-          p_userid: user_id,
+          p_userid: userid,
           p_amount: amount
         });
 
         if (deductError) {
           log(`Deduct RPC failed: ${deductError.message}`);
         } else {
-          log(`SUCCESS: Deducted ${amount} from user ${user_id}`);
+          log(`SUCCESS: Deducted ${amount} from user ${userid}`);
         }
       } else {
         if (reversalRate < 0.05) {
@@ -220,7 +260,7 @@ async function handleCpxPostback(request: NextRequest) {
           status: 2,
           updated_at: new Date().toISOString()
         })
-        .eq('transid', trans_id)
+        .eq('transid', transid)
         .eq('status', 1);
 
       if (updateError) {
@@ -228,7 +268,7 @@ async function handleCpxPostback(request: NextRequest) {
         return ok('update_failed');
       }
 
-      log(`REVERSAL PROCESSED: trans_id=${trans_id} updated to status=2`);
+      log(`REVERSAL PROCESSED: transid=${transid} updated to status=2`);
       return ok('OK');
     }
 
