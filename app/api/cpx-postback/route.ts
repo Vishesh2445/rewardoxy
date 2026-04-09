@@ -217,21 +217,17 @@ async function handleCpxPostback(request: NextRequest) {
       // ═══════════════════════════════════════════════════════════════════
       log(`REVERSAL: transid=${transid}, userid=${userid}, amount=${amount}`);
 
-      // Check if this reversal was already processed
+      // Check if this exact reversal was already processed (same transid with status=2)
       const { data: existingReversal } = await supabase
         .from('cpx_transactions')
-        .select('id, status')
+        .select('id')
         .eq('transid', transid)
+        .eq('status', 2)
         .limit(1);
 
       if (existingReversal && existingReversal.length > 0) {
-        if (existingReversal[0].status === 2) {
-          log(`REVERSAL ALREADY PROCESSED: transid=${transid} already has status=2`);
-          return ok('reversal_already_processed');
-        }
-      } else {
-        log(`REVERSAL NO ORIGINAL: transid=${transid} not found in database`);
-        return ok('reversal_no_original');
+        log(`REVERSAL ALREADY PROCESSED: transid=${transid} already exists with status=2`);
+        return ok('reversal_already_processed');
       }
 
       // Get user's current balance BEFORE deduction for logging
@@ -243,8 +239,9 @@ async function handleCpxPostback(request: NextRequest) {
 
       log(`User balance BEFORE reversal: coins=${userData?.coins_balance || 0}, total_earned=${userData?.total_earned || 0}`);
 
-      // ALWAYS deduct on reversals (removed reversal rate protection)
-      // The reversal rate check was flawed because it counted reversals BEFORE logging this one
+      // ALWAYS deduct on reversals
+      // Note: CPX sends reversals with DIFFERENT transids than the original completion
+      // So we can't match by transid - we just deduct the amount
       if (amount > 0) {
         log(`Deducting ${amount} coins from user ${userid}`);
 
@@ -272,22 +269,28 @@ async function handleCpxPostback(request: NextRequest) {
         log(`NOT deducting: amount is 0`);
       }
 
-      // Update transaction status to 2 (reversed)
-      const { error: updateError } = await supabase
-        .from('cpx_transactions')
-        .update({
-          status: 2,
-          updated_at: new Date().toISOString()
-        })
-        .eq('transid', transid)
-        .eq('status', 1);
+      // INSERT new transaction with status=2 (CPX uses different transids for reversals)
+      const { error: insertError } = await supabase.from('cpx_transactions').insert({
+        transid: transid,
+        userid: userid,
+        amount_local: amount,
+        amount_usd: amountUsd,
+        status: 2,
+        type,
+        subid1,
+        subid2,
+        offerid: offerid,
+        ipclick: ipclick,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
 
-      if (updateError) {
-        log(`Transaction update failed: ${updateError.message}`);
-        return ok('update_failed');
+      if (insertError) {
+        log(`Reversal transaction insert failed: ${insertError.message}`);
+        return ok('insert_failed');
       }
 
-      log(`REVERSAL PROCESSED: transid=${transid} updated to status=2`);
+      log(`REVERSAL PROCESSED: transid=${transid} logged with status=2`);
       return ok('OK');
     } else {
       // ═══════════════════════════════════════════════════════════════════
