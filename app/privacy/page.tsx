@@ -13,6 +13,9 @@ const colors = {
 
 export const metadata = {
   title: "Privacy Policy - Rewardoxy",
+  alternates: {
+    canonical: "https://rewardoxy.app/privacy",
+  },
 };
 
 export default function PrivacyPage() {

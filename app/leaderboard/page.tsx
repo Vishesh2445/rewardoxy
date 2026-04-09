@@ -13,8 +13,15 @@ import {
 import { Clock, Trophy, Medal, Coins } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "https://rewardoxy.app/leaderboard",
+  },
+};
 
 const PODIUM_STYLES = [
   {

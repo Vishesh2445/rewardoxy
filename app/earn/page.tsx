@@ -3,8 +3,15 @@ import { createClient } from "@/lib/supabase/server";
 import AppShell from "@/components/app-shell";
 import EarnContent from "@/components/earn-content";
 import crypto from "crypto";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "https://rewardoxy.app/earn",
+  },
+};
 
 export default async function OffersPage() {
   const supabase = await createClient();

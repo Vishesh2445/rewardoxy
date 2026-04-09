@@ -13,6 +13,9 @@ const colors = {
 
 export const metadata = {
   title: "Terms of Service - Rewardoxy",
+  alternates: {
+    canonical: "https://rewardoxy.app/terms",
+  },
 };
 
 export default function TermsPage() {

@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   },
   manifest: "/site.webmanifest",
   metadataBase: new URL("https://rewardoxy.app"),
+  alternates: {
+    canonical: "https://rewardoxy.app",
+  },
   robots: {
     index: true,
     follow: true,

@@ -2,8 +2,15 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppShell from "@/components/app-shell";
 import ReferralsClient from "@/components/referrals-client";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "https://rewardoxy.app/referrals",
+  },
+};
 
 function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
