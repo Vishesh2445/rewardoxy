@@ -134,12 +134,14 @@ async function handleCpxPostback(request: NextRequest) {
       // ═══════════════════════════════════════════════════════════════════
       // COMPLETION HANDLER (status=1)
       // ═══════════════════════════════════════════════════════════════════
-      // Check for duplicate (same transid with ANY status)
-      // This prevents re-crediting if CPX sends the same transid again
+      // Check for duplicate (same transid with status=1)
+      // Note: We only check for status=1 duplicates here because status=2 
+      // (reversals) should be handled by the reversal handler
       const { data: existing, error: checkError } = await supabase
         .from('cpx_transactions')
         .select('id, status')
         .eq('transid', transid)
+        .eq('status', 1)  // Only check for existing completions
         .limit(1);
 
       if (checkError) {
@@ -147,7 +149,7 @@ async function handleCpxPostback(request: NextRequest) {
       }
 
       if (existing && existing.length > 0) {
-        log(`DUPLICATE IGNORED: transid=${transid} already exists with status=${existing[0].status}`);
+        log(`DUPLICATE COMPLETION IGNORED: transid=${transid} already processed with status=1`);
         return ok('duplicate_ignored');
       }
 

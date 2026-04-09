@@ -330,23 +330,26 @@ if (amount > 0) {
 2. **Strengthened Duplicate Check:**
 ```typescript
 // NEW CODE (FIXED):
-// Check for duplicate (same transid with ANY status)
+// Check for duplicate (same transid with status=1)
+// Note: We only check for status=1 duplicates here because status=2 
+// (reversals) should be handled by the reversal handler
 const { data: existing } = await supabase
   .from('cpx_transactions')
   .select('id, status')
   .eq('transid', transid)
+  .eq('status', 1)  // Only check for existing completions
   .limit(1);
 
 if (existing && existing.length > 0) {
-  log(`DUPLICATE IGNORED: transid=${transid} already exists with status=${existing[0].status}`);
+  log(`DUPLICATE COMPLETION IGNORED: transid=${transid} already processed with status=1`);
   return ok('duplicate_ignored');
 }
 ```
 
 **Why this works:**
-- Blocks ANY duplicate transid, regardless of status
-- Prevents re-crediting if CPX sends the same transid multiple times
-- Prevents processing if transid already exists (even if status changed)
+- Blocks duplicate completions (same transid with status=1)
+- Does NOT block reversals (transid with status=2) - they go to the reversal handler
+- Allows the two-postback sequence: completion (status=1) → reversal (status=2)
 
 3. **Made Handlers Mutually Exclusive:**
 ```typescript
@@ -402,24 +405,40 @@ log(`User balance AFTER: coins=${userAfter?.coins_balance}, total_earned=${userA
 
 **Expected Behavior (Fresh Account):**
 ```
-1. Completion: transid=123, status=1, amount=700
+TWO-POSTBACK SEQUENCE (Same transid):
+
+1. First Postback - Completion: transid=123, status=1, amount=700
+   → Goes to COMPLETION handler (statusInt === 1)
+   → Checks for duplicate with status=1 → Not found
    → coins_balance: 0→700
    → total_earned: 0→700
    → cpx_transactions: INSERT (transid=123, status=1)
 
-2. Reversal: transid=123, status=2, amount=700
+2. Second Postback - Reversal: transid=123, status=2, amount=700
+   → Goes to REVERSAL handler (statusInt === 2) via else-if
+   → Finds existing transaction with transid=123, status=1
    → coins_balance: 700→0 (SUBTRACT 700)
    → total_earned: 700→700 (UNCHANGED)
    → cpx_transactions: UPDATE (transid=123, status=1→2)
 
 3. Duplicate Completion: transid=123, status=1, amount=700
+   → Goes to COMPLETION handler
+   → Checks for duplicate with status=1 → FOUND!
    → BLOCKED: "duplicate_ignored"
    → No changes to balance or database
 
 4. Duplicate Reversal: transid=123, status=2, amount=700
+   → Goes to REVERSAL handler
+   → Finds transaction with status=2 → Already processed!
    → BLOCKED: "reversal_already_processed"
    → No changes to balance or database
 ```
+
+**Profile Page Display After Reversal:**
+- **Balance**: 0 ✅ (from coins_balance)
+- **Total Earned**: 700 ✅ (from total_earned, never decreases)
+- **This Month**: 0 ✅ (calculated as: +700 for status=1, -700 for status=2 = 0)
+- **Completed Offers**: 1 ✅ (only counts status=1 transactions)
 
 **Database Function Verified:**
 ```sql
