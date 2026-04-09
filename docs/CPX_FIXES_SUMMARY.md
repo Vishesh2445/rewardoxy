@@ -236,9 +236,18 @@ For issues:
 
 ### 5. ✅ CRITICAL: Reversal Logic Fixed (April 9, 2026)
 
-**Problem:** When CPX sent a reversal postback (status=2), coins were NOT being deducted from user balance. In some cases, coins were even being ADDED instead of subtracted.
+**Problem:** When CPX sent a reversal postback (status=2), coins were NOT being deducted from user balance. In some cases, coins were even being ADDED instead of subtracted, causing total_earned to DOUBLE.
 
-**Root Cause:** The reversal rate protection logic was flawed:
+**Example of Bug:**
+```
+Fresh account test:
+1. Completion postback → balance: 0→700, total_earned: 0→700 ✓
+2. Reversal postback → balance: 700→700 (should be 0!), total_earned: 700→1400 (should stay 700!) ✗
+```
+
+**Root Causes Identified:**
+
+1. **Flawed Reversal Rate Protection:**
 ```typescript
 // OLD CODE (BROKEN):
 const { data: userReversals } = await supabase
@@ -263,68 +272,132 @@ if (reversalRate >= 0.05 && amount > 0) {
   - rate = 0/1 = 0% < 5%
   - Result: Deduction SKIPPED!
 
-**Example Bug:**
-```
-Fresh account test:
-1. Completion postback → balance: 0→700, total_earned: 0→700 ✓
-2. Reversal postback → balance: 700→700 (should be 0!) ✗
-   OR worse: balance: 700→1400 (added instead of subtracted!) ✗
-```
-
-**Solution:** Updated `app/api/cpx-postback/route.ts`:
-
-1. **Removed reversal rate protection** - Always deduct on reversals
-2. **Added duplicate reversal check** - Prevent double-processing
-3. **Enhanced logging** - Show balance before/after each operation
-4. **Verified database function** - `deduct_user_points` correctly subtracts
-
-**New Code:**
+2. **Weak Duplicate Check:**
 ```typescript
-// Check if reversal already processed
-const { data: existingReversal } = await supabase
+// OLD CODE (BROKEN):
+const { data: existing } = await supabase
   .from('cpx_transactions')
-  .select('id, status')
+  .select('id')
   .eq('transid', transid)
+  .eq('status', 1)  // <-- Only checks for status=1!
   .limit(1);
+```
 
-if (existingReversal && existingReversal.length > 0) {
-  if (existingReversal[0].status === 2) {
-    return ok('reversal_already_processed');
-  }
+**Why it failed:**
+- If CPX sent the same transid twice with status=1, the second one would be blocked ✓
+- BUT if CPX sent transid=123 with status=1, then later sent transid=123 with status=1 AGAIN (instead of status=2), it would NOT be blocked because the first one was already updated to status=2!
+- This could cause double-crediting
+
+3. **Non-Exclusive If Statements:**
+```typescript
+// OLD CODE (RISKY):
+if (statusInt === 1) {
+  // credit user
+  return ok('OK');
 }
 
-// Get balance BEFORE deduction (for logging)
-const { data: userData } = await supabase
-  .from('users')
-  .select('coins_balance, total_earned')
-  .eq('id', userid)
-  .single();
+if (statusInt === 2) {  // <-- Not else-if!
+  // deduct user
+  return ok('OK');
+}
+```
 
-log(`User balance BEFORE reversal: coins=${userData?.coins_balance}, total_earned=${userData?.total_earned}`);
+**Why it's risky:**
+- While both have `return` statements, it's not immediately clear that only one executes
+- Makes code harder to reason about and maintain
 
+**Solutions Implemented:**
+
+1. **Removed Reversal Rate Protection:**
+```typescript
+// NEW CODE (FIXED):
 // ALWAYS deduct on reversals (no rate protection)
 if (amount > 0) {
+  log(`Deducting ${amount} coins from user ${userid}`);
+  
   const { error: deductError } = await supabase.rpc('deduct_user_points', {
     p_userid: userid,
     p_amount: amount
   });
   
-  // Verify deduction worked
-  const { data: updatedUser } = await supabase
-    .from('users')
-    .select('coins_balance, total_earned')
-    .eq('id', userid)
-    .single();
-    
-  log(`User balance AFTER reversal: coins=${updatedUser?.coins_balance}, total_earned=${updatedUser?.total_earned}`);
+  if (deductError) {
+    log(`Deduct RPC failed: ${deductError.message}`);
+    return ok('deduct_failed');
+  }
 }
+```
 
-// Update transaction status to 2
-await supabase
+2. **Strengthened Duplicate Check:**
+```typescript
+// NEW CODE (FIXED):
+// Check for duplicate (same transid with ANY status)
+const { data: existing } = await supabase
   .from('cpx_transactions')
-  .update({ status: 2, updated_at: new Date().toISOString() })
+  .select('id, status')
   .eq('transid', transid)
-  .eq('status', 1);
+  .limit(1);
+
+if (existing && existing.length > 0) {
+  log(`DUPLICATE IGNORED: transid=${transid} already exists with status=${existing[0].status}`);
+  return ok('duplicate_ignored');
+}
+```
+
+**Why this works:**
+- Blocks ANY duplicate transid, regardless of status
+- Prevents re-crediting if CPX sends the same transid multiple times
+- Prevents processing if transid already exists (even if status changed)
+
+3. **Made Handlers Mutually Exclusive:**
+```typescript
+// NEW CODE (FIXED):
+if (statusInt === 1) {
+  // ═══════════════════════════════════════════════════════════════════
+  // COMPLETION HANDLER (status=1)
+  // ═══════════════════════════════════════════════════════════════════
+  // ... credit logic ...
+  return ok('OK');
+} else if (statusInt === 2) {
+  // ═══════════════════════════════════════════════════════════════════
+  // REVERSAL HANDLER (status=2)
+  // ═══════════════════════════════════════════════════════════════════
+  // ... deduct logic ...
+  return ok('OK');
+} else {
+  // ═══════════════════════════════════════════════════════════════════
+  // UNKNOWN STATUS HANDLER
+  // ═══════════════════════════════════════════════════════════════════
+  log(`Unknown status: ${statusInt}`);
+  return ok('unknown_status');
+}
+```
+
+**Why this works:**
+- Uses `else if` to make it crystal clear only ONE handler executes
+- Improves code readability and maintainability
+- Eliminates any possibility of both handlers running
+
+4. **Enhanced Logging:**
+```typescript
+// Get balance BEFORE operation
+const { data: userBefore } = await supabase
+  .from('users')
+  .select('coins_balance, total_earned')
+  .eq('id', userid)
+  .single();
+
+log(`User balance BEFORE: coins=${userBefore?.coins_balance}, total_earned=${userBefore?.total_earned}`);
+
+// ... perform operation ...
+
+// Get balance AFTER operation
+const { data: userAfter } = await supabase
+  .from('users')
+  .select('coins_balance, total_earned')
+  .eq('id', userid)
+  .single();
+
+log(`User balance AFTER: coins=${userAfter?.coins_balance}, total_earned=${userAfter?.total_earned}`);
 ```
 
 **Expected Behavior (Fresh Account):**
@@ -338,6 +411,14 @@ await supabase
    → coins_balance: 700→0 (SUBTRACT 700)
    → total_earned: 700→700 (UNCHANGED)
    → cpx_transactions: UPDATE (transid=123, status=1→2)
+
+3. Duplicate Completion: transid=123, status=1, amount=700
+   → BLOCKED: "duplicate_ignored"
+   → No changes to balance or database
+
+4. Duplicate Reversal: transid=123, status=2, amount=700
+   → BLOCKED: "reversal_already_processed"
+   → No changes to balance or database
 ```
 
 **Database Function Verified:**
@@ -361,8 +442,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 **Test Sequence:**
 1. Send completion postback → Verify balance=700, total_earned=700
 2. Send reversal postback → Verify balance=0, total_earned=700
-3. Check logs for "BEFORE" and "AFTER" balance values
-4. Verify transaction status updated from 1→2
+3. Send duplicate completion → Verify blocked, no changes
+4. Send duplicate reversal → Verify blocked, no changes
+5. Check logs for "BEFORE" and "AFTER" balance values
+6. Verify transaction status updated from 1→2
 
 ---
 

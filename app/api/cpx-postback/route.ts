@@ -128,14 +128,18 @@ async function handleCpxPostback(request: NextRequest) {
     // ── 5. Initialize Supabase ───────────────────────────────────────────
     const supabase = getSupabase();
 
-    // ── 6. Handle COMPLETION (status=1) ──────────────────────────────────
+    // ── 6. Route to correct handler based on status ──────────────────────
+    // CRITICAL: Use else-if to ensure only ONE handler executes
     if (statusInt === 1) {
-      // Check for duplicate (same transid AND status=1)
+      // ═══════════════════════════════════════════════════════════════════
+      // COMPLETION HANDLER (status=1)
+      // ═══════════════════════════════════════════════════════════════════
+      // Check for duplicate (same transid with ANY status)
+      // This prevents re-crediting if CPX sends the same transid again
       const { data: existing, error: checkError } = await supabase
         .from('cpx_transactions')
-        .select('id')
+        .select('id, status')
         .eq('transid', transid)
-        .eq('status', 1)
         .limit(1);
 
       if (checkError) {
@@ -143,7 +147,7 @@ async function handleCpxPostback(request: NextRequest) {
       }
 
       if (existing && existing.length > 0) {
-        log(`DUPLICATE IGNORED: transid=${transid} already processed with status=1`);
+        log(`DUPLICATE IGNORED: transid=${transid} already exists with status=${existing[0].status}`);
         return ok('duplicate_ignored');
       }
 
@@ -205,10 +209,10 @@ async function handleCpxPostback(request: NextRequest) {
 
       log(`Transaction logged: transid=${transid}, status=1`);
       return ok('OK');
-    }
-
-    // ── 7. Handle REVERSAL (status=2) ────────────────────────────────────
-    if (statusInt === 2) {
+    } else if (statusInt === 2) {
+      // ═══════════════════════════════════════════════════════════════════
+      // REVERSAL HANDLER (status=2)
+      // ═══════════════════════════════════════════════════════════════════
       log(`REVERSAL: transid=${transid}, userid=${userid}, amount=${amount}`);
 
       // Check if this reversal was already processed
@@ -283,11 +287,13 @@ async function handleCpxPostback(request: NextRequest) {
 
       log(`REVERSAL PROCESSED: transid=${transid} updated to status=2`);
       return ok('OK');
+    } else {
+      // ═══════════════════════════════════════════════════════════════════
+      // UNKNOWN STATUS HANDLER
+      // ═══════════════════════════════════════════════════════════════════
+      log(`Unknown status: ${statusInt}`);
+      return ok('unknown_status');
     }
-
-    // ── 8. Unknown status ────────────────────────────────────────────────
-    log(`Unknown status: ${statusInt}`);
-    return ok('unknown_status');
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
