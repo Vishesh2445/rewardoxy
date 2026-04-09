@@ -1,7 +1,27 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// Streak-based bonus: day 1 = 10, day 2 = 20, ..., day 7+ = 100
+/**
+ * Daily Bonus System
+ * 
+ * Requirements:
+ * 1. User must earn at least 1000 coins in one day (from any offerwall or mixed)
+ * 2. Streak continues only if user claims bonus on consecutive days
+ * 3. Streak resets to day 1 after completing day 7 or missing any day
+ * 4. Can only claim once per day (UTC timezone)
+ * 
+ * Rewards by streak day:
+ * - Day 1: 10 coins
+ * - Day 2: 20 coins
+ * - Day 3: 30 coins
+ * - Day 4: 40 coins
+ * - Day 5: 50 coins
+ * - Day 6: 75 coins
+ * - Day 7: 100 coins
+ * - Day 8+: Resets to Day 1 (10 coins)
+ */
+
+// Streak-based bonus: day 1 = 10, day 2 = 20, ..., day 7 = 100
 const STREAK_REWARDS = [0, 10, 20, 30, 40, 50, 75, 100];
 
 function getReward(streakDay: number): number {
@@ -90,12 +110,12 @@ export async function POST() {
     // If claimed yesterday, continue streak
     if (lastDate.getTime() === yesterday.getTime()) {
       streakDay = lastClaim.streak_day + 1;
-      // If streak reaches 8, reset to 1 (7-day cycle)
+      // After day 7, reset to day 1 (7-day cycle)
       if (streakDay > 7) {
         streakDay = 1;
       }
     }
-    // Otherwise streak resets to 1 (missed a day)
+    // Otherwise streak resets to 1 (missed a day or more)
   }
 
   const reward = getReward(streakDay);
