@@ -1,11 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { processFraudCheck, getRealIP } from '@/lib/fraud-check';
-
-// Default coins-per-USD fallback if amount_local is missing or 0
-// This should match the Currency Factor set in your CPX Dashboard
-const CPX_COINS_PER_USD = 700;
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,8 +11,8 @@ function getSupabase() {
   });
 }
 
-function ok(body: Record<string, unknown>) {
-  return NextResponse.json(body, { status: 200 });
+function ok(message: string) {
+  return new NextResponse(message, { status: 200 });
 }
 
 async function handleCpxPostback(request: NextRequest) {
@@ -33,7 +28,7 @@ async function handleCpxPostback(request: NextRequest) {
     log(`Full URL: ${request.url}`);
     log(`IP: ${clientIp}`);
     log(`User-Agent: ${request.headers.get('user-agent') || 'none'}`);
-    
+
     // Log all query params for debugging
     const allParams: Record<string, string> = {};
     url.searchParams.forEach((value, key) => {
@@ -42,269 +37,213 @@ async function handleCpxPostback(request: NextRequest) {
     log(`All query params: ${JSON.stringify(allParams)}`);
 
     // ── 1. Extract CPX Research parameters ───────────────────────────────
-    const status = url.searchParams.get('status');       // 1 = completed, 2 = canceled
-    const trans_id = url.searchParams.get('trans_id');    // Unique transaction ID
-    const user_id = url.searchParams.get('user_id');      // Your ext_user_id
-    const amount_local = url.searchParams.get('amount_local'); // Amount in your virtual currency
-    const amount_usd = url.searchParams.get('amount_usd');     // Amount in USD
-    const offer_id = url.searchParams.get('offer_id') || url.searchParams.get('type') || '';
-    const hash = url.searchParams.get('hash');            // MD5 hash for verification
+    // Parameter names match CPX Research dashboard placeholders exactly
+    const user_id = url.searchParams.get('user_id');           // MANDATORY: {user_id}
+    const amount_local = url.searchParams.get('amount_local'); // MANDATORY: {amount_local}
+    const amount_usd = url.searchParams.get('amount_usd');     // MANDATORY: {amount_usd}
+    const status = url.searchParams.get('status');             // recommended: {status} - 1 = completed, 2 = canceled
+    const trans_id = url.searchParams.get('trans_id');         // recommended: {trans_id} - Unique transaction ID
+    const hash = url.searchParams.get('hash');                 // recommended: {secure_hash} - MD5 hash for verification
+    const type = url.searchParams.get('type');                 // optional: {type} - 'complete', 'out', 'bonus'
+    const subid1 = url.searchParams.get('sub_id');             // optional: {subid_1} - Sub-identifier
+    const subid2 = url.searchParams.get('sub_id_2');           // optional: {subid_2} - Sub-identifier
+    const offer_id = url.searchParams.get('offer_id');         // optional: {offer_ID} - Survey/offer ID
+    const ip_click = url.searchParams.get('ip_click');         // optional: {ip_click} - User's IP at click time
 
-    log(`Parsed: status=${status}, trans_id=${trans_id}, user_id=${user_id}, amount_local=${amount_local}, amount_usd=${amount_usd}, offer_id=${offer_id}, hash=${hash}`);
+    log(`Parsed: user_id=${user_id}, trans_id=${trans_id}, amount_local=${amount_local}, amount_usd=${amount_usd}, status=${status}, type=${type}, hash=${hash}`);
 
-    // ── 2. Signature / Hash Validation ───────────────────────────────────
-    const secureHashAppCode = process.env.CPX_SECURE_HASH;
-
-    if (!secureHashAppCode) {
-      log('WARNING: CPX_SECURE_HASH env var is not set — cannot validate hash');
+    // ── 2. Validate minimum required parameters ─────────────────────────
+    if (!user_id || !trans_id || amount_local === null || amount_usd === null) {
+      log(`Missing required params: user_id=${user_id}, trans_id=${trans_id}, amount_local=${amount_local}, amount_usd=${amount_usd}`);
+      // ALWAYS return 200 to prevent CPX retry storms
+      return ok('missing_params');
     }
 
-    if (secureHashAppCode && trans_id && hash) {
-      const expectedHash = crypto.createHash('md5').update(`${trans_id}-${secureHashAppCode}`).digest('hex');
-      if (expectedHash !== hash) {
-        log(`Hash mismatch: received="${hash}", expected="${expectedHash}"`);
-        // Don't reject — CPX may use a different hash format in production
-        // Log it but proceed. If you want strict validation, uncomment the return below:
-        // return ok({ error: 'invalid_hash', logs });
-        log('Proceeding despite hash mismatch (non-strict mode)');
+    // ── 3. Hash Verification (Security — MUST implement) ─────────────────
+    const CPX_SECURE_HASH = process.env.CPX_SECURE_HASH;
+
+    if (hash && hash.trim() !== '') {
+      if (!CPX_SECURE_HASH) {
+        log('WARNING: CPX_SECURE_HASH env var is not set — cannot validate hash');
       } else {
+        const expectedHash = crypto.createHash('md5').update(`${trans_id}-${CPX_SECURE_HASH}`).digest('hex');
+        if (hash !== expectedHash) {
+          log(`HASH MISMATCH: trans_id=${trans_id}, received="${hash}", expected="${expectedHash}"`);
+          // Do NOT credit user, but return 200 to prevent retry storms
+          return ok('hash_mismatch');
+        }
         log('Hash validation PASSED');
       }
     } else {
-      log('Hash check skipped (missing: ' +
-        (!secureHashAppCode ? 'CPX_SECURE_HASH ' : '') +
-        (!trans_id ? 'trans_id ' : '') +
-        (!hash ? 'hash ' : '') + ')');
+      log('Hash check skipped (hash param empty - feature may not be activated)');
     }
 
-    // ── 3. Validate minimum required parameters ─────────────────────────
-    if (!user_id || !trans_id) {
-      log(`Missing required params: user_id=${user_id}, trans_id=${trans_id}`);
-      return ok({ error: 'missing_params', logs });
-    }
+    // ── 4. Parse amounts ─────────────────────────────────────────────────
+    const amount = parseFloat(amount_local || '0');
+    const amountUsd = parseFloat(amount_usd || '0');
+    const statusInt = parseInt(status || '1');
 
-    // ── 4. Parse amounts — handle both integer and decimal values ────────
-    const rawAmountLocal = parseFloat(amount_local || '0');
-    const payoutUsd = parseFloat(amount_usd || '0');
-
-    // Calculate coins: use amount_local if it's a valid number > 0,
-    // otherwise fall back to amount_usd * CPX_COINS_PER_USD
-    let amountCoins: number;
-    if (rawAmountLocal > 0) {
-      // amount_local could be integer (700) or decimal (0.50)
-      amountCoins = Math.round(rawAmountLocal);
-      log(`Coins from amount_local: raw=${rawAmountLocal}, rounded=${amountCoins}`);
-    } else if (payoutUsd > 0) {
-      // Fallback: convert USD to coins using our rate
-      amountCoins = Math.round(payoutUsd * CPX_COINS_PER_USD);
-      log(`Coins from USD fallback: $${payoutUsd} × ${CPX_COINS_PER_USD} = ${amountCoins}`);
-    } else {
-      amountCoins = 0;
-      log(`WARNING: Both amount_local (${amount_local}) and amount_usd (${amount_usd}) are 0 or missing`);
-    }
+    log(`Parsed amounts: amount_local=${amount}, amount_usd=${amountUsd}, status=${statusInt}, type=${type}`);
 
     // ── 5. Initialize Supabase ───────────────────────────────────────────
     const supabase = getSupabase();
 
-    // ── 5.5 Persist a postback log for debugging ─────────────────────────
-    try {
-      await supabase.from('postback_logs').insert({
-        source: 'cpx',
-        method: request.method,
-        ip_address: clientIp,
-        user_id: user_id,
-        trans_id: trans_id,
-        status: status,
-        amount_local: amount_local,
-        amount_usd: amount_usd,
-        coins_calculated: amountCoins,
-        hash: hash,
-        raw_params: allParams,
-      });
-    } catch (logErr) {
-      // Non-critical — don't let logging failure break the postback
-      log(`Postback log insert failed (non-critical): ${logErr}`);
-    }
-
-    // ── 6. Check if user exists ──────────────────────────────────────────
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('id', user_id)
-      .single();
-
-    if (userError || !userData) {
-      log(`User not found: ${userError?.message || 'no data'} (user_id: ${user_id})`);
-      return ok({ error: 'user_not_found', user_id, logs });
-    }
-    log(`User verified: ${user_id}`);
-
-    // ── 7. Handle Canceled/Chargeback (status = 2) ───────────────────────
-    if (status === '2') {
-      log('Status=2 (canceled/chargeback)');
-
-      const { data: cancelExisting } = await supabase
-        .from('completions')
+    // ── 6. Handle COMPLETION (status=1) ──────────────────────────────────
+    if (statusInt === 1) {
+      // Check for duplicate (same trans_id AND status=1)
+      const { data: existing, error: checkError } = await supabase
+        .from('cpx_transactions')
         .select('id')
-        .eq('player_id', user_id)
-        .eq('program_id', `cpx_cancel_${trans_id}`)
+        .eq('transid', trans_id)
+        .eq('status', 1)
         .limit(1);
 
-      if (cancelExisting && cancelExisting.length > 0) {
-        log('Duplicate cancel — already processed');
-        return ok({ status: 'duplicate_cancel', logs });
+      if (checkError) {
+        log(`Duplicate check error: ${checkError.message}`);
       }
 
-      const absCoins = Math.abs(amountCoins);
-      const absPayoutUsd = Math.abs(payoutUsd);
+      if (existing && existing.length > 0) {
+        log(`DUPLICATE IGNORED: trans_id=${trans_id} already processed with status=1`);
+        return ok('duplicate_ignored');
+      }
 
-      if (absCoins > 0) {
-        const { error: debitError } = await supabase.rpc('credit_postback', {
-          p_user_id: user_id,
-          p_amount: -absCoins,
+      // Credit user if amount > 0
+      if (amount > 0) {
+        log(`Crediting user: user_id=${user_id}, amount=${amount}`);
+
+        const { error: creditError } = await supabase.rpc('add_user_points', {
+          p_userid: user_id,
+          p_amount: amount
         });
-        if (debitError) log(`Debit RPC failed: ${debitError.message}`);
-        else log(`Debited ${absCoins} coins from user ${user_id}`);
+
+        if (creditError) {
+          log(`Credit RPC failed: ${creditError.message}`);
+          // Still log the transaction even if credit fails
+        } else {
+          log(`SUCCESS: Credited ${amount} to user ${user_id}`);
+        }
+      } else {
+        log(`Amount is 0, skipping credit (type=${type})`);
       }
 
-      await supabase.from('completions').insert({
-        player_id: user_id,
-        program_id: `cpx_cancel_${trans_id}`,
-        payout_decimal: -absPayoutUsd,
-        coins_awarded: -absCoins,
-        source: 'cpx'
+      // Log transaction
+      const { error: insertError } = await supabase.from('cpx_transactions').insert({
+        transid: trans_id,
+        userid: user_id,
+        amount_local: amount,
+        amount_usd: amountUsd,
+        status: 1,
+        type,
+        subid1,
+        subid2,
+        offerid: offer_id,
+        ipclick: ip_click,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
 
-      // Revert referral commission
-      const { data: userWithReferrer } = await supabase
-        .from('users')
-        .select('referred_by, email_verified')
-        .eq('id', user_id)
-        .single();
+      if (insertError) {
+        log(`Transaction log insert failed: ${insertError.message}`);
+        return ok('insert_failed');
+      }
 
-      if (userWithReferrer?.referred_by && userWithReferrer?.email_verified) {
-        const commissionAmount = Math.round(absCoins * 0.05);
-        if (commissionAmount > 0) {
-          await supabase.rpc('increment_pending_referral_earnings', {
-            uid: userWithReferrer.referred_by,
-            amount: -commissionAmount,
-          });
-          log(`Reverted 5% commission (${commissionAmount}) from referrer ${userWithReferrer.referred_by}`);
+      log(`Transaction logged: trans_id=${trans_id}, status=1`);
+      return ok('OK');
+    }
+
+    // ── 7. Handle REVERSAL (status=2) ────────────────────────────────────
+    if (statusInt === 2) {
+      log(`REVERSAL: trans_id=${trans_id}, user_id=${user_id}, amount=${amount}`);
+
+      // Find the original completed transaction
+      const { data: original, error: findError } = await supabase
+        .from('cpx_transactions')
+        .select('*')
+        .eq('transid', trans_id)
+        .eq('status', 1)
+        .limit(1);
+
+      if (findError) {
+        log(`Reversal lookup error: ${findError.message}`);
+      }
+
+      if (!original || original.length === 0) {
+        log(`REVERSAL NO ORIGINAL: trans_id=${trans_id} not found with status=1`);
+        return ok('reversal_no_original');
+      }
+
+      // Check user reversal rate (don't punish good users)
+      const { data: userCompletions } = await supabase
+        .from('cpx_transactions')
+        .select('id')
+        .eq('userid', user_id)
+        .eq('status', 1);
+
+      const { data: userReversals } = await supabase
+        .from('cpx_transactions')
+        .select('id')
+        .eq('userid', user_id)
+        .eq('status', 2);
+
+      const completionCount = userCompletions?.length || 0;
+      const reversalCount = userReversals?.length || 0;
+      const reversalRate = completionCount > 0 ? reversalCount / completionCount : 0;
+
+      log(`User reversal stats: completions=${completionCount}, reversals=${reversalCount}, rate=${(reversalRate * 100).toFixed(2)}%`);
+
+      // Only deduct if reversal rate >= 5%
+      if (reversalRate >= 0.05 && amount > 0) {
+        log(`Deducting points: reversal rate ${(reversalRate * 100).toFixed(2)}% >= 5%`);
+
+        const { error: deductError } = await supabase.rpc('deduct_user_points', {
+          p_userid: user_id,
+          p_amount: amount
+        });
+
+        if (deductError) {
+          log(`Deduct RPC failed: ${deductError.message}`);
+        } else {
+          log(`SUCCESS: Deducted ${amount} from user ${user_id}`);
+        }
+      } else {
+        if (reversalRate < 0.05) {
+          log(`NOT deducting: reversal rate ${(reversalRate * 100).toFixed(2)}% < 5% (good user)`);
+        } else {
+          log(`NOT deducting: amount is 0`);
         }
       }
 
-      return ok({ status: 'canceled_processed', trans_id, coins_debited: absCoins, logs });
-    }
+      // Update transaction status to 2 (reversed)
+      const { error: updateError } = await supabase
+        .from('cpx_transactions')
+        .update({
+          status: 2,
+          updated_at: new Date().toISOString()
+        })
+        .eq('transid', trans_id)
+        .eq('status', 1);
 
-    // ── 8. Handle Completed (status = 1) ─────────────────────────────────
-    if (status !== '1') {
-      log(`Unknown status: "${status}" — expected "1" or "2"`);
-      return ok({ error: 'unknown_status', status, logs });
-    }
-
-    if (amountCoins <= 0) {
-      log(`WARNING: Completed status but 0 coins — amount_local=${amount_local}, amount_usd=${amount_usd}`);
-      // Still proceed to record the completion so we can debug later
-    }
-
-    // Duplicate check
-    const { data: existing } = await supabase
-      .from('completions')
-      .select('id')
-      .eq('player_id', user_id)
-      .eq('program_id', `cpx_${trans_id}`)
-      .limit(1);
-
-    if (existing && existing.length > 0) {
-      log('Duplicate — trans_id already processed');
-      return ok({ status: 'duplicate', trans_id, logs });
-    }
-
-    // Insert completion record
-    const { error: completionError } = await supabase
-      .from('completions')
-      .insert({
-        player_id: user_id,
-        program_id: `cpx_${trans_id}`,
-        payout_decimal: payoutUsd,
-        coins_awarded: amountCoins,
-        source: 'cpx'
-      });
-
-    if (completionError) {
-      log(`Completion insert failed: ${completionError.message}`);
-    } else {
-      log(`Completion record inserted: cpx_${trans_id}, coins=${amountCoins}`);
-    }
-
-    // Credit coins to user
-    if (amountCoins > 0) {
-      const { data: creditResult, error: creditError } = await supabase
-        .rpc('credit_postback', {
-          p_user_id: user_id,
-          p_amount: amountCoins,
-        });
-
-      if (creditError) {
-        log(`Credit RPC FAILED: ${creditError.message}`);
-        return ok({ error: 'credit_failed', detail: creditError.message, logs });
+      if (updateError) {
+        log(`Transaction update failed: ${updateError.message}`);
+        return ok('update_failed');
       }
 
-      const newBalance = creditResult?.[0]?.new_balance ?? creditResult?.new_balance ?? '?';
-      const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
-      log(`SUCCESS: Credited ${amountCoins} coins to user ${user_id}. New balance: ${newBalance}, New total: ${newTotal}`);
-    } else {
-      log(`Skipped crediting — 0 coins (amount_local=${amount_local}, amount_usd=${amount_usd})`);
+      log(`REVERSAL PROCESSED: trans_id=${trans_id} updated to status=2`);
+      return ok('OK');
     }
 
-    // ── 9. Referral commission ───────────────────────────────────────────
-    if (amountCoins > 0) {
-      const { data: userWithReferrer, error: referrerError } = await supabase
-        .from('users')
-        .select('referred_by, email_verified')
-        .eq('id', user_id)
-        .single();
+    // ── 8. Unknown status ────────────────────────────────────────────────
+    log(`Unknown status: ${statusInt}`);
+    return ok('unknown_status');
 
-      if (!referrerError && userWithReferrer?.referred_by && userWithReferrer?.email_verified) {
-        const commissionAmount = Math.round(amountCoins * 0.05);
-        if (commissionAmount > 0) {
-          await supabase.rpc('increment_pending_referral_earnings', {
-            uid: userWithReferrer.referred_by,
-            amount: commissionAmount,
-          });
-          log(`Referral: Added ${commissionAmount} coins (5%) to referrer ${userWithReferrer.referred_by}`);
-        }
-      }
-    }
-
-    // 10. Silent fraud check (never block earnings)
-    if (amountCoins > 0) {
-      try {
-        const fraudIp = getRealIP(request);
-        await processFraudCheck(user_id, fraudIp, 'offer_completion');
-      } catch (fraudErr) {
-        log(`Fraud check error (non-blocking): ${fraudErr}`);
-      }
-    }
-
-    return ok({
-      status: 'success',
-      trans_id,
-      amount_credited: amountCoins,
-      payout_usd: payoutUsd,
-      logs
-    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     log(`UNEXPECTED ERROR: ${message}`);
-    return ok({ error: 'unexpected', detail: message, logs });
+    // ALWAYS return 200 to prevent CPX retry storms
+    return ok('error');
   }
 }
 
 export async function GET(request: NextRequest) {
-  return handleCpxPostback(request);
-}
-
-export async function POST(request: NextRequest) {
   return handleCpxPostback(request);
 }
