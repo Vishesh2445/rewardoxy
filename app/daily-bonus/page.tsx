@@ -43,10 +43,24 @@ export default async function DailyBonusPage() {
     .eq("player_id", user.id)
     .gte("created_at", todayStart.toISOString());
 
-  const todayCoinsEarned = todayCompletions?.reduce(
+  // Get today's CPX earnings
+  const { data: todayCpx } = await supabase
+    .from("cpx_transactions")
+    .select("amount_local, status")
+    .eq("userid", user.id)
+    .gte("created_at", todayStart.toISOString());
+
+  const todayCoinsFromCompletions = todayCompletions?.reduce(
     (sum, c) => sum + (c.coins_awarded || 0),
     0
   ) || 0;
+
+  const todayCoinsFromCpx = todayCpx?.reduce((sum, c) => {
+    const amount = Math.round(Number(c.amount_local || 0));
+    return sum + (c.status === 2 ? -amount : amount); // Subtract reversals
+  }, 0) || 0;
+
+  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx;
 
   return (
     <AppShell coins={coins}>
