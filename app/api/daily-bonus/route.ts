@@ -42,14 +42,28 @@ export async function POST() {
     .eq("player_id", user.id)
     .gte("created_at", todayStart.toISOString());
 
-  const todayCoinsEarned = todayCompletions?.reduce(
+  // Check CPX earnings today
+  const { data: todayCpx } = await supabase
+    .from("cpx_transactions")
+    .select("amount_local, status")
+    .eq("userid", user.id)
+    .gte("created_at", todayStart.toISOString());
+
+  const todayCoinsFromCompletions = todayCompletions?.reduce(
     (sum, c) => sum + (c.coins_awarded || 0),
     0
   ) || 0;
 
+  const todayCoinsFromCpx = todayCpx?.reduce((sum, c) => {
+    const amount = Math.round(Number(c.amount_local || 0));
+    return sum + (c.status === 2 ? -amount : amount); // Subtract reversals
+  }, 0) || 0;
+
+  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx;
+
   if (todayCoinsEarned < 1000) {
     return NextResponse.json(
-      { error: "Earn at least 1000 coins ($1) today to claim bonus" },
+      { error: `Earn at least 1000 coins ($1) today to claim bonus. You have earned ${todayCoinsEarned} coins today.` },
       { status: 400 }
     );
   }
@@ -67,15 +81,21 @@ export async function POST() {
 
   if (lastClaim) {
     const lastDate = new Date(lastClaim.claimed_at);
+    lastDate.setUTCHours(0, 0, 0, 0);
+    
     const yesterday = new Date();
     yesterday.setUTCHours(0, 0, 0, 0);
     yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
     // If claimed yesterday, continue streak
-    if (lastDate >= yesterday) {
-      streakDay = Math.min(lastClaim.streak_day + 1, 7);
+    if (lastDate.getTime() === yesterday.getTime()) {
+      streakDay = lastClaim.streak_day + 1;
+      // If streak reaches 8, reset to 1 (7-day cycle)
+      if (streakDay > 7) {
+        streakDay = 1;
+      }
     }
-    // Otherwise streak resets to 1
+    // Otherwise streak resets to 1 (missed a day)
   }
 
   const reward = getReward(streakDay);

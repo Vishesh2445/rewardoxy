@@ -23,6 +23,9 @@ import {
   Smartphone,
   Coins,
   TrendingUp,
+  XCircle,
+  Gift,
+  Star,
 } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
@@ -48,9 +51,21 @@ const OFFER_ICONS: Record<string, typeof Gamepad2> = {
   game: Gamepad2,
   survey: FileText,
   app: Smartphone,
+  cpx_survey: FileText,
+  cpx_screenout: XCircle,
+  cpx_bonus: Star,
 };
 
-function offerIcon(name: string) {
+function offerIcon(name: string, source?: string) {
+  // CPX-specific icons
+  if (source === 'cpx') {
+    if (name.includes('Survey')) return OFFER_ICONS.cpx_survey;
+    if (name.includes('Screen-out')) return OFFER_ICONS.cpx_screenout;
+    if (name.includes('Bonus')) return OFFER_ICONS.cpx_bonus;
+    return OFFER_ICONS.survey;
+  }
+  
+  // Regular offer icons
   const lower = name.toLowerCase();
   if (lower.includes("game") || lower.includes("play")) return OFFER_ICONS.game;
   if (lower.includes("survey") || lower.includes("fill")) return OFFER_ICONS.survey;
@@ -73,14 +88,41 @@ export default function HistoryClient({
     const supabase = createClient();
     const from = newPage * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
-    const { data, count } = await supabase
-      .from("completions")
-      .select("id, program_id, payout_decimal, coins_awarded, created_at, source", { count: "exact" })
-      .eq("player_id", userId)
-      .order("created_at", { ascending: false })
-      .range(from, to);
-    if (data) setCompletions(data);
-    if (count !== null) setTotal(count);
+    
+    // Fetch both completions and CPX transactions
+    const [completionsResult, cpxResult] = await Promise.all([
+      supabase
+        .from("completions")
+        .select("id, program_id, payout_decimal, coins_awarded, created_at, source", { count: "exact" })
+        .eq("player_id", userId)
+        .order("created_at", { ascending: false })
+        .range(from, to),
+      
+      supabase
+        .from("cpx_transactions")
+        .select("id, transid, amount_local, status, type, created_at", { count: "exact" })
+        .eq("userid", userId)
+        .order("created_at", { ascending: false })
+        .range(from, to),
+    ]);
+
+    // Merge and sort by date
+    const merged = [
+      ...(completionsResult.data ?? []),
+      ...(cpxResult.data ?? []).map((cpx) => ({
+        id: cpx.id,
+        program_id: cpx.type === 'complete' ? 'CPX Survey' : cpx.type === 'out' ? 'CPX Screen-out' : cpx.type === 'bonus' ? 'CPX Rating Bonus' : 'CPX Research',
+        payout_decimal: cpx.amount_local,
+        coins_awarded: cpx.status === 2 ? -Math.round(Number(cpx.amount_local)) : Math.round(Number(cpx.amount_local)),
+        created_at: cpx.created_at,
+        source: 'cpx',
+      })),
+    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0);
+
+    if (merged) setCompletions(merged.slice(0, PAGE_SIZE));
+    if (totalCount !== null) setTotal(totalCount);
     setPage(newPage);
   }
 
@@ -139,7 +181,7 @@ export default function HistoryClient({
           {/* Mobile cards */}
           <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1.5 }}>
             {completions.map((c) => {
-              const Icon = offerIcon(c.program_id);
+              const Icon = offerIcon(c.program_id, c.source);
               const isChargeback = c.coins_awarded < 0;
               const displayAmount = isChargeback ? String(c.coins_awarded) : `+${c.coins_awarded}`;
               const amtColor = isChargeback ? "#f87171" : "#01D676";
@@ -170,12 +212,12 @@ export default function HistoryClient({
                       width: 42,
                       height: 42,
                       borderRadius: 3,
-                      bgcolor: colors.background.ternary,
-                      border: `1px solid ${colors.divider}`,
+                      bgcolor: isChargeback ? "rgba(239,68,68,0.1)" : colors.background.ternary,
+                      border: isChargeback ? "1px solid rgba(239,68,68,0.2)" : `1px solid ${colors.divider}`,
                       flexShrink: 0,
                     }}
                   >
-                    <Icon size={20} color="#01D676" />
+                    <Icon size={20} color={isChargeback ? "#f87171" : "#01D676"} />
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -255,7 +297,7 @@ export default function HistoryClient({
               </TableHead>
               <TableBody>
                 {completions.map((c, i) => {
-                  const Icon = offerIcon(c.program_id);
+                  const Icon = offerIcon(c.program_id, c.source);
                   const isChargeback = c.coins_awarded < 0;
                   const displayAmount = isChargeback ? String(c.coins_awarded) : `+${c.coins_awarded}`;
                   const amtColor = isChargeback ? "#f87171" : "#01D676";
@@ -281,8 +323,8 @@ export default function HistoryClient({
                       </TableCell>
                       <TableCell sx={{ borderColor: colors.divider }}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 2, bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}` }}>
-                            <Icon size={15} color="#01D676" />
+                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 2, bgcolor: isChargeback ? "rgba(239,68,68,0.1)" : colors.background.ternary, border: isChargeback ? "1px solid rgba(239,68,68,0.2)" : `1px solid ${colors.divider}` }}>
+                            <Icon size={15} color={isChargeback ? "#f87171" : "#01D676"} />
                           </Box>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
                             {c.program_id}

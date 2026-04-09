@@ -44,6 +44,15 @@ export default async function ProfilePage() {
     .select("*", { count: "exact", head: true })
     .eq("player_id", user.id);
 
+  // Get CPX completion count
+  const { count: cpxCompletionCount } = await supabase
+    .from("cpx_transactions")
+    .select("*", { count: "exact", head: true })
+    .eq("userid", user.id)
+    .eq("status", 1); // Only count completed transactions, not reversals
+
+  const totalCompletions = (completionCount ?? 0) + (cpxCompletionCount ?? 0);
+
   const { count: withdrawalCount } = await supabase
     .from("withdrawals")
     .select("*", { count: "exact", head: true })
@@ -59,7 +68,19 @@ export default async function ProfilePage() {
     .eq("player_id", user.id)
     .gte("created_at", startOfMonth);
 
-  const monthEarned = monthlyCompletions?.reduce((sum, c) => sum + (c.coins_awarded || 0), 0) || 0;
+  // Get this month's CPX earnings
+  const { data: monthlyCpx } = await supabase
+    .from("cpx_transactions")
+    .select("amount_local, status")
+    .eq("userid", user.id)
+    .gte("created_at", startOfMonth);
+
+  const monthEarnedFromCompletions = monthlyCompletions?.reduce((sum, c) => sum + (c.coins_awarded || 0), 0) || 0;
+  const monthEarnedFromCpx = monthlyCpx?.reduce((sum, c) => {
+    const amount = Math.round(Number(c.amount_local || 0));
+    return sum + (c.status === 2 ? -amount : amount); // Subtract reversals
+  }, 0) || 0;
+  const monthEarned = monthEarnedFromCompletions + monthEarnedFromCpx;
 
   const coins = userData?.coins_balance ?? 0;
 
@@ -72,7 +93,7 @@ export default async function ProfilePage() {
         cryptoAddress={userData?.crypto_address ?? ""}
         totalEarned={userData?.total_earned ?? 0}
         streakCount={userData?.streak_count ?? 0}
-        totalCompletions={completionCount ?? 0}
+        totalCompletions={totalCompletions}
         totalWithdrawals={withdrawalCount ?? 0}
         monthEarned={monthEarned}
         memberSince={userData?.created_at ?? user.created_at}
