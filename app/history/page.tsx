@@ -5,7 +5,7 @@ import HistoryClient from "@/components/history-client";
 
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 5;
 
 export default async function HistoryPage() {
   const supabase = await createClient();

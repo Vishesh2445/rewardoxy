@@ -217,7 +217,7 @@ export default function ProfileClient({
     { icon: <Flame size={18} color="#01D676" />, label: "Streak", value: `${streakCount} days` },
   ];
 
-  const TABS = ["Completed Offers", "Withdrawals"] as const;
+  const TABS = ["Withdrawals"] as const;
 
   /* ── settings panel ─────────── */
   if (showSettings) {
@@ -405,119 +405,18 @@ export default function ProfileClient({
         ))}
       </Box>
 
-      {activeTab === 0 && loadingCompletions && completions.length === 0 ? (
-        <Box sx={{ textAlign: "center", py: 6 }}>
-          <CircularProgress size={28} sx={{ color: colors.secondary }} />
-        </Box>
-      ) : activeTab === 1 && loadingWithdrawals && withdrawals.length === 0 ? (
+      {loadingWithdrawals && withdrawals.length === 0 ? (
         <Box sx={{ textAlign: "center", py: 6 }}>
           <CircularProgress size={28} sx={{ color: colors.secondary }} />
         </Box>
       ) : (
         <>
-          {/* completed offers tab */}
-          {activeTab === 0 && (
-            completions.length === 0 ? (
-              <Paper sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 6, textAlign: "center" }}>
-                <Typography sx={{ fontSize: "0.875rem", color: colors.text.secondary }}>No offers have been completed yet</Typography>
-              </Paper>
-            ) : (
-              <>
-                {/* Mobile cards */}
-                <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1 }}>
-                   {completions.map((c) => {
-                     const isChargeback = c.coins_awarded < 0;
-                     const displayAmount = isChargeback ? String(c.coins_awarded) : `+${c.coins_awarded}`;
-                     const amtColor = isChargeback ? "#f87171" : "#01D676";
-                     const amtBg = isChargeback ? "rgba(239,68,68,0.1)" : "rgba(1,214,118,0.1)";
-                     const amtBorder = isChargeback ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(1,214,118,0.2)";
-
-                     return (
-                      <Box key={c.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, px: 2, py: 1.5 }}>
-                        <Box sx={{ minWidth: 0 }}>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }} truncate>{c.program_id}</Typography>
-                            <Box sx={{ borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1, py: 0.1, fontSize: '0.6rem', fontWeight: 700, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'uppercase', flexShrink: 0 }}>
-                              {c.source || 'unknown'}
-                            </Box>
-                          </Box>
-                          <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
-                            {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, borderRadius: 50, bgcolor: amtBg, border: amtBorder, px: 1.5, py: 0.25, fontSize: "0.8rem", fontWeight: 600, color: amtColor, flexShrink: 0 }}>
-                          {displayAmount}
-                        </Box>
-                      </Box>
-                     );
-                   })}
-                </Box>
-                {/* Desktop table */}
-                <TableContainer component={Paper} sx={{ display: { xs: "none", sm: "block" }, borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: "transparent", mb: 2 }}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        {["Program", "Source", "Coins Awarded", "Date"].map((h) => (
-                          <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.primary }}>
-                            {h}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {completions.map((c) => {
-                         const isChargeback = c.coins_awarded < 0;
-                         const displayAmount = isChargeback ? String(c.coins_awarded) : `+${c.coins_awarded}`;
-                         const amtColor = isChargeback ? "#f87171" : "#01D676";
-                         const amtBg = isChargeback ? "rgba(239,68,68,0.1)" : "rgba(1,214,118,0.1)";
-                         const amtBorder = isChargeback ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(1,214,118,0.2)";
-
-                         return (
-                          <TableRow key={c.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
-                            <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontSize: "0.875rem" }}>{c.program_id}</TableCell>
-                            <TableCell sx={{ borderColor: colors.divider }}>
-                              <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1.5, py: 0.25, fontSize: '0.75rem', fontWeight: 600, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'capitalize' }}>
-                                {c.source || 'unknown'}
-                              </Box>
-                            </TableCell>
-                            <TableCell sx={{ borderColor: colors.divider }}>
-                              <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, borderRadius: 50, bgcolor: amtBg, border: amtBorder, px: 1.5, py: 0.25, fontSize: "0.8rem", fontWeight: 600, color: amtColor }}>
-                                {displayAmount}
-                              </Box>
-                            </TableCell>
-                            <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.8rem", whiteSpace: "nowrap" }}>
-                              {new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-
-                {hasMoreCompletions && (
-                  <Box sx={{ textAlign: "center", mt: 2 }}>
-                    <Button
-                      onClick={loadMoreCompletions}
-                      disabled={loadingCompletions}
-                      startIcon={loadingCompletions ? <CircularProgress size={16} color="inherit" /> : <Plus size={16} />}
-                      sx={{ textTransform: "none", color: colors.text.secondary, border: `1px solid ${colors.divider}`, borderRadius: 2, px: 3, "&:hover": { bgcolor: colors.background.ternary, color: "#fff" } }}
-                    >
-                      {loadingCompletions ? "Loading..." : "Load More"}
-                    </Button>
-                  </Box>
-                )}
-              </>
-            )
-          )}
-
           {/* withdrawals tab */}
-          {activeTab === 1 && (
-            withdrawals.length === 0 ? (
-              <Paper sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 6, textAlign: "center" }}>
-                <Typography sx={{ fontSize: "0.875rem", color: colors.text.secondary }}>No withdrawals yet</Typography>
-              </Paper>
-            ) : (
+          {withdrawals.length === 0 ? (
+            <Paper sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 6, textAlign: "center" }}>
+              <Typography sx={{ fontSize: "0.875rem", color: colors.text.secondary }}>No withdrawals yet</Typography>
+            </Paper>
+          ) : (
               <>
                 {/* Mobile cards */}
                 <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1 }}>
@@ -590,8 +489,7 @@ export default function ProfileClient({
                   </Box>
                 )}
               </>
-            )
-          )}
+            )}
         </>
       )}
 
