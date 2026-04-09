@@ -230,3 +230,150 @@ For issues:
 - Query database: Use Supabase dashboard or SQL queries
 - Review postback logs: Look for `[cpx-postback]` entries
 - Test with CPX Test Button before going live
+
+
+---
+
+### 5. ✅ CRITICAL: Reversal Logic Fixed (April 9, 2026)
+
+**Problem:** When CPX sent a reversal postback (status=2), coins were NOT being deducted from user balance. In some cases, coins were even being ADDED instead of subtracted.
+
+**Root Cause:** The reversal rate protection logic was flawed:
+```typescript
+// OLD CODE (BROKEN):
+const { data: userReversals } = await supabase
+  .from('cpx_transactions')
+  .select('id')
+  .eq('userid', userid)
+  .eq('status', 2);
+
+const reversalRate = completionCount > 0 ? reversalCount / completionCount : 0;
+
+// Only deduct if reversal rate >= 5%
+if (reversalRate >= 0.05 && amount > 0) {
+  // deduct coins
+}
+```
+
+**Why it failed:**
+- The reversal rate check happened BEFORE logging the current reversal
+- On a fresh account with first reversal:
+  - completions = 1
+  - reversals = 0 (current reversal not logged yet!)
+  - rate = 0/1 = 0% < 5%
+  - Result: Deduction SKIPPED!
+
+**Example Bug:**
+```
+Fresh account test:
+1. Completion postback → balance: 0→700, total_earned: 0→700 ✓
+2. Reversal postback → balance: 700→700 (should be 0!) ✗
+   OR worse: balance: 700→1400 (added instead of subtracted!) ✗
+```
+
+**Solution:** Updated `app/api/cpx-postback/route.ts`:
+
+1. **Removed reversal rate protection** - Always deduct on reversals
+2. **Added duplicate reversal check** - Prevent double-processing
+3. **Enhanced logging** - Show balance before/after each operation
+4. **Verified database function** - `deduct_user_points` correctly subtracts
+
+**New Code:**
+```typescript
+// Check if reversal already processed
+const { data: existingReversal } = await supabase
+  .from('cpx_transactions')
+  .select('id, status')
+  .eq('transid', transid)
+  .limit(1);
+
+if (existingReversal && existingReversal.length > 0) {
+  if (existingReversal[0].status === 2) {
+    return ok('reversal_already_processed');
+  }
+}
+
+// Get balance BEFORE deduction (for logging)
+const { data: userData } = await supabase
+  .from('users')
+  .select('coins_balance, total_earned')
+  .eq('id', userid)
+  .single();
+
+log(`User balance BEFORE reversal: coins=${userData?.coins_balance}, total_earned=${userData?.total_earned}`);
+
+// ALWAYS deduct on reversals (no rate protection)
+if (amount > 0) {
+  const { error: deductError } = await supabase.rpc('deduct_user_points', {
+    p_userid: userid,
+    p_amount: amount
+  });
+  
+  // Verify deduction worked
+  const { data: updatedUser } = await supabase
+    .from('users')
+    .select('coins_balance, total_earned')
+    .eq('id', userid)
+    .single();
+    
+  log(`User balance AFTER reversal: coins=${updatedUser?.coins_balance}, total_earned=${updatedUser?.total_earned}`);
+}
+
+// Update transaction status to 2
+await supabase
+  .from('cpx_transactions')
+  .update({ status: 2, updated_at: new Date().toISOString() })
+  .eq('transid', transid)
+  .eq('status', 1);
+```
+
+**Expected Behavior (Fresh Account):**
+```
+1. Completion: transid=123, status=1, amount=700
+   → coins_balance: 0→700
+   → total_earned: 0→700
+   → cpx_transactions: INSERT (transid=123, status=1)
+
+2. Reversal: transid=123, status=2, amount=700
+   → coins_balance: 700→0 (SUBTRACT 700)
+   → total_earned: 700→700 (UNCHANGED)
+   → cpx_transactions: UPDATE (transid=123, status=1→2)
+```
+
+**Database Function Verified:**
+```sql
+CREATE OR REPLACE FUNCTION deduct_user_points(p_userid text, p_amount numeric)
+RETURNS void AS $$
+BEGIN
+  -- Deduct from coins_balance only (don't touch total_earned)
+  UPDATE users
+  SET coins_balance = GREATEST(COALESCE(coins_balance, 0) - p_amount::integer, 0)
+  WHERE id::text = p_userid;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+**Testing:**
+- Test user reset: `a123f1a9-4086-4976-99f1-2f5f5d68ba22`
+- Balance reset to: coins_balance=0, total_earned=0
+- All CPX transactions cleared
+
+**Test Sequence:**
+1. Send completion postback → Verify balance=700, total_earned=700
+2. Send reversal postback → Verify balance=0, total_earned=700
+3. Check logs for "BEFORE" and "AFTER" balance values
+4. Verify transaction status updated from 1→2
+
+---
+
+## Updated Testing Checklist
+
+### Reversal Testing (CRITICAL)
+- [ ] Fresh account: Complete +700 → balance=700, total_earned=700
+- [ ] Fresh account: Reverse -700 → balance=0, total_earned=700
+- [ ] Existing account: Complete +350 → balance increases by 350
+- [ ] Existing account: Reverse -350 → balance decreases by 350
+- [ ] Double reversal: Send same reversal twice → Second one ignored
+- [ ] Verify logs show "BEFORE" and "AFTER" balance values
+- [ ] Verify total_earned NEVER changes on reversals
+

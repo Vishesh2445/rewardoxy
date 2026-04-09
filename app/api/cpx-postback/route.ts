@@ -149,6 +149,14 @@ async function handleCpxPostback(request: NextRequest) {
 
       // Credit user if amount > 0
       if (amount > 0) {
+        // Get user's current balance BEFORE credit for logging
+        const { data: userBefore } = await supabase
+          .from('users')
+          .select('coins_balance, total_earned')
+          .eq('id', userid)
+          .single();
+
+        log(`User balance BEFORE credit: coins=${userBefore?.coins_balance || 0}, total_earned=${userBefore?.total_earned || 0}`);
         log(`Crediting user: userid=${userid}, amount=${amount}`);
 
         const { error: creditError } = await supabase.rpc('add_user_points', {
@@ -160,6 +168,14 @@ async function handleCpxPostback(request: NextRequest) {
           log(`Credit RPC failed: ${creditError.message}`);
           // Still log the transaction even if credit fails
         } else {
+          // Verify the credit worked
+          const { data: userAfter } = await supabase
+            .from('users')
+            .select('coins_balance, total_earned')
+            .eq('id', userid)
+            .single();
+
+          log(`User balance AFTER credit: coins=${userAfter?.coins_balance || 0}, total_earned=${userAfter?.total_earned || 0}`);
           log(`SUCCESS: Credited ${amount} to user ${userid}`);
         }
       } else {
@@ -195,45 +211,36 @@ async function handleCpxPostback(request: NextRequest) {
     if (statusInt === 2) {
       log(`REVERSAL: transid=${transid}, userid=${userid}, amount=${amount}`);
 
-      // Find the original completed transaction
-      const { data: original, error: findError } = await supabase
+      // Check if this reversal was already processed
+      const { data: existingReversal } = await supabase
         .from('cpx_transactions')
-        .select('*')
+        .select('id, status')
         .eq('transid', transid)
-        .eq('status', 1)
         .limit(1);
 
-      if (findError) {
-        log(`Reversal lookup error: ${findError.message}`);
-      }
-
-      if (!original || original.length === 0) {
-        log(`REVERSAL NO ORIGINAL: transid=${transid} not found with status=1`);
+      if (existingReversal && existingReversal.length > 0) {
+        if (existingReversal[0].status === 2) {
+          log(`REVERSAL ALREADY PROCESSED: transid=${transid} already has status=2`);
+          return ok('reversal_already_processed');
+        }
+      } else {
+        log(`REVERSAL NO ORIGINAL: transid=${transid} not found in database`);
         return ok('reversal_no_original');
       }
 
-      // Check user reversal rate (don't punish good users)
-      const { data: userCompletions } = await supabase
-        .from('cpx_transactions')
-        .select('id')
-        .eq('userid', userid)
-        .eq('status', 1);
+      // Get user's current balance BEFORE deduction for logging
+      const { data: userData } = await supabase
+        .from('users')
+        .select('coins_balance, total_earned')
+        .eq('id', userid)
+        .single();
 
-      const { data: userReversals } = await supabase
-        .from('cpx_transactions')
-        .select('id')
-        .eq('userid', userid)
-        .eq('status', 2);
+      log(`User balance BEFORE reversal: coins=${userData?.coins_balance || 0}, total_earned=${userData?.total_earned || 0}`);
 
-      const completionCount = userCompletions?.length || 0;
-      const reversalCount = userReversals?.length || 0;
-      const reversalRate = completionCount > 0 ? reversalCount / completionCount : 0;
-
-      log(`User reversal stats: completions=${completionCount}, reversals=${reversalCount}, rate=${(reversalRate * 100).toFixed(2)}%`);
-
-      // Only deduct if reversal rate >= 5%
-      if (reversalRate >= 0.05 && amount > 0) {
-        log(`Deducting points: reversal rate ${(reversalRate * 100).toFixed(2)}% >= 5%`);
+      // ALWAYS deduct on reversals (removed reversal rate protection)
+      // The reversal rate check was flawed because it counted reversals BEFORE logging this one
+      if (amount > 0) {
+        log(`Deducting ${amount} coins from user ${userid}`);
 
         const { error: deductError } = await supabase.rpc('deduct_user_points', {
           p_userid: userid,
@@ -242,15 +249,21 @@ async function handleCpxPostback(request: NextRequest) {
 
         if (deductError) {
           log(`Deduct RPC failed: ${deductError.message}`);
+          return ok('deduct_failed');
         } else {
           log(`SUCCESS: Deducted ${amount} from user ${userid}`);
         }
+
+        // Verify the deduction worked
+        const { data: updatedUser } = await supabase
+          .from('users')
+          .select('coins_balance, total_earned')
+          .eq('id', userid)
+          .single();
+
+        log(`User balance AFTER reversal: coins=${updatedUser?.coins_balance || 0}, total_earned=${updatedUser?.total_earned || 0}`);
       } else {
-        if (reversalRate < 0.05) {
-          log(`NOT deducting: reversal rate ${(reversalRate * 100).toFixed(2)}% < 5% (good user)`);
-        } else {
-          log(`NOT deducting: amount is 0`);
-        }
+        log(`NOT deducting: amount is 0`);
       }
 
       // Update transaction status to 2 (reversed)
