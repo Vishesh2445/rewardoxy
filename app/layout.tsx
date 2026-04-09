@@ -9,9 +9,9 @@ import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Rewardoxy — Get Paid to Complete Simple Tasks",
+  title: "Rewardoxy — Get Paid to Complete Surveys & Tasks",
   description:
-    "Complete tasks. Earn rewards. Withdraw crypto. Join thousands earning USDT by completing offers, surveys and games.",
+    "Earn real rewards by completing surveys, tasks, and offers. Join Rewardoxy and start earning today.",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -21,13 +21,34 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
+  metadataBase: new URL("https://rewardoxy.app"),
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
-    title: "Rewardoxy — Get Paid to Complete Simple Tasks",
+    title: "Rewardoxy — Get Paid to Complete Surveys & Tasks",
     description:
-      "Complete tasks. Earn rewards. Withdraw crypto. Join thousands earning USDT by completing offers, surveys and games.",
+      "Earn real rewards by completing surveys, tasks, and offers. Join Rewardoxy and start earning today.",
+    url: "https://rewardoxy.app",
     siteName: "Rewardoxy",
     images: [{ url: "/logo.png", width: 512, height: 512, alt: "Rewardoxy Logo" }],
     type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Rewardoxy — Get Paid to Complete Surveys & Tasks",
+    description:
+      "Earn real rewards by completing surveys, tasks, and offers. Join Rewardoxy and start earning today.",
+    images: ["/logo.png"],
   },
 };
 
