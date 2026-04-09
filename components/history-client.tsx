@@ -22,7 +22,6 @@ import {
   FileText,
   Smartphone,
   Coins,
-  TrendingUp,
   XCircle,
   Gift,
   Star,
@@ -81,8 +80,6 @@ export default function HistoryClient({
   const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(0);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
-  const totalCoins = completions.reduce((acc, c) => acc + c.coins_awarded, 0);
 
   async function fetchPage(newPage: number) {
     const supabase = createClient();
@@ -145,13 +142,6 @@ export default function HistoryClient({
             <Box>
               <Typography sx={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: colors.text.secondary }}>Completions</Typography>
               <Typography sx={{ fontSize: "1rem", fontWeight: 800, color: "#fff" }}>{total}</Typography>
-            </Box>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, borderRadius: 3, border: `1px solid rgba(1,214,118,0.2)`, bgcolor: "rgba(1,214,118,0.06)", px: 2, py: 1 }}>
-            <TrendingUp size={15} color="#01D676" />
-            <Box>
-              <Typography sx={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: "rgba(1,214,118,0.6)" }}>Page Coins</Typography>
-              <Typography sx={{ fontSize: "1rem", fontWeight: 800, color: "#01D676" }}>{totalCoins.toLocaleString()}</Typography>
             </Box>
           </Box>
         </Box>
