@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/dashboard/', '/profile/', '/history/', '/cashout/', '/daily-bonus/', '/banned/'],
+        disallow: ['/api/', '/dashboard/', '/admin/', '/auth/', '/profile/', '/history/', '/cashout/', '/daily-bonus/', '/banned/'],
       },
     ],
     sitemap: 'https://rewardoxy.app/sitemap.xml',
