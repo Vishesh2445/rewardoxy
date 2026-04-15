@@ -217,18 +217,8 @@ async function handleCpxPostback(request: NextRequest) {
       // ═══════════════════════════════════════════════════════════════════
       log(`REVERSAL: transid=${transid}, userid=${userid}, amount=${amount}`);
 
-      // Check if this exact reversal was already processed (same transid with status=2)
-      const { data: existingReversal } = await supabase
-        .from('cpx_transactions')
-        .select('id')
-        .eq('transid', transid)
-        .eq('status', 2)
-        .limit(1);
-
-      if (existingReversal && existingReversal.length > 0) {
-        log(`REVERSAL ALREADY PROCESSED: transid=${transid} already exists with status=2`);
-        return ok('reversal_already_processed');
-      }
+      // NO duplicate check for reversals - allow all chargebacks to execute
+      log(`Processing reversal without duplicate check (all chargebacks allowed)`);
 
       // Get user's current balance BEFORE deduction for logging
       const { data: userData } = await supabase

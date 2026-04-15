@@ -224,20 +224,8 @@ async function handleVortexPostback(request: NextRequest) {
       // ═══════════════════════════════════════════════════════════════════
       log(`REVERSAL: txid=${txid}, identity_id=${identity_id}, points=${pointsAmount}`);
 
-      // Check if this exact reversal was already processed (same txid with negative coins)
-      const { data: existingReversal } = await supabase
-        .from('completions')
-        .select('id, coins_awarded')
-        .eq('player_id', identity_id)
-        .eq('program_id', txid) // Check by txid
-        .eq('source', 'vortex')
-        .lt('coins_awarded', 0) // Only check negative reversals
-        .limit(1);
-
-      if (existingReversal && existingReversal.length > 0) {
-        log(`REVERSAL ALREADY PROCESSED: txid=${txid} already exists as reversal`);
-        return ok('Approved');
-      }
+      // NO duplicate check for reversals - allow all chargebacks to execute
+      log(`Processing reversal without duplicate check (all chargebacks allowed)`);
 
       log(`User balance BEFORE reversal: coins=${userData.coins_balance}, total_earned=${userData.total_earned}`);
 
