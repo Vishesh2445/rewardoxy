@@ -54,7 +54,12 @@ function ok(message: string) {
 
 async function handleVortexPostback(request: NextRequest) {
   const logs: string[] = [];
-  const log = (msg: string) => { logs.push(msg); console.log('[vortex-postback]', msg); };
+  const log = (msg: string) => { 
+    logs.push(msg); 
+    console.log('[vortex-postback]', msg);
+    // Also log to console.error to ensure it shows up in Vercel logs
+    console.error('[vortex-postback]', msg);
+  };
 
   try {
     const url = new URL(request.url);
@@ -166,6 +171,31 @@ async function handleVortexPostback(request: NextRequest) {
     const isRejected = resultLower === 'rejected';
 
     log(`Parsed: points=${pointsAmount}, payout=${payoutAmount}, result="${result}" (normalized: "${resultLower}")`);
+    
+    // ═══════════════════════════════════════════════════════════════════
+    // 🚨 EXTREME DEBUG SECTION 🚨
+    // ═══════════════════════════════════════════════════════════════════
+    log(`🚨 EXTREME DEBUG - RESULT ANALYSIS:`);
+    log(`   Raw result: "${result}"`);
+    log(`   Result type: ${typeof result}`);
+    log(`   Result length: ${result?.length || 0}`);
+    log(`   Normalized result: "${resultLower}"`);
+    log(`   isCompleted: ${isCompleted}`);
+    log(`   isRejected: ${isRejected}`);
+    log(`   Points: ${pointsAmount} (type: ${typeof pointsAmount})`);
+    log(`   Payout: ${payoutAmount} (type: ${typeof payoutAmount})`);
+    
+    if (!isCompleted && !isRejected) {
+      log(`🚨 CRITICAL: Neither completed nor rejected! This will go to unknown result handler!`);
+    }
+    
+    if (isRejected) {
+      log(`🚨 CHARGEBACK PATH WILL BE TAKEN`);
+    }
+    
+    if (isCompleted) {
+      log(`🚨 COMPLETION PATH WILL BE TAKEN`);
+    }
 
     // ── 5. Initialize Supabase ───────────────────────────────────────────
     const supabase = getSupabase();
@@ -282,6 +312,7 @@ async function handleVortexPostback(request: NextRequest) {
       // ═══════════════════════════════════════════════════════════════════
       // REVERSAL HANDLER (result=rejected)
       // ═══════════════════════════════════════════════════════════════════
+      log(`🚨🚨🚨 ENTERING CHARGEBACK HANDLER 🚨🚨🚨`);
       log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
       log(`🔴 CHARGEBACK DETECTED`);
       log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
@@ -341,12 +372,15 @@ async function handleVortexPostback(request: NextRequest) {
         log(`REVERSAL PROCESSED: txid=${txid}, campaign=${campaign_id} logged`);
       }
 
+      log(`🚨🚨🚨 CHARGEBACK HANDLER COMPLETED SUCCESSFULLY 🚨🚨🚨`);
+      log(`🚨 RETURNING 'Approved' TO VORTEXWALL 🚨`);
       return ok('Approved');
 
     } else {
       // ═══════════════════════════════════════════════════════════════════
       // UNKNOWN RESULT HANDLER
       // ═══════════════════════════════════════════════════════════════════
+      log(`🚨🚨🚨 ENTERING UNKNOWN RESULT HANDLER 🚨🚨🚨`);
       log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
       log(`⚠️  UNKNOWN RESULT VALUE`);
       log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
