@@ -182,6 +182,10 @@ async function handleVortexPostback(request: NextRequest) {
       return ok('Unauthorized');
     }
     log(`User found: ${identity_id}`);
+    log(`🔍 USER DEBUG INFO:`);
+    log(`   User ID: ${identity_id} (type: ${typeof identity_id})`);
+    log(`   Current balance: ${userData.coins_balance}`);
+    log(`   Total earned: ${userData.total_earned}`);
 
     // ── 7. Route to correct handler based on result ──────────────────────
     if (isCompleted) {
@@ -293,19 +297,22 @@ async function handleVortexPostback(request: NextRequest) {
       const deductAmount = Math.abs(pointsAmount);
 
       if (deductAmount > 0) {
-        log(`Deducting ${deductAmount} coins from user ${identity_id}`);
+        log(`💰 Attempting to deduct ${deductAmount} coins from user ${identity_id}`);
 
-        const { error: deductError } = await supabase.rpc('deduct_user_points', {
-          p_userid: identity_id,
-          p_amount: deductAmount
+        // Use the correct RPC function signature: (p_userid uuid, p_amount integer)
+        const { data: deductResult, error: deductError } = await supabase.rpc('deduct_user_points', {
+          p_userid: identity_id,  // UUID format
+          p_amount: Math.floor(deductAmount)  // Integer format
         });
 
         if (deductError) {
-          log(`Deduct RPC failed: ${deductError.message}`);
+          log(`❌ Deduct RPC failed: ${deductError.message}`);
+          log(`❌ Full error object: ${JSON.stringify(deductError)}`);
           return ok('Unauthorized');
         }
 
-        log(`SUCCESS: Deducted ${deductAmount} from user ${identity_id}`);
+        const newBalance = deductResult?.[0]?.new_balance ?? deductResult?.new_balance ?? '?';
+        log(`✅ SUCCESS: Deducted ${deductAmount} from user ${identity_id}. New balance: ${newBalance}`);
 
         // Verify the deduction
         const { data: updatedUser } = await supabase
