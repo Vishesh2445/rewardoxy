@@ -37,6 +37,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { getRealIP } from '@/lib/fraud-check';
+import crypto from 'crypto';
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -108,11 +109,11 @@ async function handleVortexPostback(request: NextRequest) {
     // ── 2.5. Hash Verification (Security — Optional) ─────────────────────
     const SECRET_KEY = process.env.POSTBACK_SECRET_vortex;
     
-    if (SECRET_KEY && hash) {
+    if (SECRET_KEY && hash && identity_id && campaign_id && txid) {
       // VortexWall uses SHA256: identity_id + campaign_id + txid + SECRET_KEY
-      const crypto = require('crypto');
+      const hashString = identity_id + campaign_id + txid + SECRET_KEY;
       const expectedHash = crypto.createHash('sha256')
-        .update(identity_id + campaign_id + txid + SECRET_KEY)
+        .update(hashString)
         .digest('hex');
       
       if (hash !== expectedHash) {
@@ -121,12 +122,14 @@ async function handleVortexPostback(request: NextRequest) {
         log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
         log(`Expected: ${expectedHash}`);
         log(`Received: ${hash}`);
-        log(`Hash string: ${identity_id + campaign_id + txid + SECRET_KEY}`);
+        log(`Hash string: ${hashString}`);
         return ok('Unauthorized');
       }
       log('✅ Hash verification PASSED');
     } else if (SECRET_KEY && !hash) {
       log(`⚠️  Hash verification SKIPPED: SECRET_KEY configured but no hash received`);
+    } else if (SECRET_KEY && hash && (!identity_id || !campaign_id || !txid)) {
+      log(`⚠️  Hash verification SKIPPED: Missing required parameters for hash calculation`);
     } else {
       log(`ℹ️  Hash verification DISABLED: No SECRET_KEY configured`);
     }
