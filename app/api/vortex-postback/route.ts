@@ -133,14 +133,15 @@ async function handleVortexPostback(request: NextRequest) {
       // COMPLETION HANDLER (result=completed)
       // ═══════════════════════════════════════════════════════════════════
       
-      // Check for duplicate (same txid)
+      // Check for duplicate completion (same txid with positive coins)
+      // Note: We store txid in program_id field for duplicate checking
       const { data: existing, error: checkError } = await supabase
         .from('completions')
-        .select('id')
+        .select('id, coins_awarded')
         .eq('player_id', identity_id)
-        .eq('program_id', campaign_id)
+        .eq('program_id', txid) // Use txid for duplicate check
         .eq('source', 'vortex')
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
+        .gt('coins_awarded', 0) // Only check positive completions
         .limit(1);
 
       if (checkError) {
@@ -148,7 +149,7 @@ async function handleVortexPostback(request: NextRequest) {
       }
 
       if (existing && existing.length > 0) {
-        log(`DUPLICATE COMPLETION IGNORED: Similar completion found in last 24h`);
+        log(`DUPLICATE COMPLETION IGNORED: txid=${txid} already processed as completion`);
         return ok('Approved');
       }
 
@@ -174,10 +175,10 @@ async function handleVortexPostback(request: NextRequest) {
         log(`Points is 0, skipping credit`);
       }
 
-      // Log completion record
+      // Log completion record (store txid in program_id for duplicate checking)
       const { error: insertError } = await supabase.from('completions').insert({
         player_id: identity_id,
-        program_id: campaign_id,
+        program_id: txid, // Store txid here for duplicate checking
         payout_decimal: payoutAmount,
         coins_awarded: pointsAmount,
         source: 'vortex'
@@ -186,7 +187,7 @@ async function handleVortexPostback(request: NextRequest) {
       if (insertError) {
         log(`Completion insert failed: ${insertError.message}`);
       } else {
-        log(`Completion logged: txid=${txid}`);
+        log(`Completion logged: txid=${txid}, campaign=${campaign_id}`);
       }
 
       // Check for referrer and add 5% commission
@@ -223,19 +224,18 @@ async function handleVortexPostback(request: NextRequest) {
       // ═══════════════════════════════════════════════════════════════════
       log(`REVERSAL: txid=${txid}, identity_id=${identity_id}, points=${pointsAmount}`);
 
-      // Check if this exact reversal was already processed
+      // Check if this exact reversal was already processed (same txid with negative coins)
       const { data: existingReversal } = await supabase
         .from('completions')
-        .select('id')
+        .select('id, coins_awarded')
         .eq('player_id', identity_id)
-        .eq('program_id', campaign_id)
+        .eq('program_id', txid) // Check by txid
         .eq('source', 'vortex')
-        .lt('coins_awarded', 0) // Negative coins = reversal
-        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
+        .lt('coins_awarded', 0) // Only check negative reversals
         .limit(1);
 
       if (existingReversal && existingReversal.length > 0) {
-        log(`REVERSAL ALREADY PROCESSED: Similar reversal found in last 24h`);
+        log(`REVERSAL ALREADY PROCESSED: txid=${txid} already exists as reversal`);
         return ok('Approved');
       }
 
@@ -271,10 +271,10 @@ async function handleVortexPostback(request: NextRequest) {
         log(`NOT deducting: amount is 0`);
       }
 
-      // Log reversal record (with negative points)
+      // Log reversal record (with negative points, store txid in program_id)
       const { error: insertError } = await supabase.from('completions').insert({
         player_id: identity_id,
-        program_id: campaign_id,
+        program_id: txid, // Store txid here for duplicate checking
         payout_decimal: -Math.abs(payoutAmount),
         coins_awarded: -deductAmount,
         source: 'vortex'
@@ -283,7 +283,7 @@ async function handleVortexPostback(request: NextRequest) {
       if (insertError) {
         log(`Reversal insert failed: ${insertError.message}`);
       } else {
-        log(`REVERSAL PROCESSED: txid=${txid} logged`);
+        log(`REVERSAL PROCESSED: txid=${txid}, campaign=${campaign_id} logged`);
       }
 
       return ok('Approved');
