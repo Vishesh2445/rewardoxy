@@ -15,7 +15,7 @@ type EarnContentProps = {
   cpxHash: string;
 };
 
-type WallType = "MyLead" | "CPX Research";
+type WallType = "MyLead" | "CPX Research" | "Vortex";
 
 export default function EarnContent({ userId, userName, userEmail, cpxHash }: EarnContentProps) {
   const [open, setOpen] = useState(false);
@@ -64,6 +64,10 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
       const encodedEmail = encodeURIComponent(userEmail || "");
       
       return `https://offers.cpx-research.com/index.php?app_id=${appId}&ext_user_id=${userId}&secure_hash=${cpxHash}&username=${encodedName}&email=${encodedEmail}&subid_1=&subid_2`;
+    }
+    if (activeWall === "Vortex") {
+      const placementId = "69dfafd0a982f180b5caa54c";
+      return `https://vortexwall.com/ow/${placementId}/${userId}`;
     }
     return "";
   };
@@ -116,33 +120,25 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
             <Typography variant="subtitle2" isBold sx={{ mt: 1.5, color: "#fff" }}>MyLead</Typography>
           </Paper>
 
-          {/* Torox card - coming soon */}
+          {/* Vortex card */}
           <Paper
+            onClick={() => handleOpenWall("Vortex")}
             elevation={0}
             sx={{
-              position: "relative", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              borderRadius: 4, p: { xs: 2.5, sm: 4 }, opacity: 0.6,
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              borderRadius: 4, p: { xs: 2.5, sm: 4 }, cursor: "pointer",
               bgcolor: colors.primary, border: `1px solid ${colors.divider}`,
-              cursor: "default",
+              transition: "all 0.2s ease-in-out",
+              "&:hover": { transform: "scale(1.04)", borderColor: "rgba(1,214,118,0.4)" },
             }}
           >
             <Box
-              sx={{
-                position: "absolute", top: 8, right: 8,
-                bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}`,
-                borderRadius: 2, px: 1, py: 0.25, fontSize: "0.6rem", fontWeight: 700,
-                color: colors.text.secondary, textTransform: "uppercase", letterSpacing: "0.05em",
-              }}
-            >
-              Coming Soon
-            </Box>
-            <Box
               component="img"
-              src="/torox.svg"
-              alt="Torox"
-              sx={{ width: 64, height: 64, objectFit: "contain" }}
+              src="/mobivortex-icon.png"
+              alt="Vortex"
+              sx={{ width: 64, height: 64, borderRadius: 3, objectFit: "cover" }}
             />
-            <Typography variant="subtitle2" isBold sx={{ mt: 1.5, color: "#fff" }}>Torox</Typography>
+            <Typography variant="subtitle2" isBold sx={{ mt: 1.5, color: "#fff" }}>Vortex</Typography>
           </Paper>
         </Box>
       </Box>
