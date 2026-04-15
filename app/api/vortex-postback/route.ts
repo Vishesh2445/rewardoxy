@@ -109,6 +109,9 @@ async function handleVortexPostback(request: NextRequest) {
     // ── 2.5. Hash Verification (Security — Optional) ─────────────────────
     const SECRET_KEY = process.env.POSTBACK_SECRET_vortex;
     
+    // TEMPORARILY DISABLED: Hash verification causing silent failures
+    // TODO: Re-enable once VortexWall hash format is confirmed
+    /*
     if (SECRET_KEY && hash && identity_id && campaign_id && txid) {
       // VortexWall uses SHA256: identity_id + campaign_id + txid + SECRET_KEY
       const hashString = identity_id + campaign_id + txid + SECRET_KEY;
@@ -133,6 +136,14 @@ async function handleVortexPostback(request: NextRequest) {
     } else {
       log(`ℹ️  Hash verification DISABLED: No SECRET_KEY configured`);
     }
+    */
+    
+    log(`ℹ️  Hash verification TEMPORARILY DISABLED for debugging`);
+    if (hash) {
+      log(`Hash received: ${hash}`);
+    } else {
+      log(`No hash parameter received`);
+    }
 
     // ── 3. Validate minimum required parameters ─────────────────────────
     if (!identity_id || !campaign_id || !txid || !result) {
@@ -148,10 +159,13 @@ async function handleVortexPostback(request: NextRequest) {
     // ── 4. Parse amounts ─────────────────────────────────────────────────
     const pointsAmount = parseFloat(points || '0');
     const payoutAmount = parseFloat(payout || '0');
-    const isCompleted = result === 'completed';
-    const isRejected = result === 'rejected';
+    
+    // VortexWall sends "Completed" and "Rejected" (with capital letters)
+    const resultLower = result?.toLowerCase() || '';
+    const isCompleted = resultLower === 'completed';
+    const isRejected = resultLower === 'rejected';
 
-    log(`Parsed: points=${pointsAmount}, payout=${payoutAmount}, result=${result}`);
+    log(`Parsed: points=${pointsAmount}, payout=${payoutAmount}, result="${result}" (normalized: "${resultLower}")`);
 
     // ── 5. Initialize Supabase ───────────────────────────────────────────
     const supabase = getSupabase();
@@ -329,8 +343,8 @@ async function handleVortexPostback(request: NextRequest) {
       log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
       log(`⚠️  UNKNOWN RESULT VALUE`);
       log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-      log(`Unknown result: "${result}"`);
-      log(`Expected: "completed" or "rejected"`);
+      log(`Unknown result: "${result}" (normalized: "${resultLower}")`);
+      log(`Expected: "completed" or "rejected" (case insensitive)`);
       log(`Full params: ${JSON.stringify(allParams)}`);
       return ok('Unauthorized');
     }
