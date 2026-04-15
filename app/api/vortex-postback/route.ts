@@ -137,8 +137,10 @@ async function handleVortexPostback(request: NextRequest) {
       const { data: existing, error: checkError } = await supabase
         .from('completions')
         .select('id')
-        .eq('transaction_id', txid)
+        .eq('player_id', identity_id)
+        .eq('program_id', campaign_id)
         .eq('source', 'vortex')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
         .limit(1);
 
       if (checkError) {
@@ -146,7 +148,7 @@ async function handleVortexPostback(request: NextRequest) {
       }
 
       if (existing && existing.length > 0) {
-        log(`DUPLICATE COMPLETION IGNORED: txid=${txid} already processed`);
+        log(`DUPLICATE COMPLETION IGNORED: Similar completion found in last 24h`);
         return ok('Approved');
       }
 
@@ -176,18 +178,9 @@ async function handleVortexPostback(request: NextRequest) {
       const { error: insertError } = await supabase.from('completions').insert({
         player_id: identity_id,
         program_id: campaign_id,
-        transaction_id: txid,
         payout_decimal: payoutAmount,
         coins_awarded: pointsAmount,
-        source: 'vortex',
-        metadata: {
-          campaign_name,
-          event_id,
-          event_name,
-          sub1,
-          sub2,
-          ipaddr
-        }
+        source: 'vortex'
       });
 
       if (insertError) {
@@ -237,12 +230,15 @@ async function handleVortexPostback(request: NextRequest) {
       const { data: existingReversal } = await supabase
         .from('completions')
         .select('id')
-        .eq('transaction_id', txid)
+        .eq('player_id', identity_id)
+        .eq('program_id', campaign_id)
         .eq('source', 'vortex')
+        .lt('coins_awarded', 0) // Negative coins = reversal
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
         .limit(1);
 
       if (existingReversal && existingReversal.length > 0) {
-        log(`REVERSAL ALREADY PROCESSED: txid=${txid} already exists`);
+        log(`REVERSAL ALREADY PROCESSED: Similar reversal found in last 24h`);
         return ok('Approved');
       }
 
@@ -282,19 +278,9 @@ async function handleVortexPostback(request: NextRequest) {
       const { error: insertError } = await supabase.from('completions').insert({
         player_id: identity_id,
         program_id: campaign_id,
-        transaction_id: txid,
         payout_decimal: -Math.abs(payoutAmount),
         coins_awarded: -deductAmount,
-        source: 'vortex',
-        metadata: {
-          campaign_name,
-          event_id,
-          event_name,
-          sub1,
-          sub2,
-          ipaddr,
-          reversal: true
-        }
+        source: 'vortex'
       });
 
       if (insertError) {
