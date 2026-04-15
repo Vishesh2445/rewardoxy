@@ -37,7 +37,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { getRealIP } from '@/lib/fraud-check';
-import crypto from 'crypto';
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -54,32 +53,21 @@ function ok(message: string) {
 
 async function handleVortexPostback(request: NextRequest) {
   const logs: string[] = [];
-  const log = (msg: string) => { 
-    logs.push(msg); 
-    console.log('[vortex-postback]', msg);
-    // Also log to console.error to ensure it shows up in Vercel logs
-    console.error('[vortex-postback]', msg);
-  };
+  const log = (msg: string) => { logs.push(msg); console.log('[vortex-postback]', msg); };
 
   try {
     const url = new URL(request.url);
 
-    // ── 0. Log EVERYTHING for debugging ──────────────────────────────────
+    // ── 0. Log basic request info ────────────────────────────────────────
     const clientIp = getRealIP(request);
-    log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-    log(`📥 VORTEXWALL POSTBACK RECEIVED`);
-    log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-    log(`Method: ${request.method}`);
-    log(`Full URL: ${request.url}`);
-    log(`IP: ${clientIp}`);
-    log(`User-Agent: ${request.headers.get('user-agent') || 'none'}`);
+    log(`Method: ${request.method}, IP: ${clientIp}`);
 
-    // Log all query params for debugging
+    // Log all query params
     const allParams: Record<string, string> = {};
     url.searchParams.forEach((value, key) => {
       allParams[key] = value;
     });
-    log(`All query params: ${JSON.stringify(allParams)}`);
+    log(`Params: ${JSON.stringify(allParams)}`);
 
     // ── 1. Extract VortexWall parameters ─────────────────────────────────
     const identity_id = url.searchParams.get('identity_id');     // MANDATORY: user ID
@@ -96,106 +84,32 @@ async function handleVortexPostback(request: NextRequest) {
     const sub2 = url.searchParams.get('sub2');                   // optional sub param
     const hash = url.searchParams.get('hash');                   // security hash
 
-    log(`Parsed: identity_id=${identity_id}, campaign_id=${campaign_id}, txid=${txid}, points=${points}, result=${result}, hash=${hash ? 'present' : 'missing'}`);
+    log(`Parsed: identity_id=${identity_id}, txid=${txid}, points=${points}, result=${result}`);
 
-    // ── 2. IP Whitelisting (Security — VortexWall IP only) ───────────────
+    // ── 2. IP Whitelisting ───────────────────────────────────────────────
     const VORTEX_IP = '157.230.103.196';
     
     if (clientIp !== VORTEX_IP) {
-      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-      log(`🚫 IP WHITELISTING FAILED`);
-      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-      log(`IP NOT WHITELISTED: received="${clientIp}", expected="${VORTEX_IP}"`);
-      log(`This request will be rejected for security reasons`);
+      log(`IP not whitelisted: ${clientIp}`);
       return ok('Unauthorized');
     }
-    log('✅ IP whitelisting PASSED');
 
-    // ── 2.5. Hash Verification (Security — Optional) ─────────────────────
-    const SECRET_KEY = process.env.POSTBACK_SECRET_vortex;
-    
-    // TEMPORARILY DISABLED: Hash verification causing silent failures
-    // TODO: Re-enable once VortexWall hash format is confirmed
-    /*
-    if (SECRET_KEY && hash && identity_id && campaign_id && txid) {
-      // VortexWall uses SHA256: identity_id + campaign_id + txid + SECRET_KEY
-      const hashString = identity_id + campaign_id + txid + SECRET_KEY;
-      const expectedHash = crypto.createHash('sha256')
-        .update(hashString)
-        .digest('hex');
-      
-      if (hash !== expectedHash) {
-        log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-        log(`🚫 HASH VERIFICATION FAILED`);
-        log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-        log(`Expected: ${expectedHash}`);
-        log(`Received: ${hash}`);
-        log(`Hash string: ${hashString}`);
-        return ok('Unauthorized');
-      }
-      log('✅ Hash verification PASSED');
-    } else if (SECRET_KEY && !hash) {
-      log(`⚠️  Hash verification SKIPPED: SECRET_KEY configured but no hash received`);
-    } else if (SECRET_KEY && hash && (!identity_id || !campaign_id || !txid)) {
-      log(`⚠️  Hash verification SKIPPED: Missing required parameters for hash calculation`);
-    } else {
-      log(`ℹ️  Hash verification DISABLED: No SECRET_KEY configured`);
-    }
-    */
-    
-    log(`ℹ️  Hash verification TEMPORARILY DISABLED for debugging`);
-    if (hash) {
-      log(`Hash received: ${hash}`);
-    } else {
-      log(`No hash parameter received`);
-    }
+    // ── 2.5. Hash Verification (Optional) ────────────────────────────────
+    // Note: Hash verification is disabled - using IP whitelisting only
+    // TODO: Enable hash verification when VortexWall provides secret key
 
-    // ── 3. Validate minimum required parameters ─────────────────────────
+    // ── 3. Validate required parameters ──────────────────────────────────
     if (!identity_id || !campaign_id || !txid || !result) {
-      log(`Missing required params: identity_id=${identity_id}, campaign_id=${campaign_id}, txid=${txid}, result=${result}, points=${points}`);
+      log(`Missing params: identity_id=${identity_id}, campaign_id=${campaign_id}, txid=${txid}, result=${result}`);
       return ok('Unauthorized');
-    }
-    
-    // Allow points to be missing, null, or 0 (will default to 0)
-    if (points === null || points === undefined || points === '') {
-      log(`WARNING: points parameter is missing or empty, defaulting to 0`);
     }
 
     // ── 4. Parse amounts ─────────────────────────────────────────────────
     const pointsAmount = parseFloat(points || '0');
     const payoutAmount = parseFloat(payout || '0');
-    
-    // VortexWall sends "Completed" and "Rejected" (with capital letters)
     const resultLower = result?.toLowerCase() || '';
     const isCompleted = resultLower === 'completed';
     const isRejected = resultLower === 'rejected';
-
-    log(`Parsed: points=${pointsAmount}, payout=${payoutAmount}, result="${result}" (normalized: "${resultLower}")`);
-    
-    // ═══════════════════════════════════════════════════════════════════
-    // 🚨 EXTREME DEBUG SECTION 🚨
-    // ═══════════════════════════════════════════════════════════════════
-    log(`🚨 EXTREME DEBUG - RESULT ANALYSIS:`);
-    log(`   Raw result: "${result}"`);
-    log(`   Result type: ${typeof result}`);
-    log(`   Result length: ${result?.length || 0}`);
-    log(`   Normalized result: "${resultLower}"`);
-    log(`   isCompleted: ${isCompleted}`);
-    log(`   isRejected: ${isRejected}`);
-    log(`   Points: ${pointsAmount} (type: ${typeof pointsAmount})`);
-    log(`   Payout: ${payoutAmount} (type: ${typeof payoutAmount})`);
-    
-    if (!isCompleted && !isRejected) {
-      log(`🚨 CRITICAL: Neither completed nor rejected! This will go to unknown result handler!`);
-    }
-    
-    if (isRejected) {
-      log(`🚨 CHARGEBACK PATH WILL BE TAKEN`);
-    }
-    
-    if (isCompleted) {
-      log(`🚨 COMPLETION PATH WILL BE TAKEN`);
-    }
 
     // ── 5. Initialize Supabase ───────────────────────────────────────────
     const supabase = getSupabase();
@@ -212,10 +126,6 @@ async function handleVortexPostback(request: NextRequest) {
       return ok('Unauthorized');
     }
     log(`User found: ${identity_id}`);
-    log(`🔍 USER DEBUG INFO:`);
-    log(`   User ID: ${identity_id} (type: ${typeof identity_id})`);
-    log(`   Current balance: ${userData.coins_balance}`);
-    log(`   Total earned: ${userData.total_earned}`);
 
     // ── 7. Route to correct handler based on result ──────────────────────
     if (isCompleted) {
@@ -312,38 +222,30 @@ async function handleVortexPostback(request: NextRequest) {
       // ═══════════════════════════════════════════════════════════════════
       // REVERSAL HANDLER (result=rejected)
       // ═══════════════════════════════════════════════════════════════════
-      log(`🚨🚨🚨 ENTERING CHARGEBACK HANDLER 🚨🚨🚨`);
-      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-      log(`🔴 CHARGEBACK DETECTED`);
-      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-      log(`REVERSAL: txid=${txid}, identity_id=${identity_id}, points=${pointsAmount}`);
-      log(`Campaign: ${campaign_id}`);
+      log(`Processing chargeback: txid=${txid}, points=${pointsAmount}`);
 
       // NO duplicate check for reversals - allow all chargebacks to execute
-      log(`Processing reversal without duplicate check (all chargebacks allowed)`);
-
-      log(`User balance BEFORE reversal: coins=${userData.coins_balance}, total_earned=${userData.total_earned}`);
+      log(`User balance BEFORE reversal: ${userData.coins_balance}`);
 
       // VortexWall sends negative points for reversals, so we use absolute value
       const deductAmount = Math.abs(pointsAmount);
 
       if (deductAmount > 0) {
-        log(`💰 Attempting to deduct ${deductAmount} coins from user ${identity_id}`);
+        log(`Deducting ${deductAmount} coins from user ${identity_id}`);
 
-        // Use the correct RPC function signature: (p_userid uuid, p_amount integer)
+        // Use the RPC function: deduct_user_points(p_userid uuid, p_amount integer)
         const { data: deductResult, error: deductError } = await supabase.rpc('deduct_user_points', {
-          p_userid: identity_id,  // UUID format
-          p_amount: Math.floor(deductAmount)  // Integer format
+          p_userid: identity_id,
+          p_amount: Math.floor(deductAmount)
         });
 
         if (deductError) {
-          log(`❌ Deduct RPC failed: ${deductError.message}`);
-          log(`❌ Full error object: ${JSON.stringify(deductError)}`);
+          log(`Deduct RPC failed: ${deductError.message}`);
           return ok('Unauthorized');
         }
 
         const newBalance = deductResult?.[0]?.new_balance ?? deductResult?.new_balance ?? '?';
-        log(`✅ SUCCESS: Deducted ${deductAmount} from user ${identity_id}. New balance: ${newBalance}`);
+        log(`SUCCESS: Deducted ${deductAmount} from user ${identity_id}. New balance: ${newBalance}`);
 
         // Verify the deduction
         const { data: updatedUser } = await supabase
@@ -352,7 +254,7 @@ async function handleVortexPostback(request: NextRequest) {
           .eq('id', identity_id)
           .single();
 
-        log(`User balance AFTER reversal: coins=${updatedUser?.coins_balance || 0}, total_earned=${updatedUser?.total_earned || 0}`);
+        log(`User balance AFTER reversal: ${updatedUser?.coins_balance || 0}`);
       } else {
         log(`NOT deducting: amount is 0`);
       }
@@ -369,24 +271,16 @@ async function handleVortexPostback(request: NextRequest) {
       if (insertError) {
         log(`Reversal insert failed: ${insertError.message}`);
       } else {
-        log(`REVERSAL PROCESSED: txid=${txid}, campaign=${campaign_id} logged`);
+        log(`Reversal logged: txid=${txid}`);
       }
 
-      log(`🚨🚨🚨 CHARGEBACK HANDLER COMPLETED SUCCESSFULLY 🚨🚨🚨`);
-      log(`🚨 RETURNING 'Approved' TO VORTEXWALL 🚨`);
       return ok('Approved');
 
     } else {
       // ═══════════════════════════════════════════════════════════════════
       // UNKNOWN RESULT HANDLER
       // ═══════════════════════════════════════════════════════════════════
-      log(`🚨🚨🚨 ENTERING UNKNOWN RESULT HANDLER 🚨🚨🚨`);
-      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-      log(`⚠️  UNKNOWN RESULT VALUE`);
-      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-      log(`Unknown result: "${result}" (normalized: "${resultLower}")`);
-      log(`Expected: "completed" or "rejected" (case insensitive)`);
-      log(`Full params: ${JSON.stringify(allParams)}`);
+      log(`Unknown result: "${result}"`);
       return ok('Unauthorized');
     }
 
