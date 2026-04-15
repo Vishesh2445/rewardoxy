@@ -36,7 +36,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
-import { processFraudCheck, getRealIP } from '@/lib/fraud-check';
+import { getRealIP } from '@/lib/fraud-check';
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -211,12 +211,9 @@ async function handleVortexPostback(request: NextRequest) {
         }
       }
 
-      // Silent fraud check (never block earnings)
-      try {
-        await processFraudCheck(identity_id, clientIp, 'offer_completion');
-      } catch (fraudErr) {
-        log(`Fraud check error (non-blocking): ${fraudErr}`);
-      }
+      // NOTE: NO fraud check for VortexWall postbacks
+      // The IP (157.230.103.196) is VortexWall's server, not the user's real IP
+      // Running fraud check would incorrectly flag users as VPN/country mismatch
 
       return ok('Approved');
 
