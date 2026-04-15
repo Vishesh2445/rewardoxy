@@ -1,0 +1,49 @@
+name: Refresh Leaderboard
+
+on:
+  schedule:
+    # Run every 6 hours (at 00:00, 06:00, 12:00, 18:00 UTC)
+    - cron: '0 */6 * * *'
+  
+  # Allow manual triggering for testing
+  workflow_dispatch:
+
+jobs:
+  refresh-leaderboard:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Refresh Leaderboard Cache
+        run: |
+          echo "🏆 Refreshing leaderboard cache..."
+          
+          response=$(curl -s -w "\n%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer ${{ secrets.LEADERBOARD_REFRESH_KEY }}" \
+            -H "Content-Type: application/json" \
+            "${{ secrets.NEXT_PUBLIC_APP_URL }}/api/refresh-leaderboard")
+          
+          # Extract HTTP status code (last line)
+          http_code=$(echo "$response" | tail -n1)
+          # Extract response body (all lines except last)
+          response_body=$(echo "$response" | head -n -1)
+          
+          echo "📊 Response: $response_body"
+          echo "📈 HTTP Status: $http_code"
+          
+          if [ "$http_code" -eq 200 ]; then
+            echo "✅ Leaderboard refreshed successfully!"
+            
+            # Extract count from JSON response
+            count=$(echo "$response_body" | grep -o '"count":[0-9]*' | cut -d':' -f2)
+            echo "👥 Updated leaderboard with $count users"
+          else
+            echo "❌ Failed to refresh leaderboard (HTTP $http_code)"
+            echo "Error details: $response_body"
+            exit 1
+          fi
+
+      - name: Log Completion
+        run: |
+          echo "🎯 Leaderboard refresh job completed at $(date -u)"
+          echo "⏰ Next refresh scheduled in 6 hours"

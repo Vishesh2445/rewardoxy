@@ -122,7 +122,7 @@ export default async function LeaderboardPage() {
   const [leaderboardResult, userResult] = await Promise.all([
     supabase
       .from("leaderboard_cache")
-      .select("rank, user_id, display_name, weekly_coins")
+      .select("rank, user_id, display_name, monthly_earnings")
       .order("rank", { ascending: true }),
     user
       ? supabase
@@ -302,7 +302,7 @@ export default async function LeaderboardPage() {
                           }}
                         >
                           <Coins size={13} />
-                          {row.weekly_coins.toLocaleString()}
+                          {row.monthly_earnings.toLocaleString()}
                         </Box>
                       </Paper>
                     );
@@ -340,7 +340,7 @@ export default async function LeaderboardPage() {
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, borderRadius: 50, bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)", px: 1.75, py: 0.5, fontSize: "0.875rem", fontWeight: 700, color: "#01D676" }}>
                   <Coins size={14} />
-                  {myRank.weekly_coins.toLocaleString()} coins this month
+                  {myRank.monthly_earnings.toLocaleString()} coins this month
                 </Box>
               </Paper>
             )}
@@ -411,7 +411,7 @@ export default async function LeaderboardPage() {
                           }}
                         >
                           <Coins size={12} />
-                          {row.weekly_coins.toLocaleString()}
+                          {row.monthly_earnings.toLocaleString()}
                         </Box>
                       </Box>
                     );
@@ -503,7 +503,7 @@ export default async function LeaderboardPage() {
                                   color: "#01D676",
                                 }}
                               >
-                                {row.weekly_coins.toLocaleString()}
+                                {row.monthly_earnings.toLocaleString()}
                               </Box>
                             </TableCell>
                           </TableRow>
