@@ -60,6 +60,9 @@ async function handleVortexPostback(request: NextRequest) {
 
     // ── 0. Log EVERYTHING for debugging ──────────────────────────────────
     const clientIp = getRealIP(request);
+    log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    log(`📥 VORTEXWALL POSTBACK RECEIVED`);
+    log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
     log(`Method: ${request.method}`);
     log(`Full URL: ${request.url}`);
     log(`IP: ${clientIp}`);
@@ -85,22 +88,58 @@ async function handleVortexPostback(request: NextRequest) {
     const ipaddr = url.searchParams.get('ipaddr');               // user IP
     const sub1 = url.searchParams.get('sub1');                   // optional sub param
     const sub2 = url.searchParams.get('sub2');                   // optional sub param
+    const hash = url.searchParams.get('hash');                   // security hash
 
-    log(`Parsed: identity_id=${identity_id}, campaign_id=${campaign_id}, txid=${txid}, points=${points}, result=${result}`);
+    log(`Parsed: identity_id=${identity_id}, campaign_id=${campaign_id}, txid=${txid}, points=${points}, result=${result}, hash=${hash ? 'present' : 'missing'}`);
 
     // ── 2. IP Whitelisting (Security — VortexWall IP only) ───────────────
     const VORTEX_IP = '157.230.103.196';
     
     if (clientIp !== VORTEX_IP) {
+      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      log(`🚫 IP WHITELISTING FAILED`);
+      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
       log(`IP NOT WHITELISTED: received="${clientIp}", expected="${VORTEX_IP}"`);
+      log(`This request will be rejected for security reasons`);
       return ok('Unauthorized');
     }
-    log('IP whitelisting PASSED');
+    log('✅ IP whitelisting PASSED');
+
+    // ── 2.5. Hash Verification (Security — Optional) ─────────────────────
+    const SECRET_KEY = process.env.POSTBACK_SECRET_vortex;
+    
+    if (SECRET_KEY && hash) {
+      // VortexWall uses SHA256: identity_id + campaign_id + txid + SECRET_KEY
+      const crypto = require('crypto');
+      const expectedHash = crypto.createHash('sha256')
+        .update(identity_id + campaign_id + txid + SECRET_KEY)
+        .digest('hex');
+      
+      if (hash !== expectedHash) {
+        log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        log(`🚫 HASH VERIFICATION FAILED`);
+        log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        log(`Expected: ${expectedHash}`);
+        log(`Received: ${hash}`);
+        log(`Hash string: ${identity_id + campaign_id + txid + SECRET_KEY}`);
+        return ok('Unauthorized');
+      }
+      log('✅ Hash verification PASSED');
+    } else if (SECRET_KEY && !hash) {
+      log(`⚠️  Hash verification SKIPPED: SECRET_KEY configured but no hash received`);
+    } else {
+      log(`ℹ️  Hash verification DISABLED: No SECRET_KEY configured`);
+    }
 
     // ── 3. Validate minimum required parameters ─────────────────────────
-    if (!identity_id || !campaign_id || !txid || !result || points === null) {
+    if (!identity_id || !campaign_id || !txid || !result) {
       log(`Missing required params: identity_id=${identity_id}, campaign_id=${campaign_id}, txid=${txid}, result=${result}, points=${points}`);
       return ok('Unauthorized');
+    }
+    
+    // Allow points to be missing, null, or 0 (will default to 0)
+    if (points === null || points === undefined || points === '') {
+      log(`WARNING: points parameter is missing or empty, defaulting to 0`);
     }
 
     // ── 4. Parse amounts ─────────────────────────────────────────────────
@@ -222,7 +261,11 @@ async function handleVortexPostback(request: NextRequest) {
       // ═══════════════════════════════════════════════════════════════════
       // REVERSAL HANDLER (result=rejected)
       // ═══════════════════════════════════════════════════════════════════
+      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      log(`🔴 CHARGEBACK DETECTED`);
+      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
       log(`REVERSAL: txid=${txid}, identity_id=${identity_id}, points=${pointsAmount}`);
+      log(`Campaign: ${campaign_id}`);
 
       // NO duplicate check for reversals - allow all chargebacks to execute
       log(`Processing reversal without duplicate check (all chargebacks allowed)`);
@@ -280,7 +323,12 @@ async function handleVortexPostback(request: NextRequest) {
       // ═══════════════════════════════════════════════════════════════════
       // UNKNOWN RESULT HANDLER
       // ═══════════════════════════════════════════════════════════════════
-      log(`Unknown result: ${result}`);
+      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      log(`⚠️  UNKNOWN RESULT VALUE`);
+      log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      log(`Unknown result: "${result}"`);
+      log(`Expected: "completed" or "rejected"`);
+      log(`Full params: ${JSON.stringify(allParams)}`);
       return ok('Unauthorized');
     }
 
