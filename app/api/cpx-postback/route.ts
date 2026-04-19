@@ -165,8 +165,8 @@ async function handleCpxPostback(request: NextRequest) {
         log(`User balance BEFORE credit: coins=${userBefore?.coins_balance || 0}, total_earned=${userBefore?.total_earned || 0}`);
         log(`Crediting user: userid=${userid}, amount=${amount}`);
 
-        const { error: creditError } = await supabase.rpc('add_user_points', {
-          p_userid: userid,
+        const { data: creditResult, error: creditError } = await supabase.rpc('credit_postback', {
+          p_user_id: userid,
           p_amount: amount
         });
 
@@ -174,15 +174,9 @@ async function handleCpxPostback(request: NextRequest) {
           log(`Credit RPC failed: ${creditError.message}`);
           // Still log the transaction even if credit fails
         } else {
-          // Verify the credit worked
-          const { data: userAfter } = await supabase
-            .from('users')
-            .select('coins_balance, total_earned')
-            .eq('id', userid)
-            .single();
-
-          log(`User balance AFTER credit: coins=${userAfter?.coins_balance || 0}, total_earned=${userAfter?.total_earned || 0}`);
-          log(`SUCCESS: Credited ${amount} to user ${userid}`);
+          const newBalance = creditResult?.[0]?.new_balance ?? creditResult?.new_balance ?? '?';
+          const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
+          log(`SUCCESS: Credited ${amount} to user ${userid}. New balance: ${newBalance}, New total: ${newTotal}`);
         }
       } else {
         log(`Amount is 0, skipping credit (type=${type})`);

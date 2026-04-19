@@ -69,6 +69,13 @@ export async function POST() {
     .eq("userid", user.id)
     .gte("created_at", todayStart.toISOString());
 
+  // Check Notik earnings today
+  const { data: todayNotik } = await supabase
+    .from("notik_transactions")
+    .select("amount")
+    .eq("user_id", user.id)
+    .gte("created_at", todayStart.toISOString());
+
   const todayCoinsFromCompletions = todayCompletions?.reduce(
     (sum, c) => sum + (c.coins_awarded || 0),
     0
@@ -79,7 +86,12 @@ export async function POST() {
     return sum + (c.status === 2 ? -amount : amount); // Subtract reversals
   }, 0) || 0;
 
-  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx;
+  const todayCoinsFromNotik = todayNotik?.reduce((sum, n) => {
+    const amount = Math.round(Number(n.amount || 0));
+    return sum + amount; // Notik amount can be negative for chargebacks
+  }, 0) || 0;
+
+  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik;
 
   if (todayCoinsEarned < 1000) {
     return NextResponse.json(

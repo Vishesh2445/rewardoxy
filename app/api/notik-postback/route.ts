@@ -208,25 +208,33 @@ async function handleNotikPostback(request: NextRequest) {
 
       log(`User balance BEFORE credit: coins=${userBefore?.coins_balance || 0}, total_earned=${userBefore?.total_earned || 0}`);
 
-      const { error: creditError } = await supabase.rpc('add_user_points', {
-        p_userid: user_id,
+      const { data: creditResult, error: creditError } = await supabase.rpc('credit_postback', {
+        p_user_id: user_id,
         p_amount: amountNum
       });
 
       if (creditError) {
         log(`Credit RPC failed: ${creditError.message}`);
       } else {
-        log(`SUCCESS: Credited ${amountNum} to user ${user_id}`);
+        const newBalance = creditResult?.[0]?.new_balance ?? creditResult?.new_balance ?? '?';
+        const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
+        log(`SUCCESS: Credited ${amountNum} to user ${user_id}. New balance: ${newBalance}, New total: ${newTotal}`);
       }
 
-      // Verify the credit worked
-      const { data: userAfter } = await supabase
-        .from('users')
-        .select('coins_balance, total_earned')
-        .eq('id', user_id)
-        .single();
+      // Log completion record for user history
+      const { error: completionError } = await supabase.from('completions').insert({
+        player_id: user_id,
+        program_id: offer_id || txn_id, // Use offer_id if available, otherwise txn_id
+        payout_decimal: payoutNum,
+        coins_awarded: amountNum,
+        source: 'notik'
+      });
 
-      log(`User balance AFTER credit: coins=${userAfter?.coins_balance || 0}, total_earned=${userAfter?.total_earned || 0}`);
+      if (completionError) {
+        log(`Completion insert failed: ${completionError.message}`);
+      } else {
+        log(`Completion logged: txn_id=${txn_id}, offer=${offer_name}`);
+      }
     } else {
       log(`Amount is 0, skipping credit/debit`);
     }
