@@ -28,11 +28,95 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const apiUrl = `https://notik.me/api/v2/get-offers/all?api_key=${NOTIK_API_KEY}&pub_id=${NOTIK_PUBLISHER_ID}&app_id=${NOTIK_APP_ID}`;
+    // Get country code from request headers or IP geolocation
+    let countryCode = request.headers.get('cf-ipcountry') || request.headers.get('x-vercel-ip-country');
     
-    console.log('[notik-offers] Fetching from Notik API...');
+    // If no country from headers, try to detect from IP
+    if (!countryCode) {
+      try {
+        const forwardedFor = request.headers.get('x-forwarded-for');
+        const realIp = request.headers.get('x-real-ip');
+        const cfConnectingIp = request.headers.get('cf-connecting-ip');
+        const clientIp = cfConnectingIp || forwardedFor?.split(',')[0]?.trim() || realIp;
+        
+        if (clientIp && clientIp !== '127.0.0.1' && clientIp !== '::1') {
+          const geoResponse = await fetch(`http://ip-api.com/json/${clientIp}?fields=countryCode`);
+          if (geoResponse.ok) {
+            const geoData = await geoResponse.json();
+            if (geoData.countryCode) {
+              countryCode = geoData.countryCode;
+            }
+          }
+        }
+      } catch (geoError) {
+        console.log('[notik-offers] Geo detection failed, using default');
+      }
+    }
+    
+    countryCode = countryCode || 'US';
 
-    const response = await fetch(apiUrl, {
+    // Get IP address
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const realIp = request.headers.get('x-real-ip');
+    const cfConnectingIp = request.headers.get('cf-connecting-ip');
+    const ip = cfConnectingIp || forwardedFor?.split(',')[0]?.trim() || realIp || '0.0.0.0';
+
+    // Get user agent
+    const userAgent = request.headers.get('user-agent') || '';
+
+    // Parse device info from user agent (basic parsing)
+    const isIOS = /iPhone|iPad|iPod/.test(userAgent);
+    const isAndroid = /Android/.test(userAgent);
+    const deviceName = isIOS ? 'iPhone' : isAndroid ? 'Android' : 'Desktop';
+    
+    // Extract browser info
+    let browserName = 'Chrome';
+    let browserVersion = '1.0';
+    
+    if (/Firefox/.test(userAgent)) {
+      browserName = 'Firefox';
+      const match = userAgent.match(/Firefox\/(\d+)/);
+      if (match) browserVersion = match[1];
+    } else if (/Safari/.test(userAgent) && !/Chrome/.test(userAgent)) {
+      browserName = 'Safari';
+      const match = userAgent.match(/Version\/(\d+)/);
+      if (match) browserVersion = match[1];
+    } else if (/Chrome/.test(userAgent)) {
+      browserName = 'Chrome';
+      const match = userAgent.match(/Chrome\/(\d+)/);
+      if (match) browserVersion = match[1];
+    }
+
+    // Get OS version (basic parsing)
+    let osVersion = '1.0';
+    if (isAndroid) {
+      const match = userAgent.match(/Android\s([\d.]+)/);
+      if (match) osVersion = match[1];
+    } else if (isIOS) {
+      const match = userAgent.match(/OS\s([\d_]+)/);
+      if (match) osVersion = match[1].replace(/_/g, '.');
+    }
+
+    // Build the filtered API URL with all parameters
+    const apiUrl = new URL('https://notik.me/api/v1/get-offers/filtered');
+    apiUrl.searchParams.append('api_key', NOTIK_API_KEY);
+    apiUrl.searchParams.append('pub_id', NOTIK_PUBLISHER_ID);
+    apiUrl.searchParams.append('app_id', NOTIK_APP_ID);
+    apiUrl.searchParams.append('user_id', user_id);
+    apiUrl.searchParams.append('s1', user_id); // s1 is typically user_id
+    apiUrl.searchParams.append('device_name', deviceName);
+    apiUrl.searchParams.append('device_type', device_type);
+    apiUrl.searchParams.append('device_os', device_os);
+    apiUrl.searchParams.append('os_version', osVersion);
+    apiUrl.searchParams.append('browser_name', browserName);
+    apiUrl.searchParams.append('browser_version', browserVersion);
+    apiUrl.searchParams.append('country_code', countryCode);
+    apiUrl.searchParams.append('user_agent', userAgent);
+    apiUrl.searchParams.append('ip', ip);
+    
+    console.log('[notik-offers] Fetching from Notik filtered API for country:', countryCode, 'IP:', ip);
+
+    const response = await fetch(apiUrl.toString(), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -72,11 +156,15 @@ export async function GET(request: NextRequest) {
     if (data.offers && typeof data.offers === 'object') {
       if (Array.isArray(data.offers.data)) {
         allOffers = data.offers.data;
+      } else if (Array.isArray(data.offers)) {
+        allOffers = data.offers;
       } else if (data.offers.android || data.offers.ios || data.offers.all) {
         allOffers = data.offers.all || data.offers.android || data.offers.ios || [];
       } else {
-        allOffers = Object.values(data.offers);
+        allOffers = Object.values(data.offers).filter(Array.isArray).flat();
       }
+    } else if (Array.isArray(data)) {
+      allOffers = data;
     }
     
     // Replace user ID macro in click URLs
@@ -99,7 +187,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       offers: processedOffers,
-      total: processedOffers.length
+      total: processedOffers.length,
+      country: countryCode
     });
 
   } catch (error) {
