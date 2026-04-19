@@ -64,6 +64,11 @@ function offerIcon(name: string, source?: string) {
     return OFFER_ICONS.survey;
   }
   
+  // Notik-specific icons
+  if (source === 'notik') {
+    return Gift; // Use Gift icon for Notik offers
+  }
+  
   // Regular offer icons
   const lower = name.toLowerCase();
   if (lower.includes("game") || lower.includes("play")) return OFFER_ICONS.game;
@@ -86,8 +91,8 @@ export default function HistoryClient({
     const from = newPage * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
     
-    // Fetch both completions and CPX transactions
-    const [completionsResult, cpxResult] = await Promise.all([
+    // Fetch completions, CPX transactions, and Notik transactions
+    const [completionsResult, cpxResult, notikResult] = await Promise.all([
       supabase
         .from("completions")
         .select("id, program_id, payout_decimal, coins_awarded, created_at, source", { count: "exact" })
@@ -99,6 +104,13 @@ export default function HistoryClient({
         .from("cpx_transactions")
         .select("id, transid, amount_local, status, type, created_at", { count: "exact" })
         .eq("userid", userId)
+        .order("created_at", { ascending: false })
+        .range(from, to),
+
+      supabase
+        .from("notik_transactions")
+        .select("id, txn_id, amount, offer_name, event_name, created_at", { count: "exact" })
+        .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .range(from, to),
     ]);
@@ -114,9 +126,17 @@ export default function HistoryClient({
         created_at: cpx.created_at,
         source: 'cpx',
       })),
+      ...(notikResult.data ?? []).map((notik) => ({
+        id: notik.id,
+        program_id: notik.event_name ? `Notik - ${notik.event_name}` : notik.offer_name || 'Notik Offer',
+        payout_decimal: notik.amount,
+        coins_awarded: Math.round(Number(notik.amount)),
+        created_at: notik.created_at,
+        source: 'notik',
+      })),
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0);
+    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0);
 
     if (merged) setCompletions(merged.slice(0, PAGE_SIZE));
     if (totalCount !== null) setTotal(totalCount);
@@ -129,7 +149,7 @@ export default function HistoryClient({
       <Box sx={{ mb: 4, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
         <Box>
           <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <History size={26} color="#01D676" />
+            <History size={26} color={colors.primary} />
             Earning History
           </Typography>
           <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
@@ -138,7 +158,7 @@ export default function HistoryClient({
         </Box>
         <Box sx={{ display: "flex", gap: 1.5 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, px: 2, py: 1 }}>
-            <CheckCircle size={15} color="#01D676" />
+            <CheckCircle size={15} color={colors.primary} />
             <Box>
               <Typography sx={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: colors.text.secondary }}>Completions</Typography>
               <Typography sx={{ fontSize: "1rem", fontWeight: 800, color: "#fff" }}>{total}</Typography>
@@ -174,9 +194,9 @@ export default function HistoryClient({
               const Icon = offerIcon(c.program_id, c.source);
               const isChargeback = c.coins_awarded < 0;
               const displayAmount = isChargeback ? String(c.coins_awarded) : `+${c.coins_awarded}`;
-              const amtColor = isChargeback ? "#f87171" : "#01D676";
-              const amtBg = isChargeback ? "rgba(239,68,68,0.1)" : "rgba(1,214,118,0.1)";
-              const amtBorder = isChargeback ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(1,214,118,0.2)";
+              const amtColor = isChargeback ? colors.status.error : colors.primary;
+              const amtBg = isChargeback ? "rgba(255, 68, 68, 0.1)" : "rgba(0, 208, 132, 0.1)";
+              const amtBorder = isChargeback ? "1px solid rgba(255, 68, 68, 0.2)" : "1px solid rgba(0, 208, 132, 0.2)";
 
               return (
                 <Box
@@ -191,7 +211,7 @@ export default function HistoryClient({
                     px: 2,
                     py: 1.75,
                     transition: "all 0.2s",
-                    "&:hover": { borderColor: "rgba(1,214,118,0.25)" },
+                    "&:hover": { borderColor: "rgba(0, 208, 132, 0.25)" },
                   }}
                 >
                   <Box
@@ -207,14 +227,14 @@ export default function HistoryClient({
                       flexShrink: 0,
                     }}
                   >
-                    <Icon size={20} color={isChargeback ? "#f87171" : "#01D676"} />
+                    <Icon size={20} color={isChargeback ? colors.status.error : colors.primary} />
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Typography variant="body2" sx={{ fontWeight: 600 }} truncate>
                         {c.program_id}
                       </Typography>
-                      <Box sx={{ borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1, py: 0.1, fontSize: '0.6rem', fontWeight: 700, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'uppercase', flexShrink: 0 }}>
+                      <Box sx={{ borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : c.source === 'notik' ? 'rgba(168,85,247,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : c.source === 'notik' ? '1px solid rgba(168,85,247,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1, py: 0.1, fontSize: '0.6rem', fontWeight: 700, color: c.source === 'cpx' ? '#3b82f6' : c.source === 'notik' ? '#a855f7' : '#f97316', textTransform: 'uppercase', flexShrink: 0 }}>
                         {c.source || 'unknown'}
                       </Box>
                     </Box>
@@ -290,9 +310,9 @@ export default function HistoryClient({
                   const Icon = offerIcon(c.program_id, c.source);
                   const isChargeback = c.coins_awarded < 0;
                   const displayAmount = isChargeback ? String(c.coins_awarded) : `+${c.coins_awarded}`;
-                  const amtColor = isChargeback ? "#f87171" : "#01D676";
-                  const amtBg = isChargeback ? "rgba(239,68,68,0.1)" : "rgba(1,214,118,0.1)";
-                  const amtBorder = isChargeback ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(1,214,118,0.2)";
+                  const amtColor = isChargeback ? colors.status.error : colors.primary;
+                  const amtBg = isChargeback ? "rgba(255, 68, 68, 0.1)" : "rgba(0, 208, 132, 0.1)";
+                  const amtBorder = isChargeback ? "1px solid rgba(255, 68, 68, 0.2)" : "1px solid rgba(0, 208, 132, 0.2)";
 
                   return (
                     <TableRow
@@ -313,8 +333,8 @@ export default function HistoryClient({
                       </TableCell>
                       <TableCell sx={{ borderColor: colors.divider }}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 2, bgcolor: isChargeback ? "rgba(239,68,68,0.1)" : colors.background.ternary, border: isChargeback ? "1px solid rgba(239,68,68,0.2)" : `1px solid ${colors.divider}` }}>
-                            <Icon size={15} color={isChargeback ? "#f87171" : "#01D676"} />
+                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 2, bgcolor: isChargeback ? "rgba(255, 68, 68, 0.1)" : colors.background.ternary, border: isChargeback ? "1px solid rgba(255, 68, 68, 0.2)" : `1px solid ${colors.divider}` }}>
+                            <Icon size={15} color={isChargeback ? colors.status.error : colors.primary} />
                           </Box>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
                             {c.program_id}
@@ -322,7 +342,7 @@ export default function HistoryClient({
                         </Box>
                       </TableCell>
                       <TableCell sx={{ borderColor: colors.divider }}>
-                        <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1.5, py: 0.25, fontSize: '0.75rem', fontWeight: 600, color: c.source === 'cpx' ? '#3b82f6' : '#f97316', textTransform: 'capitalize' }}>
+                        <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : c.source === 'notik' ? 'rgba(168,85,247,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : c.source === 'notik' ? '1px solid rgba(168,85,247,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1.5, py: 0.25, fontSize: '0.75rem', fontWeight: 600, color: c.source === 'cpx' ? '#3b82f6' : c.source === 'notik' ? '#a855f7' : '#f97316', textTransform: 'capitalize' }}>
                           {c.source || 'unknown'}
                         </Box>
                       </TableCell>

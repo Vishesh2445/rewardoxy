@@ -162,7 +162,7 @@ export default function DashboardClient({
 
   const stats = [
     {
-      icon: <Coins size={22} color="#01D676" />,
+      icon: <Coins size={22} color={colors.primary} />,
       label: "Coin Balance",
       value: coins.toLocaleString(),
       sub: `≈ $${usdValue} USDT`,
@@ -170,7 +170,7 @@ export default function DashboardClient({
       glow: true,
     },
     {
-      icon: <TrendingUp size={22} color="#01D676" />,
+      icon: <TrendingUp size={22} color={colors.primary} />,
       label: "Total Earned",
       value: totalEarned.toLocaleString(),
       sub: "lifetime coins",
@@ -178,7 +178,7 @@ export default function DashboardClient({
       glow: false,
     },
     {
-      icon: <Flame size={22} color="#f97316" />,
+      icon: <Flame size={22} color={colors.status.warning} />,
       label: "Day Streak",
       value: String(streak),
       sub: streak > 0 ? "🔥 Keep it up!" : "Start today!",
@@ -186,7 +186,7 @@ export default function DashboardClient({
       glow: false,
     },
     {
-      icon: <CheckCircle size={22} color="#01D676" />,
+      icon: <CheckCircle size={22} color={colors.primary} />,
       label: "Completions",
       value: String(completions.length),
       sub: "recent tasks",
@@ -198,21 +198,21 @@ export default function DashboardClient({
   const quickActions = [
     {
       href: "/earn",
-      icon: <Gift size={26} color="#01D676" />,
+      icon: <Gift size={26} color={colors.primary} />,
       title: "Complete Offers",
       description: "Earn coins by completing tasks",
       primary: true,
     },
     {
       href: "/daily-bonus",
-      icon: <CalendarCheck size={26} color="#01D676" />,
+      icon: <CalendarCheck size={26} color={colors.primary} />,
       title: "Daily Bonus",
       description: "Claim your daily streak reward",
       primary: false,
     },
     {
       href: "/cashout",
-      icon: <Wallet size={26} color="#01D676" />,
+      icon: <Wallet size={26} color={colors.primary} />,
       title: "Cash Out",
       description: "Withdraw earnings as USDT",
       primary: false,
@@ -220,9 +220,9 @@ export default function DashboardClient({
   ];
 
   const highlights = [
-    { icon: <Trophy size={18} color="#f59e0b" />, label: "Leaderboard", href: "/leaderboard" },
-    { icon: <Users size={18} color="#01D676" />, label: "Referrals", href: "/referrals" },
-    { icon: <Star size={18} color="#a78bfa" />, label: "History", href: "/history" },
+    { icon: <Trophy size={18} color={colors.status.warning} />, label: "Leaderboard", href: "/leaderboard" },
+    { icon: <Users size={18} color={colors.primary} />, label: "Referrals", href: "/referrals" },
+    { icon: <Star size={18} color={colors.secondary} />, label: "History", href: "/history" },
   ];
 
   return (
@@ -233,12 +233,19 @@ export default function DashboardClient({
         elevation={0}
         sx={{
           mb: 4,
-          borderRadius: 4,
-          border: "1px solid rgba(1,214,118,0.15)",
-          background: "linear-gradient(135deg, #1d1e30 0%, #1a2035 100%)",
+          borderRadius: 2,
+          background: colors.background.glass,
+          backdropFilter: colors.glass.backdrop,
+          border: `1px solid ${colors.glass.border}`,
           p: { xs: 3, sm: 4 },
           position: "relative",
           overflow: "hidden",
+          transition: "all 0.3s ease",
+          "&:hover": {
+            background: colors.background.glassHover,
+            borderColor: colors.glass.borderHover,
+            boxShadow: `0 8px 32px rgba(99, 102, 241, 0.1)`,
+          },
         }}
       >
         {/* background glow */}
@@ -251,7 +258,7 @@ export default function DashboardClient({
             width: 200,
             height: 200,
             borderRadius: "50%",
-            background: "rgba(1,214,118,0.07)",
+            background: "rgba(99, 102, 241, 0.08)",
             filter: "blur(60px)",
           }}
         />
@@ -265,12 +272,12 @@ export default function DashboardClient({
               width: 52,
               height: 52,
               borderRadius: "50%",
-              background: "linear-gradient(135deg, #01D676 0%, #007e45 100%)",
+              background: colors.background.gradient,
               fontWeight: 700,
               fontSize: "1.1rem",
               color: "#fff",
               flexShrink: 0,
-              boxShadow: "0 4px 16px rgba(1,214,118,0.3)",
+              boxShadow: "0 4px 16px rgba(99, 102, 241, 0.3)",
             }}
           >
             {initials}
@@ -281,7 +288,7 @@ export default function DashboardClient({
               <Box
                 component="span"
                 sx={{
-                  background: "linear-gradient(90deg,#01D676,#00a855)",
+                  background: colors.text.gradient,
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
@@ -307,8 +314,9 @@ export default function DashboardClient({
                   alignItems: "center",
                   gap: 0.75,
                   borderRadius: 50,
-                  border: `1px solid ${colors.divider}`,
-                  bgcolor: colors.background.ternary,
+                  border: `1px solid ${colors.glass.border}`,
+                  background: colors.background.glass,
+                  backdropFilter: colors.glass.backdrop,
                   px: 1.5,
                   py: 0.75,
                   fontSize: "0.75rem",
@@ -316,7 +324,7 @@ export default function DashboardClient({
                   color: colors.text.secondary,
                   textDecoration: "none",
                   transition: "all 0.2s",
-                  "&:hover": { borderColor: "rgba(1,214,118,0.3)", color: "#fff" },
+                  "&:hover": { borderColor: colors.glass.borderHover, color: colors.primary, background: colors.background.glassHover },
                 }}
               >
                 {h.icon}
@@ -334,13 +342,14 @@ export default function DashboardClient({
             <Paper
               elevation={0}
               sx={{
-                borderRadius: 4,
-                border: `1px solid ${s.glow ? "rgba(1,214,118,0.2)" : colors.divider}`,
-                bgcolor: colors.background.secondary,
+                borderRadius: 2,
+                background: colors.background.glass,
+                backdropFilter: colors.glass.backdrop,
+                border: `1px solid ${colors.glass.border}`,
                 p: { xs: 2, sm: 2.5 },
                 height: "100%",
-                transition: "all 0.2s",
-                "&:hover": { borderColor: "rgba(1,214,118,0.35)", boxShadow: "0 4px 20px rgba(1,214,118,0.06)" },
+                transition: "all 0.3s ease",
+                "&:hover": { borderColor: colors.glass.borderHover, background: colors.background.glassHover, boxShadow: `0 8px 24px rgba(99, 102, 241, 0.1)` },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
@@ -351,9 +360,9 @@ export default function DashboardClient({
                     justifyContent: "center",
                     width: 42,
                     height: 42,
-                    borderRadius: 3,
-                    bgcolor: s.glow ? "rgba(1,214,118,0.12)" : colors.background.ternary,
-                    border: `1px solid ${s.glow ? "rgba(1,214,118,0.25)" : colors.divider}`,
+                    borderRadius: 2,
+                    background: s.glow ? `rgba(99, 102, 241, 0.12)` : colors.background.secondary,
+                    border: `1px solid ${s.glow ? colors.glass.borderHover : colors.glass.border}`,
                     flexShrink: 0,
                   }}
                 >
@@ -367,13 +376,16 @@ export default function DashboardClient({
                     sx={{
                       fontSize: { xs: "1.1rem", sm: "1.35rem" },
                       fontWeight: 800,
-                      color: s.accent ? "#01D676" : "#fff",
+                      background: s.accent ? colors.text.gradient : "none",
+                      WebkitBackgroundClip: s.accent ? "text" : "unset",
+                      WebkitTextFillColor: s.accent ? "transparent" : "unset",
+                      color: s.accent ? "unset" : "#fff",
                       lineHeight: 1.2,
                     }}
                   >
                     {s.value}
                   </Typography>
-                  <Typography sx={{ fontSize: "0.7rem", color: s.accent ? "rgba(1,214,118,0.6)" : colors.text.secondary, mt: 0.25 }}>
+                  <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, mt: 0.25, opacity: 0.8 }}>
                     {s.sub}
                   </Typography>
                 </Box>
@@ -393,16 +405,17 @@ export default function DashboardClient({
           alignItems: "center",
           gap: 2,
           mb: 4,
-          borderRadius: 4,
-          border: "1px solid rgba(1,214,118,0.25)",
-          background: "linear-gradient(135deg, rgba(1,214,118,0.12) 0%, rgba(0,126,69,0.08) 100%)",
+          borderRadius: 2,
+          background: colors.background.glass,
+          backdropFilter: colors.glass.backdrop,
+          border: `1px solid ${colors.glass.borderHover}`,
           p: { xs: 2.5, sm: 3 },
           textDecoration: "none",
           color: "inherit",
-          transition: "all 0.25s",
+          transition: "all 0.3s ease",
           position: "relative",
           overflow: "hidden",
-          "&:hover": { borderColor: "rgba(1,214,118,0.5)", boxShadow: "0 6px 30px rgba(1,214,118,0.12)" },
+          "&:hover": { borderColor: colors.primary, background: colors.background.glassHover, boxShadow: `0 8px 32px rgba(99, 102, 241, 0.15)` },
         }}
       >
         <Box
@@ -412,17 +425,17 @@ export default function DashboardClient({
             justifyContent: "center",
             width: 52,
             height: 52,
-            borderRadius: 3,
-            bgcolor: "rgba(1,214,118,0.15)",
-            border: "1px solid rgba(1,214,118,0.3)",
+            borderRadius: 2,
+            background: `rgba(99, 102, 241, 0.15)`,
+            border: `1px solid ${colors.glass.borderHover}`,
             flexShrink: 0,
             animation: "pulse-glow 2.5s ease-in-out infinite",
           }}
         >
-          <CalendarCheck size={26} color="#01D676" />
+          <CalendarCheck size={26} color={colors.primary} />
         </Box>
         <Box sx={{ flex: 1 }}>
-          <Typography variant="body1" isBold sx={{ color: "#01D676" }}>
+          <Typography variant="body1" isBold sx={{ background: colors.text.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             🔥 Day {streak} Streak — Claim Your Daily Bonus!
           </Typography>
           <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 0.25 }}>
@@ -434,8 +447,8 @@ export default function DashboardClient({
             display: { xs: "none", sm: "flex" },
             alignItems: "center",
             gap: 0.5,
-            borderRadius: 3,
-            background: "linear-gradient(180deg,#01D676,#007e45)",
+            borderRadius: 2,
+            background: colors.background.gradient,
             color: "#fff",
             px: 2.5,
             py: 1,
@@ -464,17 +477,19 @@ export default function DashboardClient({
                 display: "flex",
                 alignItems: "center",
                 gap: 2,
-                borderRadius: 4,
-                border: `1px solid ${a.primary ? "rgba(1,214,118,0.25)" : colors.divider}`,
-                bgcolor: a.primary ? "rgba(1,214,118,0.07)" : colors.background.secondary,
+                borderRadius: 2,
+                background: colors.background.glass,
+                backdropFilter: colors.glass.backdrop,
+                border: `1px solid ${a.primary ? colors.glass.borderHover : colors.glass.border}`,
                 p: 2.5,
                 textDecoration: "none",
                 color: "inherit",
-                transition: "all 0.25s",
+                transition: "all 0.3s ease",
                 "&:hover": {
-                  borderColor: "rgba(1,214,118,0.4)",
-                  boxShadow: "0 4px 20px rgba(1,214,118,0.07)",
-                  transform: "translateY(-1px)",
+                  borderColor: colors.primary,
+                  background: colors.background.glassHover,
+                  boxShadow: `0 8px 24px rgba(99, 102, 241, 0.12)`,
+                  transform: "translateY(-2px)",
                 },
               }}
             >
@@ -485,9 +500,9 @@ export default function DashboardClient({
                   justifyContent: "center",
                   width: 48,
                   height: 48,
-                  borderRadius: 3,
-                  bgcolor: a.primary ? "rgba(1,214,118,0.15)" : colors.background.ternary,
-                  border: `1px solid ${a.primary ? "rgba(1,214,118,0.25)" : colors.divider}`,
+                  borderRadius: 2,
+                  background: a.primary ? `rgba(99, 102, 241, 0.15)` : colors.background.secondary,
+                  border: `1px solid ${a.primary ? colors.glass.borderHover : colors.glass.border}`,
                   flexShrink: 0,
                 }}
               >

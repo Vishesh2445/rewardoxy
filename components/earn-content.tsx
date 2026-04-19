@@ -15,7 +15,7 @@ type EarnContentProps = {
   cpxHash: string;
 };
 
-type WallType = "MyLead" | "CPX Research" | "Vortex";
+type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik";
 
 export default function EarnContent({ userId, userName, userEmail, cpxHash }: EarnContentProps) {
   const [open, setOpen] = useState(false);
@@ -69,6 +69,12 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
       const placementId = "69dfafd0a982f180b5caa54c";
       return `https://vortexwall.com/ow/${placementId}/${userId}`;
     }
+    if (activeWall === "Notik") {
+      const apiKey = "PYMTzu6owFJ8roFouth5bEYxoJRmg7q9";
+      const pubId = "mIJkTN";
+      const appId = "dOTR7kmvMw";
+      return `https://notik.me/coins?api_key=${apiKey}&pub_id=${pubId}&app_id=${appId}&user_id=${userId}`;
+    }
     return "";
   };
 
@@ -78,11 +84,13 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
     <Box sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 10, lg: 2 } }}>
       {/* Offer Walls section */}
       <Box sx={{ py: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
           <Box
             sx={{
               width: 28, height: 28, borderRadius: 1.5,
-              bgcolor: colors.background.secondary,
+              background: colors.background.glass,
+              backdropFilter: colors.glass.backdrop,
+              border: `1px solid ${colors.glass.border}`,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
@@ -90,12 +98,12 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
               sx={{
                 width: 0, height: 0, borderStyle: "solid",
                 borderWidth: "5px 0 5px 9px",
-                borderColor: `transparent transparent transparent ${colors.secondary}`,
+                borderColor: `transparent transparent transparent ${colors.primary}`,
                 ml: "1px",
               }}
             />
           </Box>
-          <Typography variant="h6" isBold>Offer Wall</Typography>
+          <Typography variant="h6" isBold>Offer Walls</Typography>
         </Box>
 
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(auto-fill, 180px)" }, gap: 2 }}>
@@ -105,17 +113,24 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
             elevation={0}
             sx={{
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              borderRadius: 4, p: { xs: 2.5, sm: 4 }, cursor: "pointer",
-              bgcolor: colors.primary, border: `1px solid ${colors.divider}`,
-              transition: "all 0.2s ease-in-out",
-              "&:hover": { transform: "scale(1.04)", borderColor: "rgba(1,214,118,0.4)" },
+              borderRadius: 2, p: { xs: 2.5, sm: 4 }, cursor: "pointer",
+              background: colors.background.glass,
+              backdropFilter: colors.glass.backdrop,
+              border: `1px solid ${colors.glass.border}`,
+              transition: "all 0.3s ease",
+              "&:hover": { 
+                transform: "translateY(-4px)", 
+                borderColor: colors.glass.borderHover,
+                background: colors.background.glassHover,
+                boxShadow: `0 12px 32px rgba(99, 102, 241, 0.15)`,
+              },
             }}
           >
             <Box
               component="img"
               src="/mylead_logo.jpg"
               alt="MyLead"
-              sx={{ width: 64, height: 64, borderRadius: 3, objectFit: "cover" }}
+              sx={{ width: 64, height: 64, borderRadius: 2, objectFit: "cover" }}
             />
             <Typography variant="subtitle2" isBold sx={{ mt: 1.5, color: "#fff" }}>MyLead</Typography>
           </Paper>
@@ -126,30 +141,67 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
             elevation={0}
             sx={{
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              borderRadius: 4, p: { xs: 2.5, sm: 4 }, cursor: "pointer",
-              bgcolor: colors.primary, border: `1px solid ${colors.divider}`,
-              transition: "all 0.2s ease-in-out",
-              "&:hover": { transform: "scale(1.04)", borderColor: "rgba(1,214,118,0.4)" },
+              borderRadius: 2, p: { xs: 2.5, sm: 4 }, cursor: "pointer",
+              background: colors.background.glass,
+              backdropFilter: colors.glass.backdrop,
+              border: `1px solid ${colors.glass.border}`,
+              transition: "all 0.3s ease",
+              "&:hover": { 
+                transform: "translateY(-4px)", 
+                borderColor: colors.glass.borderHover,
+                background: colors.background.glassHover,
+                boxShadow: `0 12px 32px rgba(99, 102, 241, 0.15)`,
+              },
             }}
           >
             <Box
               component="img"
               src="/mobivortex-icon.png"
               alt="Vortex"
-              sx={{ width: 64, height: 64, borderRadius: 3, objectFit: "cover" }}
+              sx={{ width: 64, height: 64, borderRadius: 2, objectFit: "cover" }}
             />
             <Typography variant="subtitle2" isBold sx={{ mt: 1.5, color: "#fff" }}>Vortex</Typography>
+          </Paper>
+
+          {/* Notik card */}
+          <Paper
+            onClick={() => handleOpenWall("Notik")}
+            elevation={0}
+            sx={{
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              borderRadius: 2, p: { xs: 2.5, sm: 4 }, cursor: "pointer",
+              background: colors.background.glass,
+              backdropFilter: colors.glass.backdrop,
+              border: `1px solid ${colors.glass.border}`,
+              transition: "all 0.3s ease",
+              "&:hover": { 
+                transform: "translateY(-4px)", 
+                borderColor: colors.glass.borderHover,
+                background: colors.background.glassHover,
+                boxShadow: `0 12px 32px rgba(99, 102, 241, 0.15)`,
+              },
+            }}
+          >
+            <Box
+              component="img"
+              src="/notik.jpg"
+              alt="Notik"
+              sx={{ width: 64, height: 64, borderRadius: 2, objectFit: "cover" }}
+            />
+            <Typography variant="subtitle2" isBold sx={{ mt: 1.5, color: "#fff" }}>Notik</Typography>
           </Paper>
         </Box>
       </Box>
 
       {/* Survey Partners section */}
       <Box sx={{ py: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
           <Box
             sx={{
               width: 28, height: 28, borderRadius: 1.5,
-              bgcolor: colors.background.secondary,
+              background: colors.background.glass,
+              backdropFilter: colors.glass.backdrop,
+              border: `1px solid ${colors.glass.border}`,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
@@ -157,7 +209,7 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
               sx={{
                 width: 0, height: 0, borderStyle: "solid",
                 borderWidth: "5px 0 5px 9px",
-                borderColor: `transparent transparent transparent ${colors.secondary}`,
+                borderColor: `transparent transparent transparent ${colors.primary}`,
                 ml: "1px",
               }}
             />
@@ -172,10 +224,17 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
             elevation={0}
             sx={{
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              borderRadius: 4, p: { xs: 2.5, sm: 4 }, cursor: "pointer",
-              bgcolor: colors.primary, border: `1px solid ${colors.divider}`,
-              transition: "all 0.2s ease-in-out",
-              "&:hover": { transform: "scale(1.04)", borderColor: "rgba(1,214,118,0.4)" },
+              borderRadius: 2, p: { xs: 2.5, sm: 4 }, cursor: "pointer",
+              background: colors.background.glass,
+              backdropFilter: colors.glass.backdrop,
+              border: `1px solid ${colors.glass.border}`,
+              transition: "all 0.3s ease",
+              "&:hover": { 
+                transform: "translateY(-4px)", 
+                borderColor: colors.glass.borderHover,
+                background: colors.background.glassHover,
+                boxShadow: `0 12px 32px rgba(99, 102, 241, 0.15)`,
+              },
             }}
           >
             <Box
@@ -190,7 +249,14 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
       </Box>
 
       {/* info banner */}
-      <Paper sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 2.5, mt: 1 }}>
+      <Paper sx={{ 
+        borderRadius: 2, 
+        background: colors.background.glass,
+        backdropFilter: colors.glass.backdrop,
+        border: `1px solid ${colors.glass.border}`, 
+        p: 2.5, 
+        mt: 3 
+      }}>
         <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary }}>
           Complete offers and surveys to earn coins. Coins are credited automatically after verification.
         </Typography>
@@ -203,23 +269,25 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
         fullWidth
         maxWidth="lg"
         fullScreen={isMobile}
-        PaperProps={{
-          sx: {
-            bgcolor: "#000",
-            border: `1px solid ${colors.divider}`,
-            borderRadius: 6,
-            height: "90vh", maxHeight: "90vh",
-            display: "flex", flexDirection: "column", overflow: "hidden",
-          },
-        }}
         slotProps={{
+          paper: {
+            sx: {
+              bgcolor: colors.background.default,
+              border: `1px solid ${colors.glass.border}`,
+              borderRadius: 2,
+              height: "90vh", maxHeight: "90vh",
+              display: "flex", flexDirection: "column", overflow: "hidden",
+              background: colors.background.glass,
+              backdropFilter: colors.glass.backdrop,
+            },
+          },
           backdrop: { sx: { bgcolor: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" } },
         }}
       >
         <DialogTitle
           sx={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            borderBottom: `1px solid ${colors.divider}`, px: 2.5, py: 1.5,
+            borderBottom: `1px solid ${colors.glass.border}`, px: 2.5, py: 1.5,
             bgcolor: colors.background.default
           }}
         >
@@ -230,15 +298,17 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
             onClick={() => setOpen(false)}
             size="small"
             sx={{
-              bgcolor: colors.primary, border: `1px solid ${colors.divider}`,
-              borderRadius: 2, color: colors.text.secondary, width: 32, height: 32,
-              "&:hover": { borderColor: "rgba(239,68,68,0.4)", color: "#f87171" },
+              background: colors.background.glass,
+              backdropFilter: colors.glass.backdrop,
+              border: `1px solid ${colors.glass.border}`,
+              borderRadius: 1, color: colors.text.secondary, width: 32, height: 32,
+              "&:hover": { borderColor: colors.glass.borderHover, color: colors.primary },
             }}
           >
             <CloseIcon sx={{ fontSize: 16 }} />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden", position: "relative", bgcolor: "#000" }}>
+        <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden", position: "relative", bgcolor: colors.background.default }}>
           
           {/* Loading Animation */}
           {iframeLoading && !adBlockDetected && (
@@ -246,10 +316,10 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
               sx={{
                 position: "absolute", inset: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                zIndex: 2, bgcolor: "#000"
+                zIndex: 2, bgcolor: colors.background.default
               }}
             >
-              <CircularProgress size={40} sx={{ color: colors.secondary }} />
+              <CircularProgress size={40} sx={{ color: colors.primary }} />
             </Box>
           )}
 
@@ -259,8 +329,8 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
               sx={{
                 position: "absolute", inset: 0,
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                textAlign: "center", p: 3, zIndex: 3, bgcolor: "#000",
-                border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, m: 2
+                textAlign: "center", p: 3, zIndex: 3, bgcolor: colors.background.default,
+                border: `1px solid ${colors.glass.border}`, borderRadius: 2, m: 2
               }}
             >
               <Typography sx={{ color: colors.text.secondary, mb: 1.5, fontSize: "1rem" }}>
@@ -280,7 +350,7 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
               title={`${activeWall}`}
               sx={{ 
                 width: "100%", height: "100%", border: "none", 
-                bgcolor: "#000",
+                bgcolor: colors.background.default,
                 display: adBlockDetected ? "none" : "block" 
               }}
             />

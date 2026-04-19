@@ -67,7 +67,7 @@ export default function DailyBonusClient({
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <CalendarCheck size={26} color="#01D676" />
+          <CalendarCheck size={26} color={colors.primary} />
           Daily Bonus
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
@@ -78,9 +78,9 @@ export default function DailyBonusClient({
       {/* Stats mini row */}
       <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 2, mb: 4 }}>
         {[
-          { icon: <Flame size={20} color="#f97316" />, label: "Current Streak", value: `${currentDay} days`, color: "#f97316" },
-          { icon: <Coins size={20} color="#01D676" />, label: "Today's Coins", value: `${todayCoinsEarned.toLocaleString()} / 1000`, color: "#01D676" },
-          { icon: <TrendingUp size={20} color="#a78bfa" />, label: "Status", value: isUnlocked ? "Unlocked ✓" : "Locked", color: isUnlocked ? "#01D676" : "#f97316" },
+          { icon: <Flame size={20} color={colors.status.warning} />, label: "Current Streak", value: `${currentDay} days`, color: colors.status.warning },
+          { icon: <Coins size={20} color={colors.primary} />, label: "Today's Coins", value: `${todayCoinsEarned.toLocaleString()} / 1000`, color: colors.primary },
+          { icon: <TrendingUp size={20} color={colors.secondary} />, label: "Status", value: isUnlocked ? "Unlocked ✓" : "Locked", color: isUnlocked ? colors.primary : colors.status.warning },
         ].map((s) => (
           <Paper
             key={s.label}
@@ -91,7 +91,7 @@ export default function DailyBonusClient({
               bgcolor: colors.background.secondary,
               p: { xs: 2, sm: 2.5 },
               transition: "all 0.2s",
-              "&:hover": { borderColor: "rgba(1,214,118,0.25)" },
+              "&:hover": { borderColor: "rgba(0, 208, 132, 0.25)" },
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, borderRadius: 3, bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}`, mb: 1.5 }}>
@@ -120,19 +120,19 @@ export default function DailyBonusClient({
       >
         <Box sx={{ mb: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Typography variant="subtitle1" isBold sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Flame size={20} color="#f97316" />
+            <Flame size={20} color={colors.status.warning} />
             7-Day Streak Progress
           </Typography>
           <Box
             sx={{
               borderRadius: 50,
-              bgcolor: "rgba(249,115,22,0.1)",
-              border: "1px solid rgba(249,115,22,0.25)",
+              bgcolor: "rgba(255, 107, 53, 0.1)",
+              border: "1px solid rgba(255, 107, 53, 0.25)",
               px: 1.5,
               py: 0.5,
               fontSize: "0.75rem",
               fontWeight: 700,
-              color: "#f97316",
+              color: colors.secondary,
             }}
           >
             🔥 Day {currentDay}
@@ -154,11 +154,11 @@ export default function DailyBonusClient({
                   borderRadius: 3,
                   p: { xs: 1, sm: 1.5 },
                   transition: "all 0.2s",
-                  border: `1px solid ${isCompleted ? "rgba(1,214,118,0.4)" : isCurrent ? "rgba(1,214,118,0.2)" : colors.divider}`,
+                  border: `1px solid ${isCompleted ? "rgba(0, 208, 132, 0.4)" : isCurrent ? "rgba(0, 208, 132, 0.2)" : colors.divider}`,
                   bgcolor: isCompleted
-                    ? "rgba(1,214,118,0.12)"
+                    ? "rgba(0, 208, 132, 0.12)"
                     : isCurrent
-                    ? "rgba(1,214,118,0.05)"
+                    ? "rgba(0, 208, 132, 0.05)"
                     : colors.background.ternary,
                 }}
               >
@@ -173,17 +173,17 @@ export default function DailyBonusClient({
                     width: { xs: 28, sm: 34 },
                     height: { xs: 28, sm: 34 },
                     borderRadius: "50%",
-                    bgcolor: isCompleted ? "rgba(1,214,118,0.2)" : colors.background.ternary,
-                    border: `1px solid ${isCompleted ? "rgba(1,214,118,0.3)" : colors.divider}`,
+                    bgcolor: isCompleted ? "rgba(0, 208, 132, 0.2)" : colors.background.ternary,
+                    border: `1px solid ${isCompleted ? "rgba(0, 208, 132, 0.3)" : colors.divider}`,
                   }}
                 >
                   {isCompleted ? (
-                    <CheckCircle size={15} color="#01D676" />
+                    <CheckCircle size={15} color={colors.primary} />
                   ) : (
-                    <Star size={14} color={isCurrent ? "rgba(1,214,118,0.5)" : "rgba(169,169,202,0.3)"} />
+                    <Star size={14} color={isCurrent ? "rgba(0, 208, 132, 0.5)" : "rgba(169,169,202,0.3)"} />
                   )}
                 </Box>
-                <Typography sx={{ fontSize: "10px", fontWeight: 700, color: isCompleted ? "#01D676" : colors.text.secondary }}>
+                <Typography sx={{ fontSize: "10px", fontWeight: 700, color: isCompleted ? colors.primary : colors.text.secondary }}>
                   +{dayReward}
                 </Typography>
               </Box>
@@ -200,16 +200,16 @@ export default function DailyBonusClient({
           borderRadius: 4,
           p: { xs: 3, sm: 5 },
           textAlign: "center",
-          border: claimed ? "1px solid rgba(1,214,118,0.2)" : "1px solid rgba(1,214,118,0.25)",
+          border: claimed ? "1px solid rgba(0, 208, 132, 0.2)" : "1px solid rgba(0, 208, 132, 0.25)",
           background: claimed
-            ? "linear-gradient(135deg, rgba(1,214,118,0.05) 0%, rgba(0,126,69,0.03) 100%)"
-            : "linear-gradient(135deg, rgba(1,214,118,0.1) 0%, rgba(0,126,69,0.06) 100%)",
+            ? "linear-gradient(135deg, rgba(0, 208, 132, 0.05) 0%, rgba(0,126,69,0.03) 100%)"
+            : "linear-gradient(135deg, rgba(0, 208, 132, 0.1) 0%, rgba(0,126,69,0.06) 100%)",
           position: "relative",
           overflow: "hidden",
         }}
       >
         {/* background decoration */}
-        <Box sx={{ pointerEvents: "none", position: "absolute", top: -80, left: "50%", transform: "translateX(-50%)", width: 300, height: 300, borderRadius: "50%", background: "rgba(1,214,118,0.05)", filter: "blur(80px)" }} />
+        <Box sx={{ pointerEvents: "none", position: "absolute", top: -80, left: "50%", transform: "translateX(-50%)", width: 300, height: 300, borderRadius: "50%", background: "rgba(0, 208, 132, 0.05)", filter: "blur(80px)" }} />
 
         {claimed ? (
           <Box sx={{ position: "relative" }}>
@@ -223,19 +223,19 @@ export default function DailyBonusClient({
                 width: 80,
                 height: 80,
                 borderRadius: "50%",
-                bgcolor: "rgba(1,214,118,0.12)",
-                border: "2px solid rgba(1,214,118,0.3)",
-                boxShadow: "0 0 40px rgba(1,214,118,0.2)",
+                bgcolor: "rgba(0, 208, 132, 0.12)",
+                border: "2px solid rgba(0, 208, 132, 0.3)",
+                boxShadow: "0 0 40px rgba(0, 208, 132, 0.2)",
               }}
             >
-              <CheckCircle size={40} color="#01D676" />
+              <CheckCircle size={40} color={colors.primary} />
             </Box>
             <Typography variant="h5" isBold sx={{ mb: 1 }}>
               Bonus Claimed! 🎉
             </Typography>
             <Typography variant="body1" sx={{ color: colors.text.secondary, mb: 2 }}>
               You earned{" "}
-              <Box component="span" sx={{ fontWeight: 800, color: "#01D676", fontSize: "1.2rem" }}>
+              <Box component="span" sx={{ fontWeight: 800, color: colors.primary, fontSize: "1.2rem" }}>
                 +{reward}
               </Box>{" "}
               coins today
@@ -246,8 +246,8 @@ export default function DailyBonusClient({
                 alignItems: "center",
                 gap: 1,
                 borderRadius: 50,
-                bgcolor: "rgba(1,214,118,0.08)",
-                border: "1px solid rgba(1,214,118,0.2)",
+                bgcolor: "rgba(0, 208, 132, 0.08)",
+                border: "1px solid rgba(0, 208, 132, 0.2)",
                 px: 2.5,
                 py: 1,
                 fontSize: "0.875rem",
@@ -270,13 +270,13 @@ export default function DailyBonusClient({
                 width: 80,
                 height: 80,
                 borderRadius: "50%",
-                bgcolor: "rgba(1,214,118,0.12)",
-                border: "2px solid rgba(1,214,118,0.3)",
-                boxShadow: "0 0 40px rgba(1,214,118,0.15)",
+                bgcolor: "rgba(0, 208, 132, 0.12)",
+                border: "2px solid rgba(0, 208, 132, 0.3)",
+                boxShadow: "0 0 40px rgba(0, 208, 132, 0.15)",
                 animation: "pulse-glow 2.5s ease-in-out infinite",
               }}
             >
-              <Gift size={40} color="#01D676" />
+              <Gift size={40} color={colors.primary} />
             </Box>
             <Box
               sx={{
@@ -302,20 +302,20 @@ export default function DailyBonusClient({
             <Typography variant="body1" sx={{ color: colors.text.secondary, mb: 1 }}>
               Claim your reward of
             </Typography>
-            <Typography sx={{ fontSize: "2.5rem", fontWeight: 900, color: "#01D676", mb: 3, lineHeight: 1 }}>
+            <Typography sx={{ fontSize: "2.5rem", fontWeight: 900, color: colors.primary, mb: 3, lineHeight: 1 }}>
               +{nextReward}
               <Box component="span" sx={{ fontSize: "1rem", fontWeight: 600, color: colors.text.secondary, ml: 1 }}>coins</Box>
             </Typography>
             {!isUnlocked && (
               <Box sx={{ mb: 2 }}>
-                <Box sx={{ borderRadius: 3, bgcolor: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)", px: 2, py: 1.5, fontSize: "0.875rem", color: "#f97316", display: "flex", alignItems: "center", gap: 1, justifyContent: "center" }}>
+                <Box sx={{ borderRadius: 3, bgcolor: "rgba(255, 107, 53, 0.1)", border: "1px solid rgba(255, 107, 53, 0.2)", px: 2, py: 1.5, fontSize: "0.875rem", color: colors.secondary, display: "flex", alignItems: "center", gap: 1, justifyContent: "center" }}>
                   <TrendingUp size={16} />
                   Earn {(1000 - coinsProgress).toLocaleString()} more coins to unlock! ({coinsProgress.toLocaleString()}/1000)
                 </Box>
               </Box>
             )}
             {error && (
-              <Box sx={{ mb: 2, borderRadius: 3, bgcolor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1, fontSize: "0.875rem", color: "#f87171" }}>
+              <Box sx={{ mb: 2, borderRadius: 3, bgcolor: "rgba(255, 68, 68, 0.1)", border: "1px solid rgba(255, 68, 68, 0.2)", px: 2, py: 1, fontSize: "0.875rem", color: colors.status.error }}>
                 {error}
               </Box>
             )}
@@ -327,15 +327,15 @@ export default function DailyBonusClient({
               sx={{
                 background: !isUnlocked 
                   ? "linear-gradient(180deg,#4a5568,#2d3748)" 
-                  : "linear-gradient(180deg,#01D676,#007e45)",
+                  : "linear-gradient(180deg,#00D084,#007e45)",
                 borderRadius: 3,
                 px: 6,
                 py: 1.75,
                 fontWeight: 800,
                 fontSize: "1.1rem",
                 textTransform: "none",
-                boxShadow: !isUnlocked ? "none" : "0 6px 24px rgba(1,214,118,0.3)",
-                "&:hover": { filter: !isUnlocked ? "none" : "brightness(1.1)", transform: !isUnlocked ? "none" : "translateY(-1px)", boxShadow: !isUnlocked ? "none" : "0 8px 30px rgba(1,214,118,0.35)" },
+                boxShadow: !isUnlocked ? "none" : "0 6px 24px rgba(0, 208, 132, 0.3)",
+                "&:hover": { filter: !isUnlocked ? "none" : "brightness(1.1)", transform: !isUnlocked ? "none" : "translateY(-1px)", boxShadow: !isUnlocked ? "none" : "0 8px 30px rgba(0, 208, 132, 0.35)" },
                 transition: "all 0.2s",
                 "&.Mui-disabled": {
                   background: "linear-gradient(180deg,#4a5568,#2d3748)",

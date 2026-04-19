@@ -20,7 +20,24 @@
       "env": {},
       "disabled": false,
       "autoApprove": [
-        "execute_sql"
+        "execute_sql",
+        "list_projects",
+        "apply_migration",
+        "list_tables"
+      ]
+    },
+    "stitch-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@google-cloud/stitch-mcp@latest"
+      ],
+      "env": {},
+      "disabled": false,
+      "autoApprove": [
+        "generate_screen_from_text",
+        "edit_screens",
+        "generate_variants"
       ]
     }
   }

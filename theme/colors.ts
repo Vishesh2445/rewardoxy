@@ -1,29 +1,46 @@
 const colors = {
-  primary: "#1d1e30",
-  secondary: "#01D676",
-  divider: "#2a2b43",
+  // Luminous Prism - Glassmorphic Design System
+  primary: "#6366F1", // Indigo
+  secondary: "#EC4899", // Pink
+  tertiary: "#14B8A6", // Teal
+  divider: "rgba(148, 163, 184, 0.2)",
   text: {
-    primary: "#ffffff",
-    secondary: "#a9a9ca",
+    primary: "#d9e3f6",
+    secondary: "#94a3b8",
     gradient:
-      "linear-gradient(rgb(255, 255, 255) 0%, rgb(189, 255, 206) 100%) text",
+      "linear-gradient(135deg, #d9e3f6 0%, #6366F1 100%) text",
   },
   background: {
-    default: "#141523",
-    primary: "#2F3043",
-    secondary: "#00e9411a",
-    ternary: "#252539",
-    drawer: "#212134",
-    hover: "#1e333c",
-    gradient: "linear-gradient(180deg,#01d676 0,#007e45 100%)",
+    default: "#091421", // Deep dark background
+    primary: "#16202e", // Surface container low
+    secondary: "#212b39", // Surface container
+    ternary: "#2b3544", // Surface container high
+    drawer: "#16202e",
+    hover: "rgba(99, 102, 241, 0.08)",
+    gradient: "linear-gradient(135deg, #6366F1 0%, #EC4899 100%)",
+    // Glassmorphic surfaces
+    glass: "rgba(43, 53, 68, 0.6)", // surface-container-high at 60% opacity
+    glassHover: "rgba(43, 53, 68, 0.75)",
   },
   action: {
-    active: "#a9a9ca",
+    active: "#94a3b8",
   },
   scrollBar: {
-    active: "#888",
-    thumb: "#2e2f46",
-    track: "#222337",
+    active: "#6366F1",
+    thumb: "#2b3544",
+    track: "#16202e",
+  },
+  status: {
+    success: "#14B8A6", // Teal for success
+    warning: "#f59e0b", // Amber for warnings
+    error: "#ef4444", // Red for errors
+    info: "#6366F1", // Indigo for info
+  },
+  // Glassmorphic effect colors
+  glass: {
+    border: "rgba(148, 163, 184, 0.15)", // Ghost border at 15% opacity
+    borderHover: "rgba(99, 102, 241, 0.3)",
+    backdrop: "blur(20px)",
   },
 };
 

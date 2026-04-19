@@ -190,11 +190,13 @@ export default function CashoutClient({
           elevation={0}
           sx={{
             mb: 4,
-            borderRadius: 4,
-            border: "1px solid rgba(245,158,11,0.4)",
-            bgcolor: "rgba(245,158,11,0.06)",
+            borderRadius: 2,
+            background: `rgba(245, 158, 11, 0.08)`,
+            backdropFilter: colors.glass.backdrop,
+            border: `1px solid rgba(245, 158, 11, 0.3)`,
             p: { xs: 2.5, sm: 3 },
             position: "relative",
+            transition: "all 0.3s ease",
           }}
         >
           <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
@@ -203,20 +205,21 @@ export default function CashoutClient({
                 width: 40,
                 height: 40,
                 borderRadius: 2,
-                bgcolor: "rgba(245,158,11,0.15)",
+                background: `rgba(245, 158, 11, 0.15)`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
+                border: `1px solid rgba(245, 158, 11, 0.25)`,
               }}
             >
               <AlertTriangle size={20} color="#f59e0b" />
             </Box>
             <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#fbbf24", mb: 0.5 }}>
+              <Typography sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#f59e0b", mb: 0.5 }}>
                 Cashouts Paused
               </Typography>
-              <Typography sx={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>
+              <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary, lineHeight: 1.6 }}>
                 Hey! 👋 We have noticed some unusual activity in your account. As a result, we&apos;ve paused cashouts for now. If this doesn&apos;t seem right, please contact support so we can help clear it up.
               </Typography>
               <Box sx={{ mt: 2, display: "flex", gap: 1.5, flexWrap: "wrap" }}>
@@ -229,11 +232,11 @@ export default function CashoutClient({
                     fontSize: "0.8rem",
                     fontWeight: 600,
                     color: "#f59e0b",
-                    bgcolor: "rgba(245,158,11,0.12)",
-                    border: "1px solid rgba(245,158,11,0.25)",
-                    borderRadius: 2,
+                    background: `rgba(245, 158, 11, 0.12)`,
+                    border: `1px solid rgba(245, 158, 11, 0.25)`,
+                    borderRadius: 1.5,
                     px: 2,
-                    "&:hover": { bgcolor: "rgba(245,158,11,0.2)" },
+                    "&:hover": { background: `rgba(245, 158, 11, 0.2)` },
                   }}
                 >
                   Message Support
@@ -245,8 +248,8 @@ export default function CashoutClient({
                 size="small"
                 onClick={dismissFraudBanner}
                 sx={{
-                  color: "rgba(245,158,11,0.6)",
-                  "&:hover": { color: "#f59e0b", bgcolor: "rgba(245,158,11,0.1)" },
+                  color: "rgba(245, 158, 11, 0.6)",
+                  "&:hover": { color: "#f59e0b", background: `rgba(245, 158, 11, 0.1)` },
                 }}
               >
                 <X size={18} />
@@ -259,7 +262,7 @@ export default function CashoutClient({
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Wallet size={26} color="#01D676" />
+          <Wallet size={26} color={colors.primary} />
           Cash Out
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
@@ -272,33 +275,40 @@ export default function CashoutClient({
         elevation={0}
         sx={{
           mb: 4,
-          borderRadius: 4,
-          border: "1px solid rgba(1,214,118,0.2)",
-          background: "linear-gradient(135deg, rgba(1,214,118,0.08) 0%, rgba(0,126,69,0.05) 100%)",
+          borderRadius: 2,
+          background: colors.background.glass,
+          backdropFilter: colors.glass.backdrop,
+          border: `1px solid ${colors.glass.border}`,
           p: { xs: 3, sm: 4 },
           position: "relative",
           overflow: "hidden",
+          transition: "all 0.3s ease",
+          "&:hover": {
+            background: colors.background.glassHover,
+            borderColor: colors.glass.borderHover,
+            boxShadow: `0 8px 32px rgba(99, 102, 241, 0.1)`,
+          },
         }}
       >
-        <Box sx={{ pointerEvents: "none", position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(1,214,118,0.06)", filter: "blur(50px)" }} />
+        <Box sx={{ pointerEvents: "none", position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(99, 102, 241, 0.08)", filter: "blur(50px)" }} />
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, alignItems: "center" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 3, bgcolor: "rgba(1,214,118,0.15)", border: "1px solid rgba(1,214,118,0.25)" }}>
-              <Coins size={26} color="#01D676" />
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 2, background: `rgba(99, 102, 241, 0.15)`, border: `1px solid ${colors.glass.borderHover}` }}>
+              <Coins size={26} color={colors.primary} />
             </Box>
             <Box>
-              <Typography sx={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(1,214,118,0.7)" }}>Available Balance</Typography>
-              <Typography sx={{ fontSize: "2rem", fontWeight: 800, color: "#01D676", lineHeight: 1.1 }}>
+              <Typography sx={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: colors.text.secondary }}>Available Balance</Typography>
+              <Typography sx={{ fontSize: "2rem", fontWeight: 800, background: colors.text.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", lineHeight: 1.1 }}>
                 {coins.toLocaleString()}
               </Typography>
-              <Typography sx={{ fontSize: "0.8rem", color: "rgba(1,214,118,0.55)" }}>coins</Typography>
+              <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary, opacity: 0.7 }}>coins</Typography>
             </Box>
           </Box>
 
-          <Box sx={{ borderLeft: { sm: `1px solid rgba(1,214,118,0.15)` }, pl: { sm: 3 } }}>
+          <Box sx={{ borderLeft: { sm: `1px solid ${colors.glass.border}` }, pl: { sm: 3 } }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 3, bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}` }}>
-                <DollarSign size={26} color="#01D676" />
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 2, background: colors.background.secondary, border: `1px solid ${colors.glass.border}` }}>
+                <DollarSign size={26} color={colors.primary} />
               </Box>
               <Box>
                 <Typography sx={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: colors.text.secondary }}>USD Value</Typography>
@@ -336,7 +346,7 @@ export default function CashoutClient({
             textAlign: "center",
           }}
         >
-          <Typography variant="h6" sx={{ color: "#f87171", mb: 1, fontWeight: 700 }}>
+          <Typography variant="h6" sx={{ color: colors.status.error, mb: 1, fontWeight: 700 }}>
             Account Banned
           </Typography>
           <Typography variant="body2" sx={{ color: colors.text.secondary }}>
@@ -355,7 +365,7 @@ export default function CashoutClient({
             textAlign: "center",
           }}
         >
-          <Typography variant="h6" sx={{ color: "#f59e0b", mb: 1, fontWeight: 700 }}>
+          <Typography variant="h6" sx={{ color: colors.status.warning, mb: 1, fontWeight: 700 }}>
             Email Verification Required
           </Typography>
           <Typography variant="body2" sx={{ color: colors.text.secondary }}>
@@ -376,7 +386,7 @@ export default function CashoutClient({
             }}
           >
             <Typography variant="subtitle1" isBold sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
-              <Wallet size={20} color="#01D676" />
+              <Wallet size={20} color={colors.primary} />
               Withdrawal Details
             </Typography>
 
@@ -389,7 +399,7 @@ export default function CashoutClient({
                     <Box
                       component="span"
                       onClick={() => setAmountCoins(coins)}
-                      sx={{ color: "#01D676", fontSize: "0.8rem", cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
+                      sx={{ color: colors.primary, fontSize: "0.8rem", cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
                     >
                       Max: {coins.toLocaleString()}
                     </Box>
@@ -489,7 +499,7 @@ export default function CashoutClient({
                     }}
                   >
                     <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary }}>{row.label}</Typography>
-                    <Typography sx={{ fontSize: "0.8rem", fontWeight: 700, color: row.accent ? "#01D676" : "#fff" }}>{row.value}</Typography>
+                    <Typography sx={{ fontSize: "0.8rem", fontWeight: 700, color: row.accent ? colors.primary : "#fff" }}>{row.value}</Typography>
                   </Box>
                 ))}
                 {coins < MIN_COINS ? (
@@ -497,19 +507,19 @@ export default function CashoutClient({
                     ⚠ You need at least {MIN_COINS.toLocaleString()} coins (${(MIN_COINS / COINS_PER_USD).toFixed(2)}) to withdraw
                   </Box>
                 ) : (typeof amountCoins === "number" && amountCoins > coins) ? (
-                  <Box sx={{ mt: 1.5, borderRadius: 2, bgcolor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1, fontSize: "0.75rem", color: "#f87171" }}>
+                  <Box sx={{ mt: 1.5, borderRadius: 2, bgcolor: "rgba(255, 68, 68, 0.08)", border: "1px solid rgba(255, 68, 68, 0.2)", px: 2, py: 1, fontSize: "0.75rem", color: colors.status.error }}>
                     ⚠ You do not have enough coins
                   </Box>
                 ) : null}
               </Box>
 
               {error && (
-                <Box sx={{ borderRadius: 2, bgcolor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: "#f87171" }}>
+                <Box sx={{ borderRadius: 2, bgcolor: "rgba(255, 68, 68, 0.1)", border: "1px solid rgba(255, 68, 68, 0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: colors.status.error }}>
                   {error}
                 </Box>
               )}
               {success && (
-                <Box sx={{ borderRadius: 2, bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: "#01D676" }}>
+                <Box sx={{ borderRadius: 2, bgcolor: "rgba(0, 208, 132, 0.1)", border: "1px solid rgba(0, 208, 132, 0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: colors.primary }}>
                   ✓ {success}
                 </Box>
               )}
@@ -523,11 +533,11 @@ export default function CashoutClient({
                 sx={{
                   py: 1.5,
                   borderRadius: 3,
-                  background: "linear-gradient(180deg,#01D676,#007e45)",
+                  background: "linear-gradient(180deg,#00D084,#007e45)",
                   fontWeight: 700,
                   fontSize: "1rem",
                   textTransform: "none",
-                  boxShadow: "0 4px 16px rgba(1,214,118,0.25)",
+                  boxShadow: "0 4px 16px rgba(0, 208, 132, 0.25)",
                   "&:hover": { filter: "brightness(1.1)" },
                   "&.Mui-disabled": { opacity: 0.4, color: "#fff" },
                 }}
@@ -542,7 +552,7 @@ export default function CashoutClient({
       {/* Withdrawal history */}
       <Box>
         <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <Clock size={18} color="#01D676" />
+          <Clock size={18} color={colors.primary} />
           <Typography variant="subtitle1" isBold>Withdrawal History</Typography>
           <Box sx={{ ml: 1, borderRadius: 50, bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}`, px: 1.25, py: 0.25, fontSize: "0.7rem", color: colors.text.secondary }}>
             {total} total
@@ -579,7 +589,7 @@ export default function CashoutClient({
                       </Box>
                       {w.tx_hash && (
                         <Box component="a" href={`${EXPLORER_URLS}${w.tx_hash}`} target="_blank" rel="noopener noreferrer"
-                          sx={{ display: "flex", alignItems: "center", gap: 0.5, fontSize: "0.75rem", color: "#01D676", textDecoration: "none", "&:hover": { opacity: 0.8 } }}>
+                          sx={{ display: "flex", alignItems: "center", gap: 0.5, fontSize: "0.75rem", color: colors.primary, textDecoration: "none", "&:hover": { opacity: 0.8 } }}>
                           Tx <ExternalLink size={12} />
                         </Box>
                       )}
@@ -610,7 +620,7 @@ export default function CashoutClient({
                           {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                         </TableCell>
                         <TableCell sx={{ fontWeight: 600, color: "#fff", borderColor: colors.divider }}>{w.coins.toLocaleString()}</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: "#01D676", borderColor: colors.divider }}>${w.amount_usd.toFixed(2)}</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: colors.primary, borderColor: colors.divider }}>${w.amount_usd.toFixed(2)}</TableCell>
                         <TableCell sx={{ color: colors.text.secondary, borderColor: colors.divider, fontSize: "0.8rem" }}>LTC</TableCell>
                         <TableCell sx={{ borderColor: colors.divider }}>
                           <Box component="span" sx={{ borderRadius: 50, border: `1px solid ${st.border}`, bgcolor: st.bg, color: st.color, px: 1.25, py: 0.35, fontSize: "10px", fontWeight: 700, textTransform: "uppercase" }}>

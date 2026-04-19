@@ -68,7 +68,7 @@ export default function ReferralsClient({
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Users size={26} color="#01D676" />
+          <Users size={26} color={colors.primary} />
           Referrals
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
@@ -82,14 +82,14 @@ export default function ReferralsClient({
         sx={{
           mb: 4,
           borderRadius: 4,
-          border: "1px solid rgba(1,214,118,0.2)",
-          background: "linear-gradient(135deg, rgba(1,214,118,0.1) 0%, rgba(0,126,69,0.05) 100%)",
+          border: "1px solid rgba(0, 208, 132, 0.2)",
+          background: "linear-gradient(135deg, rgba(0, 208, 132, 0.1) 0%, rgba(0,126,69,0.05) 100%)",
           p: { xs: 3, sm: 4 },
           position: "relative",
           overflow: "hidden",
         }}
       >
-        <Box sx={{ pointerEvents: "none", position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", background: "rgba(1,214,118,0.07)", filter: "blur(60px)" }} />
+        <Box sx={{ pointerEvents: "none", position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", background: "rgba(0, 208, 132, 0.07)", filter: "blur(60px)" }} />
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 3, flexWrap: "wrap" }}>
           <Box
             sx={{
@@ -99,18 +99,18 @@ export default function ReferralsClient({
               width: 60,
               height: 60,
               borderRadius: 4,
-              bgcolor: "rgba(1,214,118,0.15)",
-              border: "1px solid rgba(1,214,118,0.3)",
-              boxShadow: "0 4px 20px rgba(1,214,118,0.2)",
+              bgcolor: "rgba(0, 208, 132, 0.15)",
+              border: "1px solid rgba(0, 208, 132, 0.3)",
+              boxShadow: "0 4px 20px rgba(0, 208, 132, 0.2)",
               flexShrink: 0,
             }}
           >
-            <Gift size={30} color="#01D676" />
+            <Gift size={30} color={colors.primary} />
           </Box>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h6" isBold sx={{ mb: 0.5 }}>
               Earn{" "}
-              <Box component="span" sx={{ background: "linear-gradient(90deg,#01D676,#00a855)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              <Box component="span" sx={{ background: "linear-gradient(90deg,#00D084,#00a855)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 5%
               </Box>{" "}
               of Referral Earnings
@@ -147,7 +147,7 @@ export default function ReferralsClient({
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
-                  background: "linear-gradient(135deg,#01D676,#007e45)",
+                  background: "linear-gradient(135deg,#00D084,#007e45)",
                   fontWeight: 800,
                   fontSize: "0.8rem",
                   color: "#fff",
@@ -177,7 +177,7 @@ export default function ReferralsClient({
         }}
       >
         <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <Link2 size={18} color="#01D676" />
+          <Link2 size={18} color={colors.primary} />
           <Typography variant="subtitle1" isBold>Your Referral Link</Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 1.5, flexWrap: { xs: "wrap", sm: "nowrap" } }}>
@@ -192,7 +192,7 @@ export default function ReferralsClient({
                 fontSize: "0.85rem",
                 color: colors.text.secondary,
                 "& fieldset": { borderColor: colors.divider },
-                "&:hover fieldset": { borderColor: "rgba(1,214,118,0.3)" },
+                "&:hover fieldset": { borderColor: "rgba(0, 208, 132, 0.3)" },
               },
             }}
           />
@@ -211,13 +211,13 @@ export default function ReferralsClient({
               ...(copied
                 ? {
                     bgcolor: colors.background.secondary,
-                    color: "#01D676",
-                    border: "1px solid rgba(1,214,118,0.3)",
+                    color: colors.primary,
+                    border: "1px solid rgba(0, 208, 132, 0.3)",
                     "&:hover": { bgcolor: colors.background.secondary },
                   }
                 : {
-                    background: "linear-gradient(180deg,#01D676,#007e45)",
-                    boxShadow: "0 4px 14px rgba(1,214,118,0.25)",
+                    background: "linear-gradient(180deg,#00D084,#007e45)",
+                    boxShadow: "0 4px 14px rgba(0, 208, 132, 0.25)",
                     "&:hover": { filter: "brightness(1.1)" },
                   }),
             }}
@@ -253,8 +253,8 @@ export default function ReferralsClient({
           sx={{
             mb: 4,
             borderRadius: 4,
-            border: "1px solid rgba(1,214,118,0.3)",
-            bgcolor: "rgba(1,214,118,0.1)",
+            border: "1px solid rgba(0, 208, 132, 0.3)",
+            bgcolor: "rgba(0, 208, 132, 0.1)",
             p: 3,
             display: "flex",
             alignItems: "center",
@@ -272,10 +272,10 @@ export default function ReferralsClient({
                 width: 48,
                 height: 48,
                 borderRadius: "50%",
-                bgcolor: "rgba(1,214,118,0.2)",
+                bgcolor: "rgba(0, 208, 132, 0.2)",
               }}
             >
-              <GiftIcon size={24} color="#01D676" />
+              <GiftIcon size={24} color={colors.primary} />
             </Box>
             <Box>
               <Typography sx={{ fontWeight: 700, fontSize: "1.1rem" }}>
@@ -292,7 +292,7 @@ export default function ReferralsClient({
             disabled={claiming || claimSuccess}
             startIcon={claiming ? <CircularProgress size={16} /> : claimSuccess ? <Check size={16} /> : <GiftIcon size={16} />}
             sx={{
-              background: claimSuccess ? "#01D676" : colors.background.gradient,
+              background: claimSuccess ? colors.primary : colors.background.gradient,
               fontWeight: 700,
               px: 3,
               py: 1,
@@ -310,10 +310,10 @@ export default function ReferralsClient({
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 4 }}>
         {[
           {
-            icon: <Users size={22} color="#01D676" />,
+            icon: <Users size={22} color={colors.primary} />,
           },
           {
-            icon: <Coins size={22} color="#f59e0b" />
+            icon: <Coins size={22} color={colors.status.warning} />
           },
         ].map((s, idx) => (
           <Paper
@@ -325,7 +325,7 @@ export default function ReferralsClient({
               bgcolor: colors.background.secondary,
               p: { xs: 2.5, sm: 3 },
               transition: "all 0.2s",
-              "&:hover": { borderColor: "rgba(1,214,118,0.25)" },
+              "&:hover": { borderColor: "rgba(0, 208, 132, 0.25)" },
             }}
           >
             <Box
@@ -346,7 +346,7 @@ export default function ReferralsClient({
             <Typography sx={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: colors.text.secondary }}>
               {idx === 0 ? "Total Referrals" : "Total Earned"}
             </Typography>
-            <Typography sx={{ fontSize: "2rem", fontWeight: 900, color: idx === 0 ? "#01D676" : "#f59e0b", lineHeight: 1.1, mt: 0.25 }}>
+            <Typography sx={{ fontSize: "2rem", fontWeight: 900, color: idx === 0 ? colors.primary : colors.status.warning, lineHeight: 1.1, mt: 0.25 }}>
               {idx === 0 ? totalReferrals.toString() : totalCoins.toLocaleString()}
             </Typography>
             <Typography sx={{ fontSize: "0.72rem", color: colors.text.secondary, mt: 0.25 }}>
@@ -359,7 +359,7 @@ export default function ReferralsClient({
       {/* Referral list */}
       <Box>
         <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <Users size={18} color="#01D676" />
+          <Users size={18} color={colors.primary} />
           Your Referrals
         </Typography>
         {referrals.length === 0 ? (
@@ -385,7 +385,7 @@ export default function ReferralsClient({
               variant="contained"
               endIcon={<ArrowRight size={16} />}
               sx={{
-                background: "linear-gradient(180deg,#01D676,#007e45)",
+                background: "linear-gradient(180deg,#00D084,#007e45)",
                 borderRadius: 3,
                 px: 3,
                 py: 1,
@@ -412,12 +412,12 @@ export default function ReferralsClient({
                   px: 2.5,
                   py: 2,
                   transition: "all 0.2s",
-                  "&:hover": { bgcolor: colors.background.ternary, borderColor: "rgba(1,214,118,0.2)" },
+                  "&:hover": { bgcolor: colors.background.ternary, borderColor: "rgba(0, 208, 132, 0.2)" },
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, borderRadius: "50%", bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}` }}>
-                    <Users size={16} color="#01D676" />
+                    <Users size={16} color={colors.primary} />
                   </Box>
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{r.masked_email}</Typography>

@@ -18,7 +18,7 @@ export default async function HistoryPage() {
     redirect("/auth/login");
   }
 
-  const [userResult, completionsResult, cpxResult] = await Promise.all([
+  const [userResult, completionsResult, cpxResult, notikResult] = await Promise.all([
     supabase
       .from("users")
       .select("coins_balance")
@@ -43,11 +43,21 @@ export default async function HistoryPage() {
       .eq("userid", user.id)
       .order("created_at", { ascending: false })
       .range(0, PAGE_SIZE - 1),
+
+    // Fetch Notik transactions
+    supabase
+      .from("notik_transactions")
+      .select("id, txn_id, amount, offer_name, event_name, created_at", {
+        count: "exact",
+      })
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .range(0, PAGE_SIZE - 1),
   ]);
 
   const coins = userResult.data?.coins_balance ?? 0;
 
-  // Merge completions and CPX transactions
+  // Merge completions, CPX transactions, and Notik transactions
   const allCompletions = [
     ...(completionsResult.data ?? []),
     ...(cpxResult.data ?? []).map((cpx) => ({
@@ -58,9 +68,17 @@ export default async function HistoryPage() {
       created_at: cpx.created_at,
       source: 'cpx',
     })),
+    ...(notikResult.data ?? []).map((notik) => ({
+      id: notik.id,
+      program_id: notik.event_name ? `Notik - ${notik.event_name}` : notik.offer_name || 'Notik Offer',
+      payout_decimal: notik.amount,
+      coins_awarded: Math.round(Number(notik.amount)),
+      created_at: notik.created_at,
+      source: 'notik',
+    })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0);
+  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0);
 
   return (
     <AppShell coins={coins}>

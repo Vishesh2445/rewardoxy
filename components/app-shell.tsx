@@ -16,7 +16,6 @@ import {
   ListItemText,
   Paper,
   Divider,
-  Grid,
   BottomNavigation as MuiBottomNavigation,
   BottomNavigationAction as MuiBottomNavigationAction,
   styled,
@@ -32,7 +31,6 @@ import {
   History,
   CalendarCheck,
   LogOut,
-  Coins,
   Menu,
   X,
   Mail,
@@ -110,7 +108,7 @@ const StyledBottomNavAction = styled(MuiBottomNavigationAction, {
   maxWidth: "none",
   flex: 1,
   padding: "6px 0 8px",
-  color: isActive ? "#01D676" : colors.text.secondary,
+  color: isActive ? colors.primary : colors.text.secondary,
   transition: "color 0.2s",
   "& .MuiBottomNavigationAction-label": {
     fontSize: "0.625rem",
@@ -145,10 +143,17 @@ export default function AppShell({ children, coins }: AppShellProps) {
   const balanceCard = (
     <Box
       sx={{
-        borderRadius: 3,
-        bgcolor: colors.background.secondary,
-        border: "1px solid rgba(1, 214, 118, 0.2)",
+        borderRadius: 2,
+        background: colors.background.glass,
+        backdropFilter: colors.glass.backdrop,
+        border: `1px solid ${colors.glass.border}`,
         p: 2,
+        transition: "all 0.3s ease",
+        "&:hover": {
+          background: colors.background.glassHover,
+          borderColor: colors.glass.borderHover,
+          boxShadow: `0 8px 24px rgba(99, 102, 241, 0.1)`,
+        },
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
@@ -160,16 +165,16 @@ export default function AppShell({ children, coins }: AppShellProps) {
             fontWeight: 600,
             textTransform: "uppercase",
             letterSpacing: "0.1em",
-            color: "rgba(1, 214, 118, 0.6)",
+            color: colors.text.secondary,
           }}
         >
           Balance
         </Typography>
       </Box>
-      <Typography sx={{ fontSize: "1.5rem", fontWeight: 700, color: "#01D676" }}>
+      <Typography sx={{ fontSize: "1.5rem", fontWeight: 700, background: colors.text.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
         {(coins ?? 0).toLocaleString()}
       </Typography>
-      <Typography sx={{ fontSize: "10px", color: "rgba(1, 214, 118, 0.4)", mt: 0.25 }}>
+      <Typography sx={{ fontSize: "10px", color: colors.text.secondary, mt: 0.25, opacity: 0.7 }}>
         &#8776; ${((coins ?? 0) / 1000).toFixed(2)} USD
       </Typography>
     </Box>
@@ -252,13 +257,19 @@ export default function AppShell({ children, coins }: AppShellProps) {
                   alignItems: "center",
                   gap: 0.5,
                   borderRadius: 50,
-                  bgcolor: colors.background.secondary,
-                  border: "1px solid rgba(1, 214, 118, 0.2)",
+                  background: colors.background.glass,
+                  backdropFilter: colors.glass.backdrop,
+                  border: `1px solid ${colors.glass.border}`,
                   px: 1.5,
                   py: 0.5,
                   fontSize: "0.875rem",
                   fontWeight: 600,
-                  color: "#01D676",
+                  background: colors.background.gradient,
+                  color: "#ffffff",
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    boxShadow: `0 4px 16px rgba(99, 102, 241, 0.2)`,
+                  },
                 }}
               >
                 ${((coins ?? 0) / 1000).toFixed(2)}
@@ -339,8 +350,9 @@ export default function AppShell({ children, coins }: AppShellProps) {
         <Box
           component="footer"
           sx={{
-            bgcolor: colors.background.secondary,
-            borderTop: `1px solid ${colors.divider}`,
+            background: colors.background.glass,
+            backdropFilter: colors.glass.backdrop,
+            borderTop: `1px solid ${colors.glass.border}`,
             pb: { xs: "calc(80px + env(safe-area-inset-bottom))", lg: 0 },
             mt: 4,
           }}
@@ -399,7 +411,7 @@ export default function AppShell({ children, coins }: AppShellProps) {
                             textDecoration: "none",
                             fontSize: "0.8125rem",
                             transition: "color 0.2s",
-                            "&:hover": { color: "#01D676" },
+                            "&:hover": { color: colors.primary },
                           }}
                         >
                           {isEmail && <Mail size={14} />}
@@ -451,7 +463,7 @@ export default function AppShell({ children, coins }: AppShellProps) {
             zIndex: 1200,
             pb: "env(safe-area-inset-bottom)",
             borderTop: `1px solid ${colors.divider}`,
-            bgcolor: colors.primary,
+            bgcolor: colors.background.default,
             backgroundImage: "none",
           }}
           elevation={0}
@@ -461,7 +473,7 @@ export default function AppShell({ children, coins }: AppShellProps) {
             sx={{
               bgcolor: "transparent",
               height: 56,
-              "& .Mui-selected": { color: "#01D676 !important" },
+              "& .Mui-selected": { color: `${colors.primary} !important` },
             }}
           >
             {BOTTOM_NAV_ITEMS.map(({ label, href, Icon }) => {
@@ -481,11 +493,11 @@ export default function AppShell({ children, coins }: AppShellProps) {
                             width: 20,
                             height: 3,
                             borderRadius: 2,
-                            bgcolor: "#01D676",
+                            bgcolor: colors.primary,
                           }}
                         />
                       )}
-                      <Icon size={20} color={active ? "#01D676" : colors.text.secondary} />
+                      <Icon size={20} color={active ? colors.primary : colors.text.secondary} />
                     </Box>
                   }
                   {...{ component: Link, href } as any}

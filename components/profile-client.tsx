@@ -68,10 +68,10 @@ function timeSince(dateStr: string) {
 }
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  pending: { bg: "rgba(250,204,21,0.1)", color: "#facc15" },
+  pending: { bg: "rgba(255, 107, 53, 0.1)", color: colors.secondary },
   processing: { bg: "rgba(59,130,246,0.1)", color: "#3b82f6" },
-  paid: { bg: "rgba(1,214,118,0.1)", color: "#01D676" },
-  failed: { bg: "rgba(239,68,68,0.1)", color: "#f87171" },
+  paid: { bg: "rgba(0, 208, 132, 0.1)", color: colors.primary },
+  failed: { bg: "rgba(255, 68, 68, 0.1)", color: colors.status.error },
 };
 
 const PAGE_SIZE = 5;
@@ -210,11 +210,11 @@ export default function ProfileClient({
   const totalUsd = (totalEarned * 0.001).toFixed(2);
 
   const stats = [
-    { icon: <TrendingUp size={18} color="#01D676" />, label: "Total Earned", value: `${totalEarned.toLocaleString()} coins` },
-    { icon: <Calendar size={18} color="#01D676" />, label: "This Month", value: `${monthEarned.toLocaleString()} coins` },
-    { icon: <CheckCircle size={18} color="#01D676" />, label: "Completed Offers", value: String(totalCompletions) },
-    { icon: <Wallet size={18} color="#01D676" />, label: "Withdrawals", value: String(totalWithdrawals) },
-    { icon: <Flame size={18} color="#01D676" />, label: "Streak", value: `${streakCount} days` },
+    { icon: <TrendingUp size={18} color={colors.primary} />, label: "Total Earned", value: `${totalEarned.toLocaleString()} coins` },
+    { icon: <Calendar size={18} color={colors.primary} />, label: "This Month", value: `${monthEarned.toLocaleString()} coins` },
+    { icon: <CheckCircle size={18} color={colors.primary} />, label: "Completed Offers", value: String(totalCompletions) },
+    { icon: <Wallet size={18} color={colors.primary} />, label: "Withdrawals", value: String(totalWithdrawals) },
+    { icon: <Flame size={18} color={colors.status.warning} />, label: "Streak", value: `${streakCount} days` },
   ];
 
   const TABS = ["Withdrawals"] as const;
@@ -231,9 +231,9 @@ export default function ProfileClient({
         </Box>
 
         <Box component="form" onSubmit={handleSave} sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 3 }}>
+          <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 3 }}>
             <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-              <User size={20} color="#01D676" /> Account Info
+              <User size={20} color={colors.primary} /> Account Info
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Box>
@@ -245,9 +245,9 @@ export default function ProfileClient({
                 {/* Email Verification Status */}
                 <Box sx={{ mt: 1.5, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   {emailVerified ? (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: colors.secondary }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: colors.primary }}>
                       <CheckCircle size={16} />
-                      <Typography variant="body2" sx={{ color: colors.secondary, fontWeight: 600 }}>Email Verified</Typography>
+                      <Typography variant="body2" sx={{ color: colors.primary, fontWeight: 600 }}>Email Verified</Typography>
                     </Box>
                   ) : (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
@@ -278,15 +278,15 @@ export default function ProfileClient({
                       disabled={resendingVerification}
                       startIcon={<Send size={14} />}
                       sx={{
-                        borderColor: colors.secondary,
-                        color: colors.secondary,
+                        borderColor: colors.primary,
+                        color: colors.primary,
                         fontSize: "0.75rem",
                         textTransform: "none",
                         py: 0.5,
                         px: 1.5,
                         "&:hover": {
-                          borderColor: colors.secondary,
-                          bgcolor: "rgba(1,214,118,0.1)",
+                          borderColor: colors.primary,
+                          bgcolor: "rgba(0, 208, 132, 0.1)",
                         },
                       }}
                     >
@@ -315,9 +315,9 @@ export default function ProfileClient({
             </Box>
           </Paper>
 
-          <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 3 }}>
+          <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 3 }}>
             <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-              <Wallet size={20} color="#01D676" /> Withdrawal Settings
+              <Wallet size={20} color={colors.primary} /> Withdrawal Settings
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Box>
@@ -329,16 +329,16 @@ export default function ProfileClient({
             </Box>
           </Paper>
 
-          {error && <Box sx={{ borderRadius: 2, bgcolor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: "#f87171" }}>{error}</Box>}
+          {error && <Box sx={{ borderRadius: 2, bgcolor: "rgba(255, 68, 68, 0.1)", border: "1px solid rgba(255, 68, 68, 0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: colors.status.error }}>{error}</Box>}
           {saved && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, borderRadius: 2, bgcolor: colors.background.secondary, border: "1px solid rgba(1,214,118,0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: "#01D676" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, borderRadius: 2, bgcolor: colors.background.secondary, border: "1px solid rgba(0, 208, 132, 0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: colors.primary }}>
               <CheckCircle size={16} /> Profile saved successfully
             </Box>
           )}
 
           <Button type="submit" variant="contained" disabled={saving}
             startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <Save size={16} />}
-            sx={{ alignSelf: "flex-start", background: colors.background.gradient, borderRadius: 2, px: 3, py: 1.5, fontWeight: 600, fontSize: "0.875rem", textTransform: "none", boxShadow: "0 4px 12px rgba(1,214,118,0.2)", "&:hover": { filter: "brightness(1.1)" }, "&.Mui-disabled": { opacity: 0.5, color: "#fff" } }}>
+            sx={{ alignSelf: "flex-start", background: colors.background.gradient, borderRadius: 2, px: 3, py: 1.5, fontWeight: 600, fontSize: "0.875rem", textTransform: "none", boxShadow: "0 4px 12px rgba(0, 208, 132, 0.2)", "&:hover": { filter: "brightness(1.1)" }, "&.Mui-disabled": { opacity: 0.5, color: "#fff" } }}>
             Save Changes
           </Button>
         </Box>
@@ -364,7 +364,7 @@ export default function ProfileClient({
       {/* top cards */}
       <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" }, mb: 3 }}>
         {/* avatar + info card */}
-        <Paper sx={{ flex: 1, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.scrollBar.track, p: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <Paper sx={{ flex: 1, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, p: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Avatar {...stringAvatar(initialName || email)} />
           <Typography variant="h6" isBold sx={{ mt: 1.5 }}>{initialName || email.split("@")[0]}</Typography>
           <Typography variant="caption" sx={{ color: colors.text.secondary }}>Joined {timeSince(memberSince)}</Typography>
@@ -372,7 +372,7 @@ export default function ProfileClient({
         </Paper>
 
         {/* stats card */}
-        <Paper sx={{ flex: 1, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.scrollBar.track, p: 3 }}>
+        <Paper sx={{ flex: 1, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, p: 3 }}>
           <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, height: "100%" }}>
             {stats.map((s) => (
               <Box key={s.label} sx={{ display: "flex", flexDirection: "column", gap: 0.5, p: 1.5, borderRadius: 3, bgcolor: colors.background.default, border: `1px solid ${colors.divider}` }}>
@@ -397,7 +397,7 @@ export default function ProfileClient({
               borderRadius: 50, px: 2.5, py: 1, fontSize: "0.8rem", fontWeight: 600, textTransform: "none",
               ...(activeTab === i
                 ? { bgcolor: colors.secondary, color: "#000", "&:hover": { bgcolor: colors.secondary, filter: "brightness(1.1)" } }
-                : { bgcolor: colors.primary, color: colors.text.secondary, border: `1px solid ${colors.divider}`, "&:hover": { bgcolor: colors.background.ternary } }),
+                : { bgcolor: colors.background.primary, color: colors.text.secondary, border: `1px solid ${colors.divider}`, "&:hover": { bgcolor: colors.background.ternary } }),
             }}
           >
             {tab}
@@ -413,7 +413,7 @@ export default function ProfileClient({
         <>
           {/* withdrawals tab */}
           {withdrawals.length === 0 ? (
-            <Paper sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 6, textAlign: "center" }}>
+            <Paper sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 6, textAlign: "center" }}>
               <Typography sx={{ fontSize: "0.875rem", color: colors.text.secondary }}>No withdrawals yet</Typography>
             </Paper>
           ) : (
@@ -423,7 +423,7 @@ export default function ProfileClient({
                   {withdrawals.map((w) => {
                     const sc = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
                     return (
-                      <Box key={w.id} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, px: 2, py: 1.5 }}>
+                      <Box key={w.id} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, px: 2, py: 1.5 }}>
                         <Box sx={{ mb: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
                             {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
@@ -460,7 +460,7 @@ export default function ProfileClient({
                         return (
                           <TableRow key={w.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
                             <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontSize: "0.875rem" }}>{w.coins.toLocaleString()}</TableCell>
-                            <TableCell sx={{ borderColor: colors.divider, color: "#01D676", fontWeight: 600, fontSize: "0.875rem" }}>${w.amount_usd.toFixed(2)}</TableCell>
+                            <TableCell sx={{ borderColor: colors.divider, color: colors.primary, fontWeight: 600, fontSize: "0.875rem" }}>${w.amount_usd.toFixed(2)}</TableCell>
                             <TableCell sx={{ borderColor: colors.divider }}>
                               <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: sc.bg, px: 1.5, py: 0.25, fontSize: "0.75rem", fontWeight: 600, color: sc.color, textTransform: "capitalize" }}>
                                 {w.status}
@@ -504,10 +504,10 @@ export default function ProfileClient({
           onClose={() => setShowVerificationToast(false)}
           severity="success"
           sx={{
-            bgcolor: "rgba(1,214,118,0.1)",
-            border: "1px solid rgba(1,214,118,0.3)",
-            color: colors.secondary,
-            "& .MuiAlert-icon": { color: colors.secondary },
+            bgcolor: "rgba(0, 208, 132, 0.1)",
+            border: "1px solid rgba(0, 208, 132, 0.3)",
+            color: colors.primary,
+            "& .MuiAlert-icon": { color: colors.primary },
           }}
         >
           Verification email sent!
