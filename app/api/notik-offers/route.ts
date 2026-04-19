@@ -57,52 +57,15 @@ export async function GET(request: NextRequest) {
     
     countryCode = countryCode || 'US';
 
-    // Get IP address
-    const forwardedFor = request.headers.get('x-forwarded-for');
-    const realIp = request.headers.get('x-real-ip');
-    const cfConnectingIp = request.headers.get('cf-connecting-ip');
-    let ip = cfConnectingIp || forwardedFor?.split(',')[0]?.trim() || realIp || '0.0.0.0';
-    
-    // If IP is localhost, use a default IP (Notik might reject localhost IPs)
-    if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') {
-      ip = '8.8.8.8'; // Use a public IP as fallback for testing
-      console.log('[notik-offers] Localhost detected, using fallback IP:', ip);
-    }
+    console.log('[notik-offers] Detected country:', countryCode);
 
-    // Get user agent
-    const userAgent = request.headers.get('user-agent') || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
-
-    // Parse device info from user agent
-    const isIOS = /iPhone|iPad|iPod/.test(userAgent);
+    // Use v2 all-offers endpoint (same as iframe uses) instead of filtered endpoint
+    // The filtered endpoint seems to have stricter filtering or different access
+    const v2Url = `https://notik.me/api/v2/get-offers/all?api_key=${encodeURIComponent(NOTIK_API_KEY)}&pub_id=${encodeURIComponent(NOTIK_PUBLISHER_ID)}&app_id=${encodeURIComponent(NOTIK_APP_ID)}`;
     
-    // Map to Notik's accepted device_name values: iphone, ipad, other
-    let device_name = 'other';
-    if (/iPhone/.test(userAgent)) {
-      device_name = 'iphone';
-    } else if (/iPad/.test(userAgent)) {
-      device_name = 'ipad';
-    }
+    console.log('[notik-offers] Fetching from Notik v2 all-offers endpoint');
 
-    // Build the filtered API URL with ONLY required parameters (no optional ones that might cause issues)
-    const urlParams = [
-      `api_key=${encodeURIComponent(NOTIK_API_KEY)}`,
-      `pub_id=${encodeURIComponent(NOTIK_PUBLISHER_ID)}`,
-      `app_id=${encodeURIComponent(NOTIK_APP_ID)}`,
-      `user_id=${encodeURIComponent(user_id)}`,
-      `device_name=${encodeURIComponent(device_name)}`,
-      `device_type=${encodeURIComponent(device_type)}`,
-      `device_os=${encodeURIComponent(device_os)}`,
-      `country_code=${encodeURIComponent(countryCode)}`,
-      `user_agent=${encodeURIComponent(userAgent)}`,
-      `ip=${encodeURIComponent(ip)}`
-    ];
-    
-    const apiUrl = `https://notik.me/api/v1/get-offers/filtered?${urlParams.join('&')}`;
-    
-    console.log('[notik-offers] Fetching from Notik filtered API');
-    console.log('[notik-offers] Parameters - country:', countryCode, 'device_name:', device_name, 'device_type:', device_type, 'device_os:', device_os, 'ip:', ip);
-
-    const response = await fetch(apiUrl, {
+    const response = await fetch(v2Url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -131,7 +94,6 @@ export async function GET(request: NextRequest) {
     // Check if response is HTML (error page) instead of JSON
     if (responseText.includes('<!DOCTYPE') || responseText.includes('<html')) {
       console.log('[notik-offers] Received HTML response instead of JSON');
-      console.log('[notik-offers] Response:', responseText.substring(0, 300));
       return NextResponse.json(
         { success: true, offers: [], total: 0, country: countryCode }
       );
@@ -149,26 +111,61 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    console.log('[notik-offers] Notik API response status:', data.status);
-    if (data.status === 'failed') {
-      console.log('[notik-offers] Notik error:', data.code, data.data);
-    }
+    console.log('[notik-offers] Notik API response received');
     
     let allOffers: any[] = [];
     
-    // Parse the response structure
-    if (data.status === 'success' && Array.isArray(data.offers)) {
-      allOffers = data.offers;
+    // Parse the response structure from v2 all-offers endpoint
+    if (data.offers && typeof data.offers === 'object') {
+      if (Array.isArray(data.offers)) {
+        allOffers = data.offers;
+      } else if (data.offers.data && Array.isArray(data.offers.data)) {
+        allOffers = data.offers.data;
+      } else if (data.offers.all && Array.isArray(data.offers.all)) {
+        allOffers = data.offers.all;
+      } else if (data.offers.android || data.offers.ios) {
+        // Handle platform-specific offers
+        allOffers = (data.offers.android || []).concat(data.offers.ios || []);
+      }
     } else if (Array.isArray(data.offers)) {
       allOffers = data.offers;
     } else if (Array.isArray(data)) {
       allOffers = data;
     }
     
-    console.log('[notik-offers] Parsed offers count:', allOffers.length);
+    console.log('[notik-offers] Total offers from API:', allOffers.length);
+    
+    // Filter offers by country if country info is available in offers
+    // The offers should have country_codes or similar field
+    let filteredOffers = allOffers;
+    
+    // Check if offers have country filtering info
+    const offersWithCountry = allOffers.filter((offer: any) => {
+      if (!offer.country_codes && !offer.countries) {
+        // If no country restriction, include it
+        return true;
+      }
+      
+      const countryCodes = offer.country_codes || offer.countries || [];
+      const countryArray = Array.isArray(countryCodes) ? countryCodes : 
+                          typeof countryCodes === 'string' ? countryCodes.split(',') : [];
+      
+      // Include offer if it's available in user's country
+      return countryArray.length === 0 || countryArray.includes(countryCode);
+    });
+    
+    console.log('[notik-offers] Offers available for country', countryCode + ':', offersWithCountry.length);
+    
+    // Use filtered offers if we found country info, otherwise use all offers
+    if (offersWithCountry.length > 0) {
+      filteredOffers = offersWithCountry;
+    }
+    
+    // Limit to first 50 offers for performance
+    filteredOffers = filteredOffers.slice(0, 50);
     
     // Replace user ID macro in click URLs and normalize offer structure
-    const processedOffers = allOffers.map((offer: any) => {
+    const processedOffers = filteredOffers.map((offer: any) => {
       // Normalize the offer structure to match frontend expectations
       const normalizedOffer = {
         offer_id: offer.offer_id || offer.id,
