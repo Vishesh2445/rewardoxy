@@ -161,8 +161,8 @@ export async function GET(request: NextRequest) {
       filteredOffers = offersWithCountry;
     }
     
-    // Limit to first 50 offers for performance
-    filteredOffers = filteredOffers.slice(0, 50);
+    // Limit to first 200 offers for performance (can be adjusted based on needs)
+    filteredOffers = filteredOffers.slice(0, 200);
     
     // Replace user ID macro in click URLs and normalize offer structure
     const processedOffers = filteredOffers.map((offer: any) => {
