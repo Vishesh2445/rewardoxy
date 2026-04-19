@@ -172,7 +172,7 @@ function OfferDetailsModal({
         )}
 
         {/* Rewards Section */}
-        {hasEvents && (
+        {hasEvents && offer.events && (
           <Box>
             <Typography variant="h6" isBold sx={{ mb: 2, fontSize: "1rem", display: "flex", alignItems: "center", gap: 1 }}>
               🎁 Rewards
