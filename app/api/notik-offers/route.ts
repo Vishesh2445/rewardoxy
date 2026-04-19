@@ -79,12 +79,27 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    console.log('[notik-offers] Total offers:', allOffers.length);
+    // Replace user ID macro in click URLs
+    const processedOffers = allOffers.map((offer: any) => {
+      if (offer.click_url) {
+        // Replace common user ID macros with actual user ID
+        offer.click_url = offer.click_url
+          .replace(/{user_id}/g, user_id)
+          .replace(/\[user_id\]/g, user_id)
+          .replace(/{uid}/g, user_id)
+          .replace(/\[uid\]/g, user_id)
+          .replace(/{USER_ID}/g, user_id)
+          .replace(/\[USER_ID\]/g, user_id);
+      }
+      return offer;
+    });
+    
+    console.log('[notik-offers] Total offers:', processedOffers.length);
 
     return NextResponse.json({
       success: true,
-      offers: allOffers,
-      total: allOffers.length
+      offers: processedOffers,
+      total: processedOffers.length
     });
 
   } catch (error) {
