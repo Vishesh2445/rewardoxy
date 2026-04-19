@@ -503,7 +503,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         border: "1px solid rgba(255, 255, 255, 0.05)"
       }}
     >
-      <Box sx={{ p: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <Box sx={{ p: { xs: 1.5, sm: 2 }, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box sx={{ 
             width: 20, 
@@ -516,14 +516,14 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
               <path d="M8 0C8 0 8 5.45455 3.63636 9.09091C-0.727273 12.7273 -0.727273 20 8 20C16.7273 20 16.7273 12.7273 12.3636 9.09091C8 5.45455 8 0 8 0Z" fill="currentColor"/>
             </svg>
           </Box>
-          <Typography variant="h6" isBold sx={{ fontSize: "1.25rem" }}>
+          <Typography variant="h6" isBold sx={{ fontSize: { xs: "1.125rem", sm: "1.25rem" } }}>
             Gaming Offers
           </Typography>
         </Box>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1.5, sm: 2.5 } }}>
           <Typography 
             sx={{ 
-              fontSize: "0.875rem", 
+              fontSize: { xs: "0.8125rem", sm: "0.875rem" }, 
               fontWeight: 500, 
               color: colors.text.secondary,
               cursor: "pointer",
@@ -567,10 +567,10 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       <Box
         id="gaming-offers-scroll"
         sx={{
-          px: 2,
-          pb: 2.5,
+          px: { xs: 1.5, sm: 2 },
+          pb: { xs: 2, sm: 2.5 },
           display: "flex",
-          gap: 1.5,
+          gap: { xs: 1, sm: 1.5 },
           overflowX: "auto",
           overflowY: "hidden",
           "&::-webkit-scrollbar": { display: "none" },
@@ -590,8 +590,8 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
           <Box
             key={offer.offer_id}
             sx={{
-              minWidth: 140,
-              maxWidth: 140,
+              minWidth: { xs: 100, sm: 140 },
+              maxWidth: { xs: 100, sm: 140 },
               flexShrink: 0,
               cursor: "pointer",
             }}
@@ -603,20 +603,20 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
             <Box
               sx={{
                 bgcolor: "#222339",
-                p: 1.5,
-                borderRadius: 2.5,
+                p: { xs: 0.75, sm: 1.5 },
+                borderRadius: { xs: 1.5, sm: 2.5 },
                 transition: "all 0.2s",
                 "&:hover": {
                   bgcolor: "#2a2b45",
                 },
               }}
             >
-              <Box sx={{ position: "relative", mb: 1.5 }}>
+              <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
                 <Box
                   sx={{
                     width: "100%",
                     aspectRatio: "1",
-                    borderRadius: 1.5,
+                    borderRadius: { xs: 1, sm: 1.5 },
                     overflow: "hidden",
                     bgcolor: "#1a1b2e",
                     backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
@@ -628,18 +628,18 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
                   <Box
                     sx={{
                       position: "absolute",
-                      top: 8,
-                      right: 8,
+                      top: { xs: 4, sm: 8 },
+                      right: { xs: 4, sm: 8 },
                       bgcolor: "rgba(30, 30, 46, 0.6)",
-                      px: 1,
-                      py: 0.5,
+                      px: { xs: 0.5, sm: 1 },
+                      py: { xs: 0.25, sm: 0.5 },
                       borderRadius: 10,
                       display: "flex",
                       alignItems: "center",
                       gap: 0.5,
                     }}
                   >
-                    <Gamepad2 size={10} color="#fff" />
+                    <Gamepad2 size={8} color="#fff" />
                   </Box>
                 )}
               </Box>
@@ -647,7 +647,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
               <Box sx={{ height: 40, overflow: "hidden", mb: 0.5 }}>
                 <Typography
                   sx={{
-                    fontSize: "0.875rem",
+                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
                     fontWeight: 500,
                     lineHeight: 1.3,
                     display: "-webkit-box",
@@ -662,19 +662,19 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
 
               <Typography
                 sx={{
-                  fontSize: "0.6875rem",
+                  fontSize: { xs: "0.6rem", sm: "0.6875rem" },
                   color: colors.text.secondary,
                   opacity: 0.6,
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                   fontWeight: 600,
-                  mb: 1,
+                  mb: { xs: 0.5, sm: 1 },
                 }}
               >
                 Game
               </Typography>
 
-              <Typography sx={{ fontSize: "0.875rem", fontWeight: 600 }}>
+              <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600 }}>
                 ${offer.payout}
               </Typography>
             </Box>
@@ -763,8 +763,8 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
 
   // Skeleton loader with shimmer animation
   const SkeletonOffer = () => (
-    <Box sx={{ minWidth: 140, maxWidth: 140, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: "#222339", p: 1.5, borderRadius: 2.5 }}>
+    <Box sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 }, flexShrink: 0 }}>
+      <Box sx={{ bgcolor: "#222339", p: { xs: 0.75, sm: 1.5 }, borderRadius: { xs: 1.5, sm: 2.5 } }}>
         <Box sx={{ 
           width: "100%", 
           aspectRatio: "1", 
@@ -876,7 +876,7 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
         border: "1px solid rgba(255, 255, 255, 0.05)"
       }}
     >
-      <Box sx={{ p: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <Box sx={{ p: { xs: 1.5, sm: 2 }, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box sx={{ 
             width: 20, 
@@ -892,15 +892,15 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
               <rect x="12" y="12" width="8" height="8" rx="2" fill="currentColor"/>
             </svg>
           </Box>
-          <Typography variant="h6" isBold sx={{ fontSize: "1.25rem" }}>
+          <Typography variant="h6" isBold sx={{ fontSize: { xs: "1.125rem", sm: "1.25rem" } }}>
             Other Offers
           </Typography>
         </Box>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1.5, sm: 2.5 } }}>
           <Link href="/offers/all" style={{ textDecoration: "none" }}>
             <Typography 
               sx={{ 
-                fontSize: "0.875rem", 
+                fontSize: { xs: "0.8125rem", sm: "0.875rem" }, 
                 fontWeight: 500, 
                 color: colors.text.secondary,
                 cursor: "pointer",
@@ -946,10 +946,10 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
       <Box
         id="other-offers-scroll"
         sx={{
-          px: 2,
-          pb: 2.5,
+          px: { xs: 1.5, sm: 2 },
+          pb: { xs: 2, sm: 2.5 },
           display: "flex",
-          gap: 1.5,
+          gap: { xs: 1, sm: 1.5 },
           overflowX: "auto",
           overflowY: "hidden",
           "&::-webkit-scrollbar": { display: "none" },
@@ -969,8 +969,8 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
           <Box
             key={offer.offer_id}
             sx={{
-              minWidth: 140,
-              maxWidth: 140,
+              minWidth: { xs: 100, sm: 140 },
+              maxWidth: { xs: 100, sm: 140 },
               flexShrink: 0,
               cursor: "pointer",
             }}
@@ -982,20 +982,20 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
             <Box
               sx={{
                 bgcolor: "#222339",
-                p: 1.5,
-                borderRadius: 2.5,
+                p: { xs: 0.75, sm: 1.5 },
+                borderRadius: { xs: 1.5, sm: 2.5 },
                 transition: "all 0.2s",
                 "&:hover": {
                   bgcolor: "#2a2b45",
                 },
               }}
             >
-              <Box sx={{ position: "relative", mb: 1.5 }}>
+              <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
                 <Box
                   sx={{
                     width: "100%",
                     aspectRatio: "1",
-                    borderRadius: 1.5,
+                    borderRadius: { xs: 1, sm: 1.5 },
                     overflow: "hidden",
                     bgcolor: "#1a1b2e",
                     backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
@@ -1008,7 +1008,7 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
               <Box sx={{ height: 40, overflow: "hidden", mb: 0.5 }}>
                 <Typography
                   sx={{
-                    fontSize: "0.875rem",
+                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
                     fontWeight: 500,
                     lineHeight: 1.3,
                     display: "-webkit-box",
@@ -1023,19 +1023,19 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
 
               <Typography
                 sx={{
-                  fontSize: "0.6875rem",
+                  fontSize: { xs: "0.6rem", sm: "0.6875rem" },
                   color: colors.text.secondary,
                   opacity: 0.6,
                   textTransform: "uppercase",
                   letterSpacing: "0.05em",
                   fontWeight: 600,
-                  mb: 1,
+                  mb: { xs: 0.5, sm: 1 },
                 }}
               >
                 Other
               </Typography>
 
-              <Typography sx={{ fontSize: "0.875rem", fontWeight: 600 }}>
+              <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600 }}>
                 ${offer.payout}
               </Typography>
             </Box>
