@@ -163,7 +163,7 @@ function OfferDetailsModal({
               🎁 Rewards
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {offer.events.map((event, index) => (
+              {offer.events?.map((event, index) => (
                 <Box
                   key={event.id}
                   sx={{
