@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import FullscreenShell from "@/components/fullscreen-shell";
 import EarnContent from "@/components/earn-content";
+import BalanceUpdater from "@/components/balance-updater";
 import crypto from "crypto";
 import { Metadata } from "next";
 
@@ -42,6 +43,7 @@ export default async function OffersPage() {
 
   return (
     <FullscreenShell coins={coins} userName={fullName} userAvatar={avatarUrl}>
+      <BalanceUpdater userId={user.id} />
       <EarnContent 
         userId={user.id} 
         userName={fullName} 
