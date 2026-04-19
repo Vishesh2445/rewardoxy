@@ -40,7 +40,9 @@ export async function GET(request: NextRequest) {
         const clientIp = cfConnectingIp || forwardedFor?.split(',')[0]?.trim() || realIp;
         
         if (clientIp && clientIp !== '127.0.0.1' && clientIp !== '::1') {
-          const geoResponse = await fetch(`http://ip-api.com/json/${clientIp}?fields=countryCode`);
+          const geoResponse = await fetch(`http://ip-api.com/json/${clientIp}?fields=countryCode`, {
+            redirect: 'follow'
+          });
           if (geoResponse.ok) {
             const geoData = await geoResponse.json();
             if (geoData.countryCode) {
@@ -59,72 +61,58 @@ export async function GET(request: NextRequest) {
     const forwardedFor = request.headers.get('x-forwarded-for');
     const realIp = request.headers.get('x-real-ip');
     const cfConnectingIp = request.headers.get('cf-connecting-ip');
-    const ip = cfConnectingIp || forwardedFor?.split(',')[0]?.trim() || realIp || '0.0.0.0';
+    let ip = cfConnectingIp || forwardedFor?.split(',')[0]?.trim() || realIp || '0.0.0.0';
+    
+    // If IP is localhost, use a default IP (Notik might reject localhost IPs)
+    if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') {
+      ip = '8.8.8.8'; // Use a public IP as fallback for testing
+      console.log('[notik-offers] Localhost detected, using fallback IP:', ip);
+    }
 
     // Get user agent
-    const userAgent = request.headers.get('user-agent') || '';
+    const userAgent = request.headers.get('user-agent') || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
-    // Parse device info from user agent (basic parsing)
+    // Parse device info from user agent
     const isIOS = /iPhone|iPad|iPod/.test(userAgent);
-    const isAndroid = /Android/.test(userAgent);
-    const deviceName = isIOS ? 'iPhone' : isAndroid ? 'Android' : 'Desktop';
     
-    // Extract browser info
-    let browserName = 'Chrome';
-    let browserVersion = '1.0';
-    
-    if (/Firefox/.test(userAgent)) {
-      browserName = 'Firefox';
-      const match = userAgent.match(/Firefox\/(\d+)/);
-      if (match) browserVersion = match[1];
-    } else if (/Safari/.test(userAgent) && !/Chrome/.test(userAgent)) {
-      browserName = 'Safari';
-      const match = userAgent.match(/Version\/(\d+)/);
-      if (match) browserVersion = match[1];
-    } else if (/Chrome/.test(userAgent)) {
-      browserName = 'Chrome';
-      const match = userAgent.match(/Chrome\/(\d+)/);
-      if (match) browserVersion = match[1];
+    // Map to Notik's accepted device_name values: iphone, ipad, other
+    let device_name = 'other';
+    if (/iPhone/.test(userAgent)) {
+      device_name = 'iphone';
+    } else if (/iPad/.test(userAgent)) {
+      device_name = 'ipad';
     }
 
-    // Get OS version (basic parsing)
-    let osVersion = '1.0';
-    if (isAndroid) {
-      const match = userAgent.match(/Android\s([\d.]+)/);
-      if (match) osVersion = match[1];
-    } else if (isIOS) {
-      const match = userAgent.match(/OS\s([\d_]+)/);
-      if (match) osVersion = match[1].replace(/_/g, '.');
-    }
-
-    // Build the filtered API URL with all parameters
-    const apiUrl = new URL('https://notik.me/api/v1/get-offers/filtered');
-    apiUrl.searchParams.append('api_key', NOTIK_API_KEY);
-    apiUrl.searchParams.append('pub_id', NOTIK_PUBLISHER_ID);
-    apiUrl.searchParams.append('app_id', NOTIK_APP_ID);
-    apiUrl.searchParams.append('user_id', user_id);
-    apiUrl.searchParams.append('s1', user_id); // s1 is typically user_id
-    apiUrl.searchParams.append('device_name', deviceName);
-    apiUrl.searchParams.append('device_type', device_type);
-    apiUrl.searchParams.append('device_os', device_os);
-    apiUrl.searchParams.append('os_version', osVersion);
-    apiUrl.searchParams.append('browser_name', browserName);
-    apiUrl.searchParams.append('browser_version', browserVersion);
-    apiUrl.searchParams.append('country_code', countryCode);
-    apiUrl.searchParams.append('user_agent', userAgent);
-    apiUrl.searchParams.append('ip', ip);
+    // Build the filtered API URL with ONLY required parameters (no optional ones that might cause issues)
+    const urlParams = [
+      `api_key=${encodeURIComponent(NOTIK_API_KEY)}`,
+      `pub_id=${encodeURIComponent(NOTIK_PUBLISHER_ID)}`,
+      `app_id=${encodeURIComponent(NOTIK_APP_ID)}`,
+      `user_id=${encodeURIComponent(user_id)}`,
+      `device_name=${encodeURIComponent(device_name)}`,
+      `device_type=${encodeURIComponent(device_type)}`,
+      `device_os=${encodeURIComponent(device_os)}`,
+      `country_code=${encodeURIComponent(countryCode)}`,
+      `user_agent=${encodeURIComponent(userAgent)}`,
+      `ip=${encodeURIComponent(ip)}`
+    ];
     
-    console.log('[notik-offers] Fetching from Notik filtered API for country:', countryCode, 'IP:', ip);
+    const apiUrl = `https://notik.me/api/v1/get-offers/filtered?${urlParams.join('&')}`;
+    
+    console.log('[notik-offers] Fetching from Notik filtered API');
+    console.log('[notik-offers] Parameters - country:', countryCode, 'device_name:', device_name, 'device_type:', device_type, 'device_os:', device_os, 'ip:', ip);
 
-    const response = await fetch(apiUrl.toString(), {
+    const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
+      redirect: 'follow'
     });
 
     if (!response.ok) {
-      console.error('[notik-offers] API error:', response.status);
+      console.error('[notik-offers] API error:', response.status, response.statusText);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch offers from Notik' },
         { status: 500 }
@@ -134,9 +122,18 @@ export async function GET(request: NextRequest) {
     const responseText = await response.text();
     
     if (!responseText) {
+      console.log('[notik-offers] Empty response from Notik API');
       return NextResponse.json(
-        { success: false, error: 'Empty response from Notik API' },
-        { status: 500 }
+        { success: true, offers: [], total: 0, country: countryCode }
+      );
+    }
+
+    // Check if response is HTML (error page) instead of JSON
+    if (responseText.includes('<!DOCTYPE') || responseText.includes('<html')) {
+      console.log('[notik-offers] Received HTML response instead of JSON');
+      console.log('[notik-offers] Response:', responseText.substring(0, 300));
+      return NextResponse.json(
+        { success: true, offers: [], total: 0, country: countryCode }
       );
     }
 
@@ -144,45 +141,60 @@ export async function GET(request: NextRequest) {
     try {
       data = JSON.parse(responseText);
     } catch (parseError) {
+      console.error('[notik-offers] JSON parse error:', parseError);
+      console.log('[notik-offers] Response text:', responseText.substring(0, 200));
       return NextResponse.json(
         { success: false, error: 'Invalid JSON response' },
         { status: 500 }
       );
     }
     
+    console.log('[notik-offers] Notik API response status:', data.status);
+    if (data.status === 'failed') {
+      console.log('[notik-offers] Notik error:', data.code, data.data);
+    }
+    
     let allOffers: any[] = [];
     
     // Parse the response structure
-    if (data.offers && typeof data.offers === 'object') {
-      if (Array.isArray(data.offers.data)) {
-        allOffers = data.offers.data;
-      } else if (Array.isArray(data.offers)) {
-        allOffers = data.offers;
-      } else if (data.offers.android || data.offers.ios || data.offers.all) {
-        allOffers = data.offers.all || data.offers.android || data.offers.ios || [];
-      } else {
-        allOffers = Object.values(data.offers).filter(Array.isArray).flat();
-      }
+    if (data.status === 'success' && Array.isArray(data.offers)) {
+      allOffers = data.offers;
+    } else if (Array.isArray(data.offers)) {
+      allOffers = data.offers;
     } else if (Array.isArray(data)) {
       allOffers = data;
     }
     
-    // Replace user ID macro in click URLs
+    console.log('[notik-offers] Parsed offers count:', allOffers.length);
+    
+    // Replace user ID macro in click URLs and normalize offer structure
     const processedOffers = allOffers.map((offer: any) => {
-      if (offer.click_url) {
-        // Replace common user ID macros with actual user ID
-        offer.click_url = offer.click_url
-          .replace(/{user_id}/g, user_id)
+      // Normalize the offer structure to match frontend expectations
+      const normalizedOffer = {
+        offer_id: offer.offer_id || offer.id,
+        id: offer.id || offer.offer_id,
+        name: offer.name,
+        description1: offer.description || offer.description1,
+        description2: offer.description2,
+        description3: offer.description3,
+        image_url: offer.image_url || offer.image,
+        payout: offer.payout,
+        click_url: offer.click_url,
+        categories: offer.categories || [],
+        events: offer.events,
+      };
+
+      // Replace user ID macros in click URL
+      if (normalizedOffer.click_url) {
+        normalizedOffer.click_url = normalizedOffer.click_url
           .replace(/\[user_id\]/g, user_id)
-          .replace(/{uid}/g, user_id)
-          .replace(/\[uid\]/g, user_id)
-          .replace(/{USER_ID}/g, user_id)
-          .replace(/\[USER_ID\]/g, user_id);
+          .replace(/{user_id}/g, user_id);
       }
-      return offer;
+
+      return normalizedOffer;
     });
     
-    console.log('[notik-offers] Total offers:', processedOffers.length);
+    console.log('[notik-offers] Total offers after processing:', processedOffers.length);
 
     return NextResponse.json({
       success: true,
