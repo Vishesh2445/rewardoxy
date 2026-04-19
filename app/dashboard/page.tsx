@@ -28,7 +28,7 @@ export default async function DashboardPage() {
   const displayName = userData?.display_name ?? user.email?.split("@")[0] ?? "User";
 
   return (
-    <AppShell coins={coins}>
+    <AppShell coins={coins} userId={user.id}>
       <DashboardClient
         userId={user.id}
         displayName={displayName}

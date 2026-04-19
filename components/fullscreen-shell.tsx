@@ -40,6 +40,7 @@ import { createClient } from "@/lib/supabase/client";
 import Icons from "@/components/icons";
 import Typography from "@/components/ui/Typography";
 import NotificationBell from "@/components/notification-bell";
+import BalanceDisplay from "@/components/balance-display";
 import colors from "@/theme/colors";
 
 const NAV_ITEMS = [
@@ -109,13 +110,15 @@ interface FullscreenShellProps {
   coins?: number;
   userName?: string;
   userAvatar?: string;
+  userId?: string;
 }
 
 export default function FullscreenShell({ 
   children, 
   coins,
   userName = "User",
-  userAvatar 
+  userAvatar,
+  userId
 }: FullscreenShellProps) {
   const pathname = usePathname();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -200,25 +203,7 @@ export default function FullscreenShell({
           {/* Right Side - Balance, Notifications, Profile */}
           <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 2 }, ml: "auto" }}>
             {/* Balance Display */}
-            {coins !== undefined && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: { xs: 0.5, sm: 1 },
-                  bgcolor: "rgba(1, 214, 118, 0.1)",
-                  border: "1px solid rgba(1, 214, 118, 0.2)",
-                  borderRadius: 2,
-                  px: { xs: 1, sm: 2 },
-                  py: 0.75,
-                }}
-              >
-                <Image src="/logo.png" alt="Coins" width={16} height={16} />
-                <Typography sx={{ fontSize: { xs: "0.875rem", sm: "1rem" }, fontWeight: 700, color: "#01D676" }}>
-                  ${((coins ?? 0) / 1000).toFixed(2)}
-                </Typography>
-              </Box>
-            )}
+            {userId && <BalanceDisplay userId={userId} initialBalance={coins} />}
 
             {/* Notifications */}
             <Box sx={{ display: { xs: "none", sm: "block" } }}>
@@ -359,11 +344,7 @@ export default function FullscreenShell({
               </Avatar>
               <Box>
                 <Typography sx={{ fontWeight: 600 }}>{userName}</Typography>
-                {coins !== undefined && (
-                  <Typography sx={{ fontSize: "0.875rem", color: "#01D676", fontWeight: 600 }}>
-                    ${((coins ?? 0) / 1000).toFixed(2)}
-                  </Typography>
-                )}
+                {userId && <BalanceDisplay userId={userId} initialBalance={coins} />}
               </Box>
             </Box>
           </Box>

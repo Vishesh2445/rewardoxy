@@ -35,7 +35,7 @@ export default async function AllOffersPage() {
   const avatarUrl = userData?.avatar_url ?? "";
 
   return (
-    <FullscreenShell coins={coins} userName={fullName} userAvatar={avatarUrl}>
+    <FullscreenShell coins={coins} userName={fullName} userAvatar={avatarUrl} userId={user.id}>
       <AllOffersClient userId={user.id} />
     </FullscreenShell>
   );

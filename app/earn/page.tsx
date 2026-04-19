@@ -42,7 +42,7 @@ export default async function OffersPage() {
   const cpxHash = crypto.createHash("md5").update(`${user.id}-${secureHashAppCode}`).digest("hex");
 
   return (
-    <FullscreenShell coins={coins} userName={fullName} userAvatar={avatarUrl}>
+    <FullscreenShell coins={coins} userName={fullName} userAvatar={avatarUrl} userId={user.id}>
       <BalanceUpdater userId={user.id} />
       <EarnContent 
         userId={user.id} 

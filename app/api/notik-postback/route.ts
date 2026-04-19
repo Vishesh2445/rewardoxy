@@ -221,20 +221,8 @@ async function handleNotikPostback(request: NextRequest) {
         log(`SUCCESS: Credited ${amountNum} to user ${user_id}. New balance: ${newBalance}, New total: ${newTotal}`);
       }
 
-      // Log completion record for user history
-      const { error: completionError } = await supabase.from('completions').insert({
-        player_id: user_id,
-        program_id: offer_id || txn_id, // Use offer_id if available, otherwise txn_id
-        payout_decimal: payoutNum,
-        coins_awarded: amountNum,
-        source: 'notik'
-      });
-
-      if (completionError) {
-        log(`Completion insert failed: ${completionError.message}`);
-      } else {
-        log(`Completion logged: txn_id=${txn_id}, offer=${offer_name}`);
-      }
+      // Note: We do NOT insert into completions table here because the history page
+      // queries notik_transactions directly. Inserting into both would cause duplicates.
     } else {
       log(`Amount is 0, skipping credit/debit`);
     }
