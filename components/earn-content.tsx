@@ -897,20 +897,20 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
           </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2.5 }}>
-          <Typography 
-            component={Link}
-            href="/offers/all"
-            sx={{ 
-              fontSize: "0.875rem", 
-              fontWeight: 500, 
-              color: colors.text.secondary,
-              cursor: "pointer",
-              textDecoration: "none",
-              "&:hover": { color: "#01D676" }
-            }}
-          >
-            View All
-          </Typography>
+          <Link href="/offers/all" style={{ textDecoration: "none" }}>
+            <Typography 
+              sx={{ 
+                fontSize: "0.875rem", 
+                fontWeight: 500, 
+                color: colors.text.secondary,
+                cursor: "pointer",
+                textDecoration: "none",
+                "&:hover": { color: "#01D676" }
+              }}
+            >
+              View All
+            </Typography>
+          </Link>
           <Box sx={{ display: "flex", gap: 1 }}>
             <IconButton
               onClick={() => handleScroll('left')}
