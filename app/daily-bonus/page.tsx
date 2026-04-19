@@ -36,7 +36,7 @@ export default async function DailyBonusPage() {
     .limit(1)
     .maybeSingle();
 
-  // Get today's coins earned (from ALL sources: MyLead, CPX, etc.)
+  // Get today's coins earned (from ALL sources: MyLead, CPX, Notik, etc.)
   const { data: todayCompletions } = await supabase
     .from("completions")
     .select("coins_awarded")
@@ -50,6 +50,13 @@ export default async function DailyBonusPage() {
     .eq("userid", user.id)
     .gte("created_at", todayStart.toISOString());
 
+  // Get today's Notik earnings
+  const { data: todayNotik } = await supabase
+    .from("notik_transactions")
+    .select("amount")
+    .eq("user_id", user.id)
+    .gte("created_at", todayStart.toISOString());
+
   const todayCoinsFromCompletions = todayCompletions?.reduce(
     (sum, c) => sum + (c.coins_awarded || 0),
     0
@@ -60,7 +67,12 @@ export default async function DailyBonusPage() {
     return sum + (c.status === 2 ? -amount : amount); // Subtract reversals
   }, 0) || 0;
 
-  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx;
+  const todayCoinsFromNotik = todayNotik?.reduce((sum, n) => {
+    const amount = Math.round(Number(n.amount || 0));
+    return sum + amount; // Notik amount can be negative for chargebacks
+  }, 0) || 0;
+
+  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik;
 
   return (
     <AppShell coins={coins}>
