@@ -1,19 +1,19 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import FullscreenShell from "@/components/fullscreen-shell";
-import EarnContent from "@/components/earn-content";
-import crypto from "crypto";
+import AllOffersClient from "@/components/all-offers-client";
 import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
+  title: "All Offers - Rewardoxy",
   alternates: {
-    canonical: "https://rewardoxy.app/earn",
+    canonical: "https://rewardoxy.app/offers/all",
   },
 };
 
-export default async function OffersPage() {
+export default async function AllOffersPage() {
   const supabase = await createClient();
 
   const {
@@ -26,29 +26,17 @@ export default async function OffersPage() {
 
   const { data: userData } = await supabase
     .from("users")
-    .select("coins_balance, display_name, email, avatar_url")
+    .select("coins_balance, display_name, avatar_url")
     .eq("id", user.id)
     .single();
 
   const coins = userData?.coins_balance ?? 0;
   const fullName = userData?.display_name ?? "";
-  const email = userData?.email ?? "";
   const avatarUrl = userData?.avatar_url ?? "";
-
-  // Calculate CPX Secure Hash for frontend iframe (required if wall is secure)
-  // Formula: hex(md5(user_id + your_hash))
-  const secureHashAppCode = process.env.CPX_SECURE_HASH || "";
-  const cpxHash = crypto.createHash("md5").update(`${user.id}-${secureHashAppCode}`).digest("hex");
 
   return (
     <FullscreenShell coins={coins} userName={fullName} userAvatar={avatarUrl}>
-      <EarnContent 
-        userId={user.id} 
-        userName={fullName} 
-        userEmail={email} 
-        cpxHash={cpxHash} 
-      />
+      <AllOffersClient userId={user.id} />
     </FullscreenShell>
   );
 }
-

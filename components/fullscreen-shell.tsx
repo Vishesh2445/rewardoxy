@@ -6,19 +6,19 @@ import { usePathname } from "next/navigation";
 import {
   AppBar,
   Box,
-  Drawer,
   Toolbar,
   IconButton,
   Button,
+  Menu,
+  MenuItem,
+  Avatar,
+  Drawer,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   Divider,
-  Menu,
-  MenuItem,
-  Avatar,
 } from "@mui/material";
 import Image from "next/image";
 import {
@@ -31,10 +31,10 @@ import {
   History,
   CalendarCheck,
   LogOut,
+  ChevronDown,
   Menu as MenuIcon,
   X,
   Mail,
-  ChevronDown,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Icons from "@/components/icons";
@@ -49,18 +49,19 @@ const NAV_ITEMS = [
   { label: "Rewards", href: "/daily-bonus", Icon: CalendarCheck },
 ];
 
-const ALL_NAV_ITEMS = [
-  { label: "Earn", href: "/earn", Icon: Gift },
+const DROPDOWN_ITEMS = [
   { label: "Dashboard", href: "/dashboard", Icon: LayoutDashboard },
-  { label: "Daily Bonus", href: "/daily-bonus", Icon: CalendarCheck },
-  { label: "Cashout", href: "/cashout", Icon: Wallet },
   { label: "Leaderboard", href: "/leaderboard", Icon: Trophy },
   { label: "Referrals", href: "/referrals", Icon: Users },
   { label: "History", href: "/history", Icon: History },
   { label: "Profile", href: "/profile", Icon: User },
 ];
 
-const DROPDOWN_ITEMS = [
+const ALL_NAV_ITEMS = [
+  { label: "Earn", href: "/earn", Icon: Gift },
+  { label: "Dashboard", href: "/dashboard", Icon: LayoutDashboard },
+  { label: "Daily Bonus", href: "/daily-bonus", Icon: CalendarCheck },
+  { label: "Cashout", href: "/cashout", Icon: Wallet },
   { label: "Leaderboard", href: "/leaderboard", Icon: Trophy },
   { label: "Referrals", href: "/referrals", Icon: Users },
   { label: "History", href: "/history", Icon: History },
@@ -103,17 +104,22 @@ const socialLinks = [
   { icon: "telegram", url: "https://t.me/rewardoxy", label: "Telegram" },
 ];
 
-interface AppShellProps {
+interface FullscreenShellProps {
   children: React.ReactNode;
   coins?: number;
   userName?: string;
   userAvatar?: string;
 }
 
-export default function AppShell({ children, coins, userName = "User", userAvatar }: AppShellProps) {
+export default function FullscreenShell({ 
+  children, 
+  coins,
+  userName = "User",
+  userAvatar 
+}: FullscreenShellProps) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const open = Boolean(anchorEl);
 
   async function handleLogout() {
@@ -157,7 +163,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
 
           {/* Logo */}
           <Box sx={{ mr: { xs: 0, md: 4 } }}>
-            <Icons.Logo href="/dashboard" />
+            <Icons.Logo href="/earn" />
           </Box>
 
           {/* Desktop Navigation */}
@@ -239,7 +245,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
                       fontSize: "0.875rem",
                     }}
                   >
-                    {userName?.charAt(0).toUpperCase() || "U"}
+                    {userName.charAt(0).toUpperCase()}
                   </Avatar>
                   <ChevronDown size={16} color={colors.text.secondary} />
                 </Box>
@@ -332,7 +338,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
               borderBottom: `1px solid rgba(255, 255, 255, 0.05)`,
             }}
           >
-            <Icons.Logo href="/dashboard" />
+            <Icons.Logo href="/earn" />
             <IconButton onClick={() => setMobileOpen(false)} sx={{ color: colors.text.secondary }}>
               <X size={20} />
             </IconButton>
@@ -349,10 +355,10 @@ export default function AppShell({ children, coins, userName = "User", userAvata
                   bgcolor: colors.primary,
                 }}
               >
-                {userName?.charAt(0).toUpperCase() || "U"}
+                {userName.charAt(0).toUpperCase()}
               </Avatar>
               <Box>
-                <Typography sx={{ fontWeight: 600 }}>{userName || "User"}</Typography>
+                <Typography sx={{ fontWeight: 600 }}>{userName}</Typography>
                 {coins !== undefined && (
                   <Typography sx={{ fontSize: "0.875rem", color: "#01D676", fontWeight: 600 }}>
                     ${((coins ?? 0) / 1000).toFixed(2)}
@@ -456,7 +462,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
         >
           {/* Branding & Copyright */}
           <Box sx={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Icons.Logo href="/dashboard" />
+            <Icons.Logo href="/earn" />
             <Typography sx={{ color: colors.text.secondary, fontSize: "0.875rem", maxWidth: 300 }}>
               Get paid to complete tasks, surveys and offers.
             </Typography>
