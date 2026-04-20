@@ -836,6 +836,8 @@ function CPXSurveysSection({ userId }: { userId: string }) {
       const response = await fetch(`/api/cpx-surveys?user_id=${userId}`);
       
       if (!response.ok) {
+        console.error("Failed to fetch CPX surveys:", response.status);
+        setSurveys([]);
         setLoading(false);
         return;
       }
@@ -844,9 +846,13 @@ function CPXSurveysSection({ userId }: { userId: string }) {
       
       if (data.success && data.surveys && Array.isArray(data.surveys)) {
         setSurveys(data.surveys.slice(0, 12));
+      } else {
+        console.warn("Invalid CPX surveys response:", data);
+        setSurveys([]);
       }
     } catch (error) {
       console.error("Error fetching CPX surveys:", error);
+      setSurveys([]);
     } finally {
       setLoading(false);
     }

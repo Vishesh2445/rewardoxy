@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        { success: false, error: "Missing user_id parameter" },
+        { success: false, error: "Missing user_id parameter", surveys: [], count: 0 },
         { status: 400 }
       );
     }
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     if (!secureHash) {
       console.error("CPX_SECURE_HASH not configured");
       return NextResponse.json(
-        { success: false, error: "CPX configuration missing" },
+        { success: false, error: "CPX configuration missing", surveys: [], count: 0 },
         { status: 500 }
       );
     }
@@ -59,8 +59,8 @@ export async function GET(request: NextRequest) {
     if (!response.ok) {
       console.error("CPX API error:", response.status, response.statusText);
       return NextResponse.json(
-        { success: false, error: "Failed to fetch surveys from CPX" },
-        { status: response.status }
+        { success: false, error: "Failed to fetch surveys from CPX", surveys: [], count: 0 },
+        { status: 200 } // Return 200 to avoid client-side errors
       );
     }
 
@@ -68,16 +68,17 @@ export async function GET(request: NextRequest) {
     
     console.log("CPX API response:", JSON.stringify(data, null, 2));
 
+    // Ensure we always return a valid structure
     return NextResponse.json({
       success: true,
-      surveys: data.surveys || [],
+      surveys: Array.isArray(data.surveys) ? data.surveys : [],
       count: data.count_surveys || 0,
     });
   } catch (error) {
     console.error("Error fetching CPX surveys:", error);
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
+      { success: false, error: "Internal server error", surveys: [], count: 0 },
+      { status: 200 } // Return 200 to avoid client-side errors
     );
   }
 }
