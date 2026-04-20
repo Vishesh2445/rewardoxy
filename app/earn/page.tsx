@@ -34,7 +34,6 @@ export default async function OffersPage() {
   const fullName = userData?.display_name ?? "";
   const email = userData?.email ?? "";
   const avatarUrl = userData?.avatar_url ?? "";
-  const cpxSecureHash = process.env.CPX_SECURE_HASH || "";
 
   return (
     <FullscreenShell coins={coins} userName={fullName} userAvatar={avatarUrl} userId={user.id}>
@@ -43,7 +42,6 @@ export default async function OffersPage() {
         userId={user.id}
         userName={fullName}
         userEmail={email}
-        cpxSecureHash={cpxSecureHash}
       />
     </FullscreenShell>
   );

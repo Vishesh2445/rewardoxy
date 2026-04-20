@@ -15,7 +15,6 @@ type EarnContentProps = {
   userId: string;
   userName: string;
   userEmail: string;
-  cpxSecureHash: string;
 };
 
 type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik";
@@ -44,8 +43,8 @@ interface CPXSurvey {
   payout_usd: number;
   conversion_rate: number;
   link: string;
-  country?: string;
-  device?: string;
+  score?: number;
+  type?: string;
 }
 
 // Offer Details Modal Component - Exact Freecash.com Style
@@ -870,7 +869,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
     }
   };
 
-  // Skeleton loader with shimmer animation
+  // Skeleton loader
   const SkeletonSurvey = () => (
     <Box sx={{ minWidth: 140, maxWidth: 140, flexShrink: 0 }}>
       <Box sx={{ bgcolor: "#222339", p: 1.5, borderRadius: 2.5 }}>
@@ -898,80 +897,11 @@ function CPXSurveysSection({ userId }: { userId: string }) {
           },
         }} />
         <Box sx={{ height: 40, mb: 0.5 }}>
-          <Box sx={{ 
-            height: 14, 
-            bgcolor: "#1a1b2e", 
-            borderRadius: 1, 
-            mb: 0.5,
-            position: "relative",
-            overflow: "hidden",
-            "&::after": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: "-100%",
-              width: "100%",
-              height: "100%",
-              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)",
-              animation: "shimmer 1.5s infinite",
-            },
-          }} />
-          <Box sx={{ 
-            height: 14, 
-            bgcolor: "#1a1b2e", 
-            borderRadius: 1, 
-            width: "70%",
-            position: "relative",
-            overflow: "hidden",
-            "&::after": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: "-100%",
-              width: "100%",
-              height: "100%",
-              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)",
-              animation: "shimmer 1.5s infinite 0.2s",
-            },
-          }} />
+          <Box sx={{ height: 14, bgcolor: "#1a1b2e", borderRadius: 1, mb: 0.5 }} />
+          <Box sx={{ height: 14, bgcolor: "#1a1b2e", borderRadius: 1, width: "70%" }} />
         </Box>
-        <Box sx={{ 
-          height: 10, 
-          bgcolor: "#1a1b2e", 
-          borderRadius: 1, 
-          width: "40%", 
-          mb: 1,
-          position: "relative",
-          overflow: "hidden",
-          "&::after": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: "-100%",
-            width: "100%",
-            height: "100%",
-            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)",
-            animation: "shimmer 1.5s infinite 0.4s",
-          },
-        }} />
-        <Box sx={{ 
-          height: 14, 
-          bgcolor: "#1a1b2e", 
-          borderRadius: 1, 
-          width: "50%",
-          position: "relative",
-          overflow: "hidden",
-          "&::after": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: "-100%",
-            width: "100%",
-            height: "100%",
-            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)",
-            animation: "shimmer 1.5s infinite 0.6s",
-          },
-        }} />
+        <Box sx={{ height: 10, bgcolor: "#1a1b2e", borderRadius: 1, width: "40%", mb: 1 }} />
+        <Box sx={{ height: 14, bgcolor: "#1a1b2e", borderRadius: 1, width: "50%" }} />
       </Box>
     </Box>
   );
@@ -987,13 +917,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
     >
       <Box sx={{ p: { xs: 1.5, sm: 2 }, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Box sx={{ 
-            width: 20, 
-            height: 24, 
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center" 
-          }}>
+          <Box sx={{ width: 20, height: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%', color: '#01D676' }}>
               <path d="M9 11H7V13H9V11ZM13 11H11V13H13V11ZM17 11H15V13H17V11ZM19 4H18V2H16V4H8V2H6V4H5C3.89 4 3.01 4.9 3.01 6L3 20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V9H19V20Z" fill="currentColor"/>
             </svg>
@@ -1002,36 +926,34 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             CPX Surveys
           </Typography>
         </Box>
-        <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1.5, sm: 2.5 } }}>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <IconButton
-              onClick={() => handleScroll('left')}
-              sx={{
-                width: 32,
-                height: 32,
-                bgcolor: "#242537",
-                borderRadius: 1.5,
-                color: "#01D676",
-                opacity: 0.4,
-                "&:hover": { bgcolor: "#2a2b45", opacity: 1 },
-              }}
-            >
-              <ChevronLeft size={16} />
-            </IconButton>
-            <IconButton
-              onClick={() => handleScroll('right')}
-              sx={{
-                width: 32,
-                height: 32,
-                bgcolor: "#242537",
-                borderRadius: 1.5,
-                color: "#01D676",
-                "&:hover": { bgcolor: "#2a2b45" },
-              }}
-            >
-              <ChevronRight size={16} />
-            </IconButton>
-          </Box>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <IconButton
+            onClick={() => handleScroll('left')}
+            sx={{
+              width: 32,
+              height: 32,
+              bgcolor: "#242537",
+              borderRadius: 1.5,
+              color: "#01D676",
+              opacity: 0.4,
+              "&:hover": { bgcolor: "#2a2b45", opacity: 1 },
+            }}
+          >
+            <ChevronLeft size={16} />
+          </IconButton>
+          <IconButton
+            onClick={() => handleScroll('right')}
+            sx={{
+              width: 32,
+              height: 32,
+              bgcolor: "#242537",
+              borderRadius: 1.5,
+              color: "#01D676",
+              "&:hover": { bgcolor: "#2a2b45" },
+            }}
+          >
+            <ChevronRight size={16} />
+          </IconButton>
         </Box>
       </Box>
 
@@ -1049,41 +971,21 @@ function CPXSurveysSection({ userId }: { userId: string }) {
         }}
       >
         {loading ? (
-          // Show skeleton loaders while loading
           <>
             {[1, 2, 3, 4, 5].map((i) => (
               <SkeletonSurvey key={i} />
             ))}
           </>
         ) : surveys.length === 0 ? (
-          // Show message when no surveys available
-          <Box sx={{ 
-            width: "100%", 
-            py: 4, 
-            display: "flex", 
-            flexDirection: "column", 
-            alignItems: "center", 
-            justifyContent: "center",
-            gap: 1
-          }}>
-            <Typography sx={{ 
-              fontSize: "0.875rem", 
-              color: colors.text.secondary,
-              textAlign: "center"
-            }}>
+          <Box sx={{ width: "100%", py: 4, display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+            <Typography sx={{ fontSize: "0.875rem", color: colors.text.secondary, textAlign: "center" }}>
               No surveys available at the moment
             </Typography>
-            <Typography sx={{ 
-              fontSize: "0.75rem", 
-              color: colors.text.secondary,
-              opacity: 0.6,
-              textAlign: "center"
-            }}>
+            <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary, opacity: 0.6, textAlign: "center" }}>
               Check back later for new opportunities
             </Typography>
           </Box>
         ) : (
-          // Show actual surveys
           surveys.map((survey) => (
             <Box
               key={survey.id}
@@ -1101,9 +1003,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                   p: { xs: 0.75, sm: 1.5 },
                   borderRadius: { xs: 1.5, sm: 2.5 },
                   transition: "all 0.2s",
-                  "&:hover": {
-                    bgcolor: "#2a2b45",
-                  },
+                  "&:hover": { bgcolor: "#2a2b45" },
                 }}
               >
                 <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
@@ -1113,7 +1013,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                       aspectRatio: "1",
                       borderRadius: { xs: 1, sm: 1.5 },
                       overflow: "hidden",
-                      bgcolor: "linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(13, 148, 136, 0.3) 100%)",
+                      background: "linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(13, 148, 136, 0.3) 100%)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -1124,11 +1024,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '40%', height: '40%', color: '#14b8a6' }}>
                       <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM7 10H9V17H7V10ZM11 7H13V17H11V7ZM15 13H17V17H15V13Z" fill="currentColor"/>
                     </svg>
-                    <Typography sx={{ 
-                      fontSize: { xs: "0.625rem", sm: "0.75rem" }, 
-                      color: "#14b8a6",
-                      fontWeight: 600
-                    }}>
+                    <Typography sx={{ fontSize: { xs: "0.625rem", sm: "0.75rem" }, color: "#14b8a6", fontWeight: 600 }}>
                       {survey.loi} min
                     </Typography>
                   </Box>
@@ -1141,17 +1037,10 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                       px: { xs: 0.5, sm: 1 },
                       py: { xs: 0.25, sm: 0.5 },
                       borderRadius: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
                     }}
                   >
-                    <Typography sx={{ 
-                      fontSize: { xs: "0.625rem", sm: "0.75rem" }, 
-                      color: "#000",
-                      fontWeight: 700
-                    }}>
-                      {survey.conversion_rate}%
+                    <Typography sx={{ fontSize: { xs: "0.625rem", sm: "0.75rem" }, color: "#000", fontWeight: 700 }}>
+                      {survey.conversion_rate.toFixed(0)}%
                     </Typography>
                   </Box>
                 </Box>
@@ -1198,7 +1087,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   );
 }
 
-export default function EarnContent({ userId, userName, userEmail, cpxSecureHash }: EarnContentProps) {
+export default function EarnContent({ userId, userName, userEmail }: EarnContentProps) {
   const [open, setOpen] = useState(false);
   const [activeWall, setActiveWall] = useState<WallType | null>(null);
   const [iframeLoading, setIframeLoading] = useState(true);
@@ -1264,10 +1153,11 @@ export default function EarnContent({ userId, userName, userEmail, cpxSecureHash
     }
     if (activeWall === "CPX Research") {
       const appId = "32037"; 
+      const cpxHash = process.env.NEXT_PUBLIC_CPX_SECURE_HASH || "";
       const encodedName = encodeURIComponent(userName || "");
       const encodedEmail = encodeURIComponent(userEmail || "");
       
-      return `https://offers.cpx-research.com/index.php?app_id=${appId}&ext_user_id=${userId}&secure_hash=${cpxSecureHash}&username=${encodedName}&email=${encodedEmail}&subid_1=&subid_2`;
+      return `https://offers.cpx-research.com/index.php?app_id=${appId}&ext_user_id=${userId}&secure_hash=${cpxHash}&username=${encodedName}&email=${encodedEmail}&subid_1=&subid_2`;
     }
     if (activeWall === "Vortex") {
       const placementId = "69dfafd0a982f180b5caa54c";
