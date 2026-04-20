@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import FullscreenShell from "@/components/fullscreen-shell";
 import EarnContent from "@/components/earn-content";
 import BalanceUpdater from "@/components/balance-updater";
-import crypto from "crypto";
 import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -36,19 +35,13 @@ export default async function OffersPage() {
   const email = userData?.email ?? "";
   const avatarUrl = userData?.avatar_url ?? "";
 
-  // Calculate CPX Secure Hash for frontend iframe (required if wall is secure)
-  // Formula: hex(md5(user_id + your_hash))
-  const secureHashAppCode = process.env.CPX_SECURE_HASH || "";
-  const cpxHash = crypto.createHash("md5").update(`${user.id}-${secureHashAppCode}`).digest("hex");
-
   return (
     <FullscreenShell coins={coins} userName={fullName} userAvatar={avatarUrl} userId={user.id}>
       <BalanceUpdater userId={user.id} />
-      <EarnContent 
-        userId={user.id} 
-        userName={fullName} 
-        userEmail={email} 
-        cpxHash={cpxHash} 
+      <EarnContent
+        userId={user.id}
+        userName={fullName}
+        userEmail={email}
       />
     </FullscreenShell>
   );

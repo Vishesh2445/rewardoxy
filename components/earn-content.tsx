@@ -10,13 +10,11 @@ import { Gamepad2, ChevronRight, ChevronLeft, Monitor, Smartphone } from "lucide
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 import CheckIcon from "@mui/icons-material/Check";
-import SurveysSection from "@/components/surveys-section";
 
 type EarnContentProps = {
   userId: string;
   userName: string;
   userEmail: string;
-  cpxHash: string;
 };
 
 type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik";
@@ -37,6 +35,16 @@ interface NotikOffer {
     name: string;
     payout: number;
   }[];
+}
+
+interface CPXSurvey {
+  id: string;
+  loi: number; // Length of interview in minutes
+  payout_usd: number;
+  conversion_rate: number;
+  link: string;
+  country?: string;
+  device?: string;
 }
 
 // Offer Details Modal Component - Exact Freecash.com Style
@@ -643,17 +651,20 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
           </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1.5, sm: 2.5 } }}>
-          <Typography 
-            sx={{ 
-              fontSize: { xs: "0.8125rem", sm: "0.875rem" }, 
-              fontWeight: 500, 
-              color: colors.text.secondary,
-              cursor: "pointer",
-              "&:hover": { color: "#01D676" }
-            }}
-          >
-            View All
-          </Typography>
+          <Link href="/offers/all" style={{ textDecoration: "none" }}>
+            <Typography
+              sx={{
+                fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                fontWeight: 500,
+                color: colors.text.secondary,
+                cursor: "pointer",
+                textDecoration: "none",
+                "&:hover": { color: "#01D676" }
+              }}
+            >
+              View All
+            </Typography>
+          </Link>
           <Box sx={{ display: "flex", gap: 1 }}>
             <IconButton
               onClick={() => handleScroll('left')}
@@ -811,65 +822,38 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
   );
 }
 
-// Other Offers Section
-function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: DeviceOS[] }) {
-  const [offers, setOffers] = useState<NotikOffer[]>([]);
-  const [loading, setLoading] = useState(false); // Start as false to show skeleton
-  const [selectedOffer, setSelectedOffer] = useState<NotikOffer | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+function CPXSurveysSection({ userId }: { userId: string }) {
+  const [surveys, setSurveys] = useState<CPXSurvey[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchOffers();
-  }, [userId, deviceOS]);
+    fetchSurveys();
+  }, [userId]);
 
-  async function fetchOffers() {
+  async function fetchSurveys() {
     try {
       setLoading(true);
-      const primaryOS = deviceOS.length > 0 ? deviceOS[0] : 'android';
-      const response = await fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`);
+      const response = await fetch(`/api/cpx-surveys?user_id=${userId}`);
       
       if (!response.ok) {
+        setLoading(false);
         return;
       }
 
-      const text = await response.text();
-      if (!text) {
-        return;
-      }
-
-      const data = JSON.parse(text);
+      const data = await response.json();
       
-      if (data.success && data.offers && Array.isArray(data.offers)) {
-        // Filter for gaming offers
-        const otherOffers = data.offers
-          .filter((offer: NotikOffer) => {
-            const name = offer.name?.toLowerCase() || '';
-            const desc1 = offer.description1?.toLowerCase() || '';
-            const desc2 = offer.description2?.toLowerCase() || '';
-            const categoriesStr = typeof offer.categories === 'string' 
-              ? offer.categories.toLowerCase() 
-              : JSON.stringify(offer.categories).toLowerCase();
-            
-            return name.includes('game') || 
-                   desc1.includes('game') || 
-                   desc2.includes('game') ||
-                   categoriesStr.includes('game') ||
-                   name.includes('play') ||
-                   desc1.includes('play');
-          })
-          .slice(0, 10);
-        
-        setOffers(otherOffers);
-      } else {
+      if (data.success && data.surveys && Array.isArray(data.surveys)) {
+        setSurveys(data.surveys.slice(0, 12));
       }
     } catch (error) {
+      console.error("Error fetching CPX surveys:", error);
     } finally {
       setLoading(false);
     }
   }
 
   const handleScroll = (direction: 'left' | 'right') => {
-    const container = document.getElementById('other-offers-scroll');
+    const container = document.getElementById('cpx-surveys-scroll');
     if (container) {
       const scrollAmount = 300;
       const newPosition = direction === 'left' 
@@ -880,9 +864,9 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
   };
 
   // Skeleton loader with shimmer animation
-  const SkeletonOffer = () => (
-    <Box sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 }, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: "#222339", p: { xs: 0.75, sm: 1.5 }, borderRadius: { xs: 1.5, sm: 2.5 } }}>
+  const SkeletonSurvey = () => (
+    <Box sx={{ minWidth: 140, maxWidth: 140, flexShrink: 0 }}>
+      <Box sx={{ bgcolor: "#222339", p: 1.5, borderRadius: 2.5 }}>
         <Box sx={{ 
           width: "100%", 
           aspectRatio: "1", 
@@ -998,37 +982,20 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box sx={{ 
             width: 20, 
-            height: 20, 
+            height: 24, 
             display: "flex", 
             alignItems: "center", 
             justifyContent: "center" 
           }}>
-            <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%', color: '#01D676' }}>
-              <rect x="0" y="0" width="8" height="8" rx="2" fill="currentColor"/>
-              <rect x="12" y="0" width="8" height="8" rx="2" fill="currentColor"/>
-              <rect x="0" y="12" width="8" height="8" rx="2" fill="currentColor"/>
-              <rect x="12" y="12" width="8" height="8" rx="2" fill="currentColor"/>
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%', color: '#01D676' }}>
+              <path d="M9 11H7V13H9V11ZM13 11H11V13H13V11ZM17 11H15V13H17V11ZM19 4H18V2H16V4H8V2H6V4H5C3.89 4 3.01 4.9 3.01 6L3 20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V9H19V20Z" fill="currentColor"/>
             </svg>
           </Box>
           <Typography variant="h6" isBold sx={{ fontSize: { xs: "1.125rem", sm: "1.25rem" } }}>
-            Other Offers
+            CPX Surveys
           </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1.5, sm: 2.5 } }}>
-          <Link href="/offers/all" style={{ textDecoration: "none" }}>
-            <Typography 
-              sx={{ 
-                fontSize: { xs: "0.8125rem", sm: "0.875rem" }, 
-                fontWeight: 500, 
-                color: colors.text.secondary,
-                cursor: "pointer",
-                textDecoration: "none",
-                "&:hover": { color: "#01D676" }
-              }}
-            >
-              View All
-            </Typography>
-          </Link>
           <Box sx={{ display: "flex", gap: 1 }}>
             <IconButton
               onClick={() => handleScroll('left')}
@@ -1062,7 +1029,7 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
       </Box>
 
       <Box
-        id="other-offers-scroll"
+        id="cpx-surveys-scroll"
         sx={{
           px: { xs: 1.5, sm: 2 },
           pb: { xs: 2, sm: 2.5 },
@@ -1074,102 +1041,157 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
           scrollbarWidth: "none",
         }}
       >
-        {loading || offers.length === 0 ? (
+        {loading ? (
           // Show skeleton loaders while loading
           <>
             {[1, 2, 3, 4, 5].map((i) => (
-              <SkeletonOffer key={i} />
+              <SkeletonSurvey key={i} />
             ))}
           </>
+        ) : surveys.length === 0 ? (
+          // Show message when no surveys available
+          <Box sx={{ 
+            width: "100%", 
+            py: 4, 
+            display: "flex", 
+            flexDirection: "column", 
+            alignItems: "center", 
+            justifyContent: "center",
+            gap: 1
+          }}>
+            <Typography sx={{ 
+              fontSize: "0.875rem", 
+              color: colors.text.secondary,
+              textAlign: "center"
+            }}>
+              No surveys available at the moment
+            </Typography>
+            <Typography sx={{ 
+              fontSize: "0.75rem", 
+              color: colors.text.secondary,
+              opacity: 0.6,
+              textAlign: "center"
+            }}>
+              Check back later for new opportunities
+            </Typography>
+          </Box>
         ) : (
-          // Show actual offers
-          offers.map((offer) => (
-          <Box
-            key={offer.offer_id}
-            sx={{
-              minWidth: { xs: 100, sm: 140 },
-              maxWidth: { xs: 100, sm: 140 },
-              flexShrink: 0,
-              cursor: "pointer",
-            }}
-            onClick={() => {
-              setSelectedOffer(offer);
-              setModalOpen(true);
-            }}
-          >
+          // Show actual surveys
+          surveys.map((survey) => (
             <Box
+              key={survey.id}
               sx={{
-                bgcolor: "#222339",
-                p: { xs: 0.75, sm: 1.5 },
-                borderRadius: { xs: 1.5, sm: 2.5 },
-                transition: "all 0.2s",
-                "&:hover": {
-                  bgcolor: "#2a2b45",
-                },
+                minWidth: { xs: 100, sm: 140 },
+                maxWidth: { xs: 100, sm: 140 },
+                flexShrink: 0,
+                cursor: "pointer",
               }}
+              onClick={() => window.open(survey.link, "_blank")}
             >
-              <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
-                <Box
-                  sx={{
-                    width: "100%",
-                    aspectRatio: "1",
-                    borderRadius: { xs: 1, sm: 1.5 },
-                    overflow: "hidden",
-                    bgcolor: "#1a1b2e",
-                    backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                />
-              </Box>
-
-              <Box sx={{ height: 40, overflow: "hidden", mb: 0.5 }}>
-                <Typography
-                  sx={{
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    fontWeight: 500,
-                    lineHeight: 1.3,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                  }}
-                >
-                  {offer.name}
-                </Typography>
-              </Box>
-
-              <Typography
+              <Box
                 sx={{
-                  fontSize: { xs: "0.6rem", sm: "0.6875rem" },
-                  color: colors.text.secondary,
-                  opacity: 0.6,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  fontWeight: 600,
-                  mb: { xs: 0.5, sm: 1 },
+                  bgcolor: "#222339",
+                  p: { xs: 0.75, sm: 1.5 },
+                  borderRadius: { xs: 1.5, sm: 2.5 },
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    bgcolor: "#2a2b45",
+                  },
                 }}
               >
-                Other
-              </Typography>
+                <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      aspectRatio: "1",
+                      borderRadius: { xs: 1, sm: 1.5 },
+                      overflow: "hidden",
+                      bgcolor: "linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(13, 148, 136, 0.3) 100%)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexDirection: "column",
+                      gap: 0.5,
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '40%', height: '40%', color: '#14b8a6' }}>
+                      <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM7 10H9V17H7V10ZM11 7H13V17H11V7ZM15 13H17V17H15V13Z" fill="currentColor"/>
+                    </svg>
+                    <Typography sx={{ 
+                      fontSize: { xs: "0.625rem", sm: "0.75rem" }, 
+                      color: "#14b8a6",
+                      fontWeight: 600
+                    }}>
+                      {survey.loi} min
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: { xs: 4, sm: 8 },
+                      right: { xs: 4, sm: 8 },
+                      bgcolor: "rgba(1, 214, 118, 0.9)",
+                      px: { xs: 0.5, sm: 1 },
+                      py: { xs: 0.25, sm: 0.5 },
+                      borderRadius: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                    }}
+                  >
+                    <Typography sx={{ 
+                      fontSize: { xs: "0.625rem", sm: "0.75rem" }, 
+                      color: "#000",
+                      fontWeight: 700
+                    }}>
+                      {survey.conversion_rate}%
+                    </Typography>
+                  </Box>
+                </Box>
 
-              <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600 }}>
-                ${offer.payout}
-              </Typography>
+                <Box sx={{ height: 40, overflow: "hidden", mb: 0.5 }}>
+                  <Typography
+                    sx={{
+                      fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                      fontWeight: 500,
+                      lineHeight: 1.3,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    Survey #{survey.id.slice(0, 8)}
+                  </Typography>
+                </Box>
+
+                <Typography
+                  sx={{
+                    fontSize: { xs: "0.6rem", sm: "0.6875rem" },
+                    color: colors.text.secondary,
+                    opacity: 0.6,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    fontWeight: 600,
+                    mb: { xs: 0.5, sm: 1 },
+                  }}
+                >
+                  Survey
+                </Typography>
+
+                <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600, color: "#01D676" }}>
+                  ${survey.payout_usd.toFixed(2)}
+                </Typography>
+              </Box>
             </Box>
-          </Box>
-        ))
+          ))
         )}
       </Box>
-
-      {/* Offer Details Modal */}
-      <OfferDetailsModal offer={selectedOffer} open={modalOpen} onClose={() => setModalOpen(false)} />
     </Box>
   );
 }
 
-
-export default function EarnContent({ userId, userName, userEmail, cpxHash }: EarnContentProps) {
+export default function EarnContent({ userId, userName, userEmail }: EarnContentProps) {
   const [open, setOpen] = useState(false);
   const [activeWall, setActiveWall] = useState<WallType | null>(null);
   const [iframeLoading, setIframeLoading] = useState(true);
@@ -1262,20 +1284,15 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
         <PlatformSelector selectedPlatforms={selectedPlatforms} onToggle={handlePlatformToggle} />
       </Box>
 
-      {/* Two Column Grid - Gaming Offers first, then Other Offers */}
-      <Box sx={{ 
-        px: { xs: 2, sm: 3, md: 4 },
-        display: "grid", 
-        gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, 
-        gap: { xs: 2, sm: 3 },
-        mb: { xs: 2, sm: 3 }
-      }}>
+      {/* Gaming Offers */}
+      <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3 } }}>
         <GamingOffersSection userId={userId} deviceOS={selectedPlatforms} />
-        <OtherOffersSection userId={userId} deviceOS={selectedPlatforms} />
       </Box>
 
-      {/* Surveys section */}
-      <SurveysSection userId={userId} />
+      {/* CPX Surveys */}
+      <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3 } }}>
+        <CPXSurveysSection userId={userId} />
+      </Box>
 
       {/* Offer Walls section */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 2, sm: 3 } }}>
