@@ -10,6 +10,7 @@ import { Gamepad2, ChevronRight, ChevronLeft, Monitor, Smartphone } from "lucide
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 import CheckIcon from "@mui/icons-material/Check";
+import SurveysSection from "@/components/surveys-section";
 
 type EarnContentProps = {
   userId: string;
@@ -457,14 +458,12 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       const response = await fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`);
       
       if (!response.ok) {
-        console.error("Failed to fetch offers:", response.status, response.statusText);
         setLoading(false);
         return;
       }
 
       const text = await response.text();
       if (!text) {
-        console.error("Empty response from API");
         setLoading(false);
         return;
       }
@@ -493,10 +492,8 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         
         setOffers(gamingOffers);
       } else {
-        console.error('[Gaming Offers] Invalid data structure:', data);
       }
     } catch (error) {
-      console.error("Failed to fetch gaming offers:", error);
     } finally {
       setLoading(false);
     }
@@ -832,13 +829,11 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
       const response = await fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`);
       
       if (!response.ok) {
-        console.error("Failed to fetch offers:", response.status, response.statusText);
         return;
       }
 
       const text = await response.text();
       if (!text) {
-        console.error("Empty response from API");
         return;
       }
 
@@ -866,10 +861,8 @@ function OtherOffersSection({ userId, deviceOS }: { userId: string; deviceOS: De
         
         setOffers(otherOffers);
       } else {
-        console.error('[Other Offers] Invalid data structure:', data);
       }
     } catch (error) {
-      console.error("Failed to fetch other offers:", error);
     } finally {
       setLoading(false);
     }
@@ -1280,6 +1273,9 @@ export default function EarnContent({ userId, userName, userEmail, cpxHash }: Ea
         <GamingOffersSection userId={userId} deviceOS={selectedPlatforms} />
         <OtherOffersSection userId={userId} deviceOS={selectedPlatforms} />
       </Box>
+
+      {/* Surveys section */}
+      <SurveysSection userId={userId} />
 
       {/* Offer Walls section */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 2, sm: 3 } }}>

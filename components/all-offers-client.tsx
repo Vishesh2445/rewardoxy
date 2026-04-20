@@ -514,7 +514,6 @@ export default function AllOffersClient({ userId }: { userId: string }) {
       const response = await fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`);
       
       if (!response.ok) {
-        console.error("Failed to fetch offers:", response.status, response.statusText);
         setLoading(false);
         return;
       }
@@ -522,7 +521,6 @@ export default function AllOffersClient({ userId }: { userId: string }) {
       const data = await response.json();
       
       if (data.success && data.offers && Array.isArray(data.offers)) {
-        console.log('[All Offers] Loaded', data.offers.length, 'offers');
         
         // Store all offers
         setAllOffers(data.offers);
@@ -538,11 +536,9 @@ export default function AllOffersClient({ userId }: { userId: string }) {
           setHasMore(false);
         }
       } else {
-        console.error('[All Offers] Invalid data structure:', data);
         setLoading(false);
       }
     } catch (error) {
-      console.error("Failed to fetch offers:", error);
       setLoading(false);
     }
   }

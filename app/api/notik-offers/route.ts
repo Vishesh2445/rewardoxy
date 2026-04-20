@@ -92,22 +92,18 @@ async function getCountryCodeFromIp(clientIp: string): Promise<string | null> {
     // Race both services, return first successful result
     const result1 = await service1Promise;
     if (result1?.countryCode) {
-      console.log('[notik-offers] Country detected from ip-api:', result1.countryCode);
       return result1.countryCode;
     }
 
     const result2 = await service2Promise;
     if (result2?.country_code) {
-      console.log('[notik-offers] Country detected from ipapi.co:', result2.country_code);
       return result2.country_code;
     }
 
     if (result2?.country) {
-      console.log('[notik-offers] Country detected from ipapi.co (full):', result2.country);
       return result2.country;
     }
   } catch (geoError) {
-    console.log('[notik-offers] IP geolocation failed:', geoError instanceof Error ? geoError.message : 'unknown');
   }
 
   return null;
@@ -122,7 +118,6 @@ export async function GET(request: NextRequest) {
     const device_os = searchParams.get('device_os') || 'android';
     const override_country = searchParams.get('country_code'); // Allow override for testing
 
-    console.log('[notik-offers] Request received, user_id:', user_id, 'device_os:', device_os, 'override_country:', override_country);
 
     if (!user_id) {
       return NextResponse.json(
@@ -136,7 +131,6 @@ export async function GET(request: NextRequest) {
     const NOTIK_APP_ID = process.env.NOTIK_APP_ID;
 
     if (!NOTIK_API_KEY || !NOTIK_PUBLISHER_ID || !NOTIK_APP_ID) {
-      console.error('[notik-offers] Missing API credentials');
       return NextResponse.json(
         { success: false, error: 'API credentials not configured' },
         { status: 500 }
@@ -160,7 +154,6 @@ export async function GET(request: NextRequest) {
     // Default fallback
     countryCode = countryCode || 'US';
 
-    console.log('[notik-offers] Detected country:', countryCode);
 
     // Get user agent and parse device details
     const userAgent = request.headers.get('user-agent') || 'Mozilla/5.0 (Unknown)';
@@ -179,7 +172,6 @@ export async function GET(request: NextRequest) {
     }
     // For Android and Windows, use 'other' as per Notik docs
 
-    console.log('[notik-offers] Device info:', {
       deviceName,
       deviceType: device_type,
       deviceOs: device_os,
@@ -213,8 +205,6 @@ export async function GET(request: NextRequest) {
     if (browserName && browserName !== 'unknown') apiUrl.searchParams.append('browser_name', browserName);
     if (browserVersion && browserVersion !== 'unknown') apiUrl.searchParams.append('browser_version', browserVersion);
 
-    console.log('[notik-offers] Final URL (masked):', apiUrl.toString().substring(0, 150) + '...');
-    console.log('[notik-offers] Fetching from Notik v1 filtered endpoint for country:', countryCode);
 
     let response;
     let usedEndpoint = 'v1/filtered';
@@ -231,7 +221,6 @@ export async function GET(request: NextRequest) {
         signal: AbortSignal.timeout(15000)
       });
     } catch (fetchError) {
-      console.error('[notik-offers] v1 endpoint fetch error:', fetchError instanceof Error ? fetchError.message : 'unknown');
       // If v1 fails, return error instead of silently falling back
       return NextResponse.json(
         { success: false, error: 'Failed to connect to Notik API' },
@@ -240,11 +229,9 @@ export async function GET(request: NextRequest) {
     }
 
     if (!response.ok) {
-      console.error('[notik-offers] API error:', response.status, response.statusText);
 
       // Log response body for debugging
       const errorText = await response.text();
-      console.error('[notik-offers] Error response body:', errorText.substring(0, 500));
 
       return NextResponse.json(
         { success: false, error: `Failed to fetch offers from Notik: ${response.status}` },
@@ -254,11 +241,8 @@ export async function GET(request: NextRequest) {
 
     const responseText = await response.text();
 
-    console.log('[notik-offers] Response length:', responseText.length);
-    console.log('[notik-offers] Response preview:', responseText.substring(0, 500));
 
     if (!responseText) {
-      console.log('[notik-offers] Empty response from Notik API');
       return NextResponse.json(
         { success: true, offers: [], total: 0, country: countryCode }
       );
@@ -266,7 +250,6 @@ export async function GET(request: NextRequest) {
 
     // Check if response is HTML (error page) instead of JSON
     if (responseText.includes('<!DOCTYPE') || responseText.includes('<html')) {
-      console.log('[notik-offers] Received HTML response instead of JSON');
       return NextResponse.json(
         { success: true, offers: [], total: 0, country: countryCode }
       );
@@ -276,15 +259,12 @@ export async function GET(request: NextRequest) {
     try {
       data = JSON.parse(responseText);
     } catch (parseError) {
-      console.error('[notik-offers] JSON parse error:', parseError);
-      console.log('[notik-offers] Response text:', responseText.substring(0, 200));
       return NextResponse.json(
         { success: false, error: 'Invalid JSON response from Notik' },
         { status: 500 }
       );
     }
 
-    console.log('[notik-offers] Notik API response received');
 
     let allOffers: any[] = [];
 
@@ -309,7 +289,6 @@ export async function GET(request: NextRequest) {
       allOffers = data;
     }
 
-    console.log('[notik-offers] Total offers from Notik for', countryCode + ':', allOffers.length);
 
     // The Notik v1 filtered API should already return country-filtered offers
     // But we'll normalize the structure and ensure validity
@@ -349,7 +328,6 @@ export async function GET(request: NextRequest) {
         return normalizedOffer;
       });
 
-    console.log('[notik-offers] Total valid offers after processing:', processedOffers.length);
 
     return NextResponse.json({
       success: true,
@@ -362,7 +340,6 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[notik-offers] Error:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
