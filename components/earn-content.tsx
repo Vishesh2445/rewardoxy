@@ -35,6 +35,7 @@ interface NotikOffer {
     name: string;
     payout: number;
   }[];
+  provider?: string; // Add provider field (Notik, Vortex, etc.)
 }
 
 interface CPXSurvey {
@@ -135,12 +136,33 @@ function OfferDetailsModal({
           sx={{ 
             fontSize: { xs: "1.25rem", sm: "1.5rem" },
             fontWeight: 700,
-            mb: 2,
+            mb: 1,
             color: "#fff",
           }}
         >
           {offer.name}
         </Typography>
+
+        {/* Provider Label */}
+        {offer.provider && (
+          <Box sx={{ mb: 2 }}>
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                bgcolor: "rgba(1, 214, 118, 0.1)",
+                color: "#01D676",
+                px: 1.5,
+                py: 0.5,
+                borderRadius: 1,
+                fontSize: "0.75rem",
+                fontWeight: 600,
+              }}
+            >
+              Powered by {offer.provider}
+            </Box>
+          </Box>
+        )}
 
         {/* Image and Payout Section */}
         <Box sx={{ display: "flex", gap: 2, mb: 2, flexDirection: { xs: "column", sm: "row" } }}>
@@ -465,45 +487,60 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
     try {
       setLoading(true);
       const primaryOS = deviceOS.length > 0 ? deviceOS[0] : 'android';
-      const response = await fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`);
       
-      if (!response.ok) {
-        setLoading(false);
-        return;
-      }
-
-      const text = await response.text();
-      if (!text) {
-        setLoading(false);
-        return;
-      }
-
-      const data = JSON.parse(text);
+      // Fetch from both Notik and Vortex APIs in parallel
+      const [notikResponse, vortexResponse] = await Promise.all([
+        fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
+        fetch(`/api/vortex-offers?user_id=${userId}`)
+      ]);
       
-      if (data.success && data.offers && Array.isArray(data.offers)) {
-        // Filter for non-gaming offers
-        const gamingOffers = data.offers
-          .filter((offer: NotikOffer) => {
-            const name = offer.name?.toLowerCase() || '';
-            const desc1 = offer.description1?.toLowerCase() || '';
-            const desc2 = offer.description2?.toLowerCase() || '';
-            const categoriesStr = typeof offer.categories === 'string' 
-              ? offer.categories.toLowerCase() 
-              : JSON.stringify(offer.categories).toLowerCase();
-            
-            return !(name.includes('game') || 
-                   desc1.includes('game') || 
-                   desc2.includes('game') ||
-                   categoriesStr.includes('game') ||
-                   name.includes('play') ||
-                   desc1.includes('play'));
-          })
-          .slice(0, 10);
-        
-        setOffers(gamingOffers);
-      } else {
+      let allOffers: NotikOffer[] = [];
+      
+      // Process Notik offers
+      if (notikResponse.ok) {
+        const notikText = await notikResponse.text();
+        if (notikText) {
+          const notikData = JSON.parse(notikText);
+          if (notikData.success && notikData.offers && Array.isArray(notikData.offers)) {
+            const notikOffers = notikData.offers.map((offer: NotikOffer) => ({
+              ...offer,
+              provider: "Notik"
+            }));
+            allOffers = [...allOffers, ...notikOffers];
+          }
+        }
       }
+      
+      // Process Vortex offers
+      if (vortexResponse.ok) {
+        const vortexData = await vortexResponse.json();
+        if (vortexData.success && vortexData.offers && Array.isArray(vortexData.offers)) {
+          allOffers = [...allOffers, ...vortexData.offers];
+        }
+      }
+      
+      // Filter for non-gaming offers
+      const gamingOffers = allOffers
+        .filter((offer: NotikOffer) => {
+          const name = offer.name?.toLowerCase() || '';
+          const desc1 = offer.description1?.toLowerCase() || '';
+          const desc2 = offer.description2?.toLowerCase() || '';
+          const categoriesStr = typeof offer.categories === 'string' 
+            ? offer.categories.toLowerCase() 
+            : JSON.stringify(offer.categories).toLowerCase();
+          
+          return !(name.includes('game') || 
+                 desc1.includes('game') || 
+                 desc2.includes('game') ||
+                 categoriesStr.includes('game') ||
+                 name.includes('play') ||
+                 desc1.includes('play'));
+        })
+        .slice(0, 10);
+      
+      setOffers(gamingOffers);
     } catch (error) {
+      console.error("Error fetching offers:", error);
     } finally {
       setLoading(false);
     }
