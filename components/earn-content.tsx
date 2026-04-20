@@ -10,6 +10,7 @@ import { Gamepad2, ChevronRight, ChevronLeft, Monitor, Smartphone } from "lucide
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 import CheckIcon from "@mui/icons-material/Check";
+import { QRCodeSVG } from "qrcode.react";
 
 type EarnContentProps = {
   userId: string;
@@ -62,12 +63,35 @@ function OfferDetailsModal({
 }) {
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   if (!offer) return null;
 
   const hasEvents = offer.events && offer.events.length > 0;
 
+  const handlePlayClick = () => {
+    if (isMobile) {
+      // On mobile, open the link directly
+      window.open(offer.click_url, "_blank");
+    } else {
+      // On desktop, show QR code dialog
+      setQrDialogOpen(true);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(offer.click_url);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
   return (
+    <>
     <Dialog
       open={open}
       onClose={onClose}
@@ -243,7 +267,7 @@ function OfferDetailsModal({
             {/* Play Button */}
             <Box
               component="button"
-              onClick={() => window.open(offer.click_url, "_blank")}
+              onClick={handlePlayClick}
               sx={{
                 width: "100%",
                 bgcolor: "#01D676",
@@ -412,6 +436,156 @@ function OfferDetailsModal({
       )}
       </Box>
     </Dialog>
+
+    {/* QR Code Dialog for Desktop Users */}
+    <Dialog
+      open={qrDialogOpen}
+      onClose={() => setQrDialogOpen(false)}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          bgcolor: "#1a1b2e",
+          borderRadius: 3,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+        },
+      }}
+      slotProps={{
+        backdrop: { 
+          sx: { 
+            bgcolor: "rgba(0,0,0,0.85)", 
+            backdropFilter: "blur(10px)" 
+          } 
+        },
+      }}
+    >
+      <IconButton
+        onClick={() => setQrDialogOpen(false)}
+        sx={{
+          position: "absolute",
+          right: 16,
+          top: 16,
+          color: "#fff",
+          zIndex: 10,
+          bgcolor: "rgba(0,0,0,0.3)",
+          "&:hover": { 
+            bgcolor: "rgba(0,0,0,0.5)",
+          },
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
+
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Smartphone size={48} color="#01D676" style={{ marginBottom: 16 }} />
+        
+        <Typography 
+          sx={{ 
+            fontSize: "1.5rem",
+            fontWeight: 700,
+            mb: 1,
+            color: "#fff",
+          }}
+        >
+          Continue on Your Phone
+        </Typography>
+
+        <Typography 
+          sx={{ 
+            fontSize: "0.875rem",
+            color: colors.text.secondary,
+            mb: 3,
+          }}
+        >
+          Scan this QR code with your phone to open the offer
+        </Typography>
+
+        <Box 
+          sx={{ 
+            display: "flex", 
+            justifyContent: "center", 
+            mb: 3,
+            bgcolor: "#fff",
+            p: 2,
+            borderRadius: 2,
+            mx: "auto",
+            width: "fit-content",
+          }}
+        >
+          <QRCodeSVG 
+            value={offer.click_url} 
+            size={200}
+            level="H"
+            includeMargin={true}
+          />
+        </Box>
+
+        <Typography 
+          sx={{ 
+            fontSize: "0.75rem",
+            color: colors.text.secondary,
+            mb: 2,
+          }}
+        >
+          Or copy the link below:
+        </Typography>
+
+        <Box
+          sx={{
+            bgcolor: "#222339",
+            p: 2,
+            borderRadius: 2,
+            border: "1px solid rgba(255,255,255,0.05)",
+            wordBreak: "break-all",
+            fontSize: "0.75rem",
+            color: "#01D676",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+            cursor: "pointer",
+            transition: "all 0.2s",
+            "&:hover": {
+              bgcolor: "#252640",
+              borderColor: "rgba(1, 214, 118, 0.2)",
+            },
+          }}
+          onClick={handleCopyLink}
+        >
+          <Box sx={{ flex: 1, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {offer.click_url}
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              flexShrink: 0,
+              color: copySuccess ? "#01D676" : colors.text.secondary,
+            }}
+          >
+            {copySuccess ? (
+              <>
+                <CheckIcon sx={{ fontSize: 16 }} />
+                <Typography sx={{ fontSize: "0.75rem", fontWeight: 600 }}>
+                  Copied!
+                </Typography>
+              </>
+            ) : (
+              <>
+                <svg viewBox="0 0 24 24" style={{ width: 16, height: 16 }} fill="currentColor">
+                  <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                </svg>
+                <Typography sx={{ fontSize: "0.75rem", fontWeight: 600 }}>
+                  Copy
+                </Typography>
+              </>
+            )}
+          </Box>
+        </Box>
+      </Box>
+    </Dialog>
+    </>
   );
 }
 
@@ -423,9 +597,22 @@ function PlatformSelector({
   selectedPlatforms: DeviceOS[], 
   onToggle: (platform: DeviceOS) => void 
 }) {
+  // Real Android and iOS SVG icons
+  const AndroidIcon = () => (
+    <svg viewBox="0 0 24 24" style={{ width: 14, height: 14 }} fill="currentColor">
+      <path d="M17.6,9.48l1.84-3.18c0.16-0.31,0.04-0.69-0.26-0.85c-0.29-0.15-0.65-0.06-0.83,0.22l-1.88,3.24 c-2.86-1.21-6.08-1.21-8.94,0L5.65,5.67c-0.19-0.29-0.58-0.38-0.87-0.2C4.5,5.65,4.41,6.01,4.56,6.3L6.4,9.48 C3.3,11.25,1.28,14.44,1,18h22C22.72,14.44,20.7,11.25,17.6,9.48z M7,15.25c-0.69,0-1.25-0.56-1.25-1.25 c0-0.69,0.56-1.25,1.25-1.25S8.25,13.31,8.25,14C8.25,14.69,7.69,15.25,7,15.25z M17,15.25c-0.69,0-1.25-0.56-1.25-1.25 c0-0.69,0.56-1.25,1.25-1.25s1.25,0.56,1.25,1.25C18.25,14.69,17.69,15.25,17,15.25z"/>
+    </svg>
+  );
+
+  const AppleIcon = () => (
+    <svg viewBox="0 0 24 24" style={{ width: 14, height: 14 }} fill="currentColor">
+      <path d="M17.05,20.28c-0.98,0.95-2.05,0.8-3.08,0.35c-1.09-0.46-2.09-0.48-3.24,0c-1.44,0.62-2.2,0.44-3.06-0.35 C2.79,15.25,3.51,7.59,9.05,7.31c1.35,0.07,2.29,0.74,3.08,0.8c1.18-0.24,2.31-0.93,3.57-0.84c1.51,0.12,2.65,0.72,3.4,1.8 c-3.12,1.87-2.38,5.98,0.48,7.13c-0.57,1.5-1.31,2.99-2.54,4.09L17.05,20.28z M12.03,7.25c-0.15-2.23,1.66-4.07,3.74-4.25 c0.29,2.58-2.34,4.5-3.74,4.25z"/>
+    </svg>
+  );
+
   const platforms: { id: DeviceOS; label: string; icon: any }[] = [
-    { id: "android", label: "Android", icon: Smartphone },
-    { id: "ios", label: "iOS", icon: Smartphone },
+    { id: "android", label: "Android", icon: AndroidIcon },
+    { id: "ios", label: "iOS", icon: AppleIcon },
     { id: "windows", label: "Desktop", icon: Monitor },
   ];
 
@@ -463,7 +650,9 @@ function PlatformSelector({
                 },
               }}
             >
-              <Icon size={14} color={isSelected ? "#01D676" : colors.text.secondary} />
+              <Box sx={{ display: "flex", alignItems: "center", color: isSelected ? "#01D676" : colors.text.secondary }}>
+                <Icon />
+              </Box>
               <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 500, color: isSelected ? "#01D676" : colors.text.primary, display: { xs: "none", sm: "block" } }}>
                 {platform.label}
               </Typography>
@@ -690,7 +879,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
               <path d="M8 0C8 0 8 5.45455 3.63636 9.09091C-0.727273 12.7273 -0.727273 20 8 20C16.7273 20 16.7273 12.7273 12.3636 9.09091C8 5.45455 8 0 8 0Z" fill="currentColor"/>
             </svg>
           </Box>
-          <Typography variant="h6" isBold sx={{ fontSize: { xs: "1.125rem", sm: "1.25rem" } }}>
+          <Typography variant="h6" isBold sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }}>
             Gaming Offers
           </Typography>
         </Box>
@@ -698,12 +887,16 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
           <Link href="/offers/all" style={{ textDecoration: "none" }}>
             <Typography
               sx={{
-                fontSize: { xs: "0.8125rem", sm: "0.875rem" },
-                fontWeight: 500,
-                color: colors.text.secondary,
+                fontSize: { xs: "0.875rem", sm: "0.9375rem" },
+                fontWeight: 600,
+                color: "#01D676",
                 cursor: "pointer",
                 textDecoration: "none",
-                "&:hover": { color: "#01D676" }
+                transition: "all 0.2s",
+                "&:hover": { 
+                  color: "#00c068",
+                  textDecoration: "underline"
+                }
               }}
             >
               View All
