@@ -174,6 +174,10 @@ function OfferDetailsModal({
               borderRadius: 2,
               overflow: "hidden",
               flexShrink: 0,
+              bgcolor: "#222339",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <Box
@@ -183,7 +187,8 @@ function OfferDetailsModal({
               sx={{
                 width: "100%",
                 height: "100%",
-                objectFit: "cover",
+                objectFit: { xs: "contain", sm: "cover" },
+                padding: { xs: 1, sm: 0 },
               }}
             />
           </Box>
@@ -426,11 +431,11 @@ function PlatformSelector({
 
   return (
     <Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 2 }, mb: { xs: 2, sm: 3 }, flexWrap: "wrap" }}>
-        <Typography variant="h5" isBold sx={{ fontSize: { xs: "1.5rem", sm: "1.75rem" } }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.75, sm: 2 }, mb: { xs: 2, sm: 3 }, flexWrap: "wrap" }}>
+        <Typography variant="h5" isBold sx={{ fontSize: { xs: "1.25rem", sm: "1.75rem" } }}>
           Earn
         </Typography>
-        <Typography sx={{ fontSize: { xs: "0.875rem", sm: "0.9375rem" }, color: colors.text.secondary, mr: { xs: 0, sm: 1 } }}>
+        <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.9375rem" }, color: colors.text.secondary, mr: { xs: 0, sm: 1 }, display: { xs: "none", sm: "block" } }}>
           on
         </Typography>
         {platforms.map((platform) => {
@@ -444,10 +449,10 @@ function PlatformSelector({
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: { xs: 0.75, sm: 1 },
-                px: { xs: 1.5, sm: 2 },
-                py: { xs: 0.75, sm: 1 },
-                borderRadius: 2,
+                gap: { xs: 0.5, sm: 1 },
+                px: { xs: 1, sm: 2 },
+                py: { xs: 0.5, sm: 1 },
+                borderRadius: { xs: 1.5, sm: 2 },
                 bgcolor: isSelected ? "rgba(1, 214, 118, 0.1)" : "#12131c",
                 border: `1px solid ${isSelected ? "rgba(1, 214, 118, 0.3)" : "rgba(255, 255, 255, 0.05)"}`,
                 cursor: "pointer",
@@ -458,12 +463,12 @@ function PlatformSelector({
                 },
               }}
             >
-              <Icon size={16} color={isSelected ? "#01D676" : colors.text.secondary} />
-              <Typography sx={{ fontSize: { xs: "0.8125rem", sm: "0.875rem" }, fontWeight: 500, color: isSelected ? "#01D676" : colors.text.primary }}>
+              <Icon size={14} color={isSelected ? "#01D676" : colors.text.secondary} />
+              <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 500, color: isSelected ? "#01D676" : colors.text.primary, display: { xs: "none", sm: "block" } }}>
                 {platform.label}
               </Typography>
               {isSelected && (
-                <CheckIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: "#01D676" }} />
+                <CheckIcon sx={{ fontSize: { xs: 12, sm: 16 }, color: "#01D676" }} />
               )}
             </Box>
           );
