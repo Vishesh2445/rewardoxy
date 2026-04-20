@@ -1030,37 +1030,6 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                       {survey.loi} min
                     </Typography>
                   </Box>
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: { xs: 4, sm: 8 },
-                      right: { xs: 4, sm: 8 },
-                      bgcolor: "rgba(1, 214, 118, 0.9)",
-                      px: { xs: 0.5, sm: 1 },
-                      py: { xs: 0.25, sm: 0.5 },
-                      borderRadius: 1,
-                    }}
-                  >
-                    <Typography sx={{ fontSize: { xs: "0.625rem", sm: "0.75rem" }, color: "#000", fontWeight: 700 }}>
-                      {survey.conversion_rate.toFixed(0)}%
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Box sx={{ height: 40, overflow: "hidden", mb: 0.5 }}>
-                  <Typography
-                    sx={{
-                      fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                      fontWeight: 500,
-                      lineHeight: 1.3,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    Survey #{survey.id.slice(0, 8)}
-                  </Typography>
                 </Box>
 
                 <Typography
@@ -1074,7 +1043,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                     mb: { xs: 0.5, sm: 1 },
                   }}
                 >
-                  Survey
+                Survey
                 </Typography>
 
                 <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600, color: "#01D676" }}>
