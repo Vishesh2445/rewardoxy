@@ -1,13 +1,128 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Convert coins to dollars (1000 coins = 1 dollar)
+function convertToUSD(amount: number | string | undefined): number {
+  if (!amount) return 0;
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(num)) return 0;
+  // Round to 2 decimal places
+  return Math.round((num / 1000) * 100) / 100;
+}
+
+// Parse user agent to extract browser and OS details
+function parseUserAgent(userAgent: string) {
+  let browserName = 'unknown';
+  let browserVersion = 'unknown';
+  let osVersion = 'unknown';
+
+  // Browser detection
+  if (/Chrome/.test(userAgent)) {
+    browserName = 'chrome';
+    const match = userAgent.match(/Chrome\/(\d+(?:\.\d+)*)/);
+    if (match) browserVersion = match[1];
+  } else if (/Safari/.test(userAgent) && !/Chrome/.test(userAgent)) {
+    browserName = 'safari';
+    const match = userAgent.match(/Version\/(\d+(?:\.\d+)*)/);
+    if (match) browserVersion = match[1];
+  } else if (/Firefox/.test(userAgent)) {
+    browserName = 'firefox';
+    const match = userAgent.match(/Firefox\/(\d+(?:\.\d+)*)/);
+    if (match) browserVersion = match[1];
+  } else if (/Edge/.test(userAgent)) {
+    browserName = 'edge';
+    const match = userAgent.match(/Edge\/(\d+(?:\.\d+)*)/);
+    if (match) browserVersion = match[1];
+  }
+
+  // OS version detection
+  if (/Windows NT/.test(userAgent)) {
+    const match = userAgent.match(/Windows NT ([\d.]+)/);
+    if (match) osVersion = match[1];
+  } else if (/Mac OS X/.test(userAgent)) {
+    const match = userAgent.match(/Mac OS X ([\d_]+)/);
+    if (match) osVersion = match[1].replace(/_/g, '.');
+  } else if (/Android/.test(userAgent)) {
+    const match = userAgent.match(/Android ([\d.]+)/);
+    if (match) osVersion = match[1];
+  } else if (/iPhone|iPad|iPod/.test(userAgent)) {
+    const match = userAgent.match(/OS ([\d_]+)/);
+    if (match) osVersion = match[1].replace(/_/g, '.');
+  }
+
+  return { browserName, browserVersion, osVersion };
+}
+
+// Extracts client IP from various headers
+function getClientIp(request: NextRequest): string {
+  const cfConnectingIp = request.headers.get('cf-connecting-ip');
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const realIp = request.headers.get('x-real-ip');
+
+  const clientIp = cfConnectingIp || forwardedFor?.split(',')[0]?.trim() || realIp || null;
+
+  // Validate IP format (basic check) - must be valid IPv4
+  if (clientIp && clientIp !== '127.0.0.1' && clientIp !== '::1' && /^[\d.]+$/.test(clientIp)) {
+    return clientIp;
+  }
+
+  // Return a default valid IP if we can't detect one
+  // This is needed because Notik API requires valid IP format
+  return '1.1.1.1';
+}
+
+// Detect country code from IP using geolocation service
+async function getCountryCodeFromIp(clientIp: string): Promise<string | null> {
+  // Don't try to geolocate localhost or invalid IPs
+  if (clientIp === '1.1.1.1' || clientIp === '127.0.0.1' || clientIp === '::1' || !clientIp) {
+    return null;
+  }
+
+  try {
+    // Use multiple geolocation services for better accuracy
+    const service1Promise = fetch(`http://ip-api.com/json/${clientIp}?fields=countryCode`, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(3000) // 3 second timeout
+    }).then(r => r.ok ? r.json() : null).catch(() => null);
+
+    const service2Promise = fetch(`https://ipapi.co/${clientIp}/json/`, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(3000)
+    }).then(r => r.ok ? r.json() : null).catch(() => null);
+
+    // Race both services, return first successful result
+    const result1 = await service1Promise;
+    if (result1?.countryCode) {
+      console.log('[notik-offers] Country detected from ip-api:', result1.countryCode);
+      return result1.countryCode;
+    }
+
+    const result2 = await service2Promise;
+    if (result2?.country_code) {
+      console.log('[notik-offers] Country detected from ipapi.co:', result2.country_code);
+      return result2.country_code;
+    }
+
+    if (result2?.country) {
+      console.log('[notik-offers] Country detected from ipapi.co (full):', result2.country);
+      return result2.country;
+    }
+  } catch (geoError) {
+    console.log('[notik-offers] IP geolocation failed:', geoError instanceof Error ? geoError.message : 'unknown');
+  }
+
+  return null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const user_id = searchParams.get('user_id');
+    const s1 = searchParams.get('s1');
     const device_type = searchParams.get('device_type') || 'mobile';
     const device_os = searchParams.get('device_os') || 'android';
+    const override_country = searchParams.get('country_code'); // Allow override for testing
 
-    console.log('[notik-offers] Request received, user_id:', user_id);
+    console.log('[notik-offers] Request received, user_id:', user_id, 'device_os:', device_os, 'override_country:', override_country);
 
     if (!user_id) {
       return NextResponse.json(
@@ -28,62 +143,120 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get country code from request headers or IP geolocation
-    let countryCode = request.headers.get('cf-ipcountry') || request.headers.get('x-vercel-ip-country');
-    
-    // If no country from headers, try to detect from IP
+    // Get country code - try multiple methods
+    let countryCode = override_country;
+
+    // Method 1: Check Cloudflare or Vercel headers
     if (!countryCode) {
-      try {
-        const forwardedFor = request.headers.get('x-forwarded-for');
-        const realIp = request.headers.get('x-real-ip');
-        const cfConnectingIp = request.headers.get('cf-connecting-ip');
-        const clientIp = cfConnectingIp || forwardedFor?.split(',')[0]?.trim() || realIp;
-        
-        if (clientIp && clientIp !== '127.0.0.1' && clientIp !== '::1') {
-          const geoResponse = await fetch(`http://ip-api.com/json/${clientIp}?fields=countryCode`, {
-            redirect: 'follow'
-          });
-          if (geoResponse.ok) {
-            const geoData = await geoResponse.json();
-            if (geoData.countryCode) {
-              countryCode = geoData.countryCode;
-            }
-          }
-        }
-      } catch (geoError) {
-        console.log('[notik-offers] Geo detection failed, using default');
-      }
+      countryCode = request.headers.get('cf-ipcountry') || request.headers.get('x-vercel-ip-country') || null;
     }
-    
+
+    // Method 2: Geolocate from IP
+    if (!countryCode) {
+      const clientIp = getClientIp(request);
+      countryCode = await getCountryCodeFromIp(clientIp);
+    }
+
+    // Default fallback
     countryCode = countryCode || 'US';
 
     console.log('[notik-offers] Detected country:', countryCode);
 
-    // Use v2 all-offers endpoint (same as iframe uses) instead of filtered endpoint
-    // The filtered endpoint seems to have stricter filtering or different access
-    const v2Url = `https://notik.me/api/v2/get-offers/all?api_key=${encodeURIComponent(NOTIK_API_KEY)}&pub_id=${encodeURIComponent(NOTIK_PUBLISHER_ID)}&app_id=${encodeURIComponent(NOTIK_APP_ID)}`;
-    
-    console.log('[notik-offers] Fetching from Notik v2 all-offers endpoint');
+    // Get user agent and parse device details
+    const userAgent = request.headers.get('user-agent') || 'Mozilla/5.0 (Unknown)';
+    const { browserName, browserVersion, osVersion } = parseUserAgent(userAgent);
+    const clientIp = getClientIp(request);
 
-    const response = await fetch(v2Url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      redirect: 'follow'
+    // Determine device_name based on device_os
+    let deviceName = 'other';
+    if (device_os === 'ios') {
+      // Check if iPad or iPhone from user agent
+      if (/iPad/.test(userAgent)) {
+        deviceName = 'ipad';
+      } else if (/iPhone|iPod/.test(userAgent)) {
+        deviceName = 'iphone';
+      }
+    }
+    // For Android and Windows, use 'other' as per Notik docs
+
+    console.log('[notik-offers] Device info:', {
+      deviceName,
+      deviceType: device_type,
+      deviceOs: device_os,
+      osVersion,
+      browserName,
+      browserVersion,
+      countryCode,
+      clientIp,
+      userAgent: userAgent.substring(0, 100) // Truncate for logging
     });
+
+    // Build Notik v1 Filtered Offers API URL with all parameters
+    // This endpoint filters offers based on user device and location
+    const apiUrl = new URL('https://notik.me/api/v1/get-offers/filtered');
+
+    // Required parameters
+    apiUrl.searchParams.append('api_key', NOTIK_API_KEY);
+    apiUrl.searchParams.append('pub_id', NOTIK_PUBLISHER_ID);
+    apiUrl.searchParams.append('app_id', NOTIK_APP_ID);
+    apiUrl.searchParams.append('user_id', user_id);
+    apiUrl.searchParams.append('device_name', deviceName);
+    apiUrl.searchParams.append('device_type', device_type);
+    apiUrl.searchParams.append('device_os', device_os);
+    apiUrl.searchParams.append('country_code', countryCode);
+    apiUrl.searchParams.append('user_agent', userAgent);
+    apiUrl.searchParams.append('ip', clientIp);
+
+    // Optional parameters
+    if (s1) apiUrl.searchParams.append('s1', s1);
+    if (osVersion && osVersion !== 'unknown') apiUrl.searchParams.append('os_version', osVersion);
+    if (browserName && browserName !== 'unknown') apiUrl.searchParams.append('browser_name', browserName);
+    if (browserVersion && browserVersion !== 'unknown') apiUrl.searchParams.append('browser_version', browserVersion);
+
+    console.log('[notik-offers] Final URL (masked):', apiUrl.toString().substring(0, 150) + '...');
+    console.log('[notik-offers] Fetching from Notik v1 filtered endpoint for country:', countryCode);
+
+    let response;
+    let usedEndpoint = 'v1/filtered';
+
+    // Try v1 filtered endpoint first
+    try {
+      response = await fetch(apiUrl.toString(), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(15000)
+      });
+    } catch (fetchError) {
+      console.error('[notik-offers] v1 endpoint fetch error:', fetchError instanceof Error ? fetchError.message : 'unknown');
+      // If v1 fails, return error instead of silently falling back
+      return NextResponse.json(
+        { success: false, error: 'Failed to connect to Notik API' },
+        { status: 500 }
+      );
+    }
 
     if (!response.ok) {
       console.error('[notik-offers] API error:', response.status, response.statusText);
+
+      // Log response body for debugging
+      const errorText = await response.text();
+      console.error('[notik-offers] Error response body:', errorText.substring(0, 500));
+
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch offers from Notik' },
+        { success: false, error: `Failed to fetch offers from Notik: ${response.status}` },
         { status: 500 }
       );
     }
 
     const responseText = await response.text();
-    
+
+    console.log('[notik-offers] Response length:', responseText.length);
+    console.log('[notik-offers] Response preview:', responseText.substring(0, 500));
+
     if (!responseText) {
       console.log('[notik-offers] Empty response from Notik API');
       return NextResponse.json(
@@ -106,98 +279,86 @@ export async function GET(request: NextRequest) {
       console.error('[notik-offers] JSON parse error:', parseError);
       console.log('[notik-offers] Response text:', responseText.substring(0, 200));
       return NextResponse.json(
-        { success: false, error: 'Invalid JSON response' },
+        { success: false, error: 'Invalid JSON response from Notik' },
         { status: 500 }
       );
     }
-    
+
     console.log('[notik-offers] Notik API response received');
-    
+
     let allOffers: any[] = [];
-    
-    // Parse the response structure from v2 all-offers endpoint
-    if (data.offers && typeof data.offers === 'object') {
-      if (Array.isArray(data.offers)) {
-        allOffers = data.offers;
-      } else if (data.offers.data && Array.isArray(data.offers.data)) {
+
+    // Parse the response structure - support multiple formats from Notik
+    if (data.data && Array.isArray(data.data)) {
+      allOffers = data.data;
+    } else if (data.offers && Array.isArray(data.offers)) {
+      allOffers = data.offers;
+    } else if (data.offers && typeof data.offers === 'object') {
+      if (data.offers.data && Array.isArray(data.offers.data)) {
         allOffers = data.offers.data;
       } else if (data.offers.all && Array.isArray(data.offers.all)) {
         allOffers = data.offers.all;
-      } else if (data.offers.android || data.offers.ios) {
-        // Handle platform-specific offers
-        allOffers = (data.offers.android || []).concat(data.offers.ios || []);
+      } else {
+        // Try to extract arrays from object values
+        const offers = Object.values(data.offers).filter(Array.isArray);
+        if (offers.length > 0) {
+          allOffers = offers[0] as any[];
+        }
       }
-    } else if (Array.isArray(data.offers)) {
-      allOffers = data.offers;
     } else if (Array.isArray(data)) {
       allOffers = data;
     }
-    
-    console.log('[notik-offers] Total offers from API:', allOffers.length);
-    
-    // Filter offers by country if country info is available in offers
-    // The offers should have country_codes or similar field
-    let filteredOffers = allOffers;
-    
-    // Check if offers have country filtering info
-    const offersWithCountry = allOffers.filter((offer: any) => {
-      if (!offer.country_codes && !offer.countries) {
-        // If no country restriction, include it
-        return true;
-      }
-      
-      const countryCodes = offer.country_codes || offer.countries || [];
-      const countryArray = Array.isArray(countryCodes) ? countryCodes : 
-                          typeof countryCodes === 'string' ? countryCodes.split(',') : [];
-      
-      // Include offer if it's available in user's country
-      return countryArray.length === 0 || countryArray.includes(countryCode);
-    });
-    
-    console.log('[notik-offers] Offers available for country', countryCode + ':', offersWithCountry.length);
-    
-    // Use filtered offers if we found country info, otherwise use all offers
-    if (offersWithCountry.length > 0) {
-      filteredOffers = offersWithCountry;
-    }
-    
-    // Return all available offers (no limit)
-    // filteredOffers already contains all offers filtered by country
-    
-    // Replace user ID macro in click URLs and normalize offer structure
-    const processedOffers = filteredOffers.map((offer: any) => {
-      // Normalize the offer structure to match frontend expectations
-      const normalizedOffer = {
-        offer_id: offer.offer_id || offer.id,
-        id: offer.id || offer.offer_id,
-        name: offer.name,
-        description1: offer.description || offer.description1,
-        description2: offer.description2,
-        description3: offer.description3,
-        image_url: offer.image_url || offer.image,
-        payout: offer.payout,
-        click_url: offer.click_url,
-        categories: offer.categories || [],
-        events: offer.events,
-      };
 
-      // Replace user ID macros in click URL
-      if (normalizedOffer.click_url) {
-        normalizedOffer.click_url = normalizedOffer.click_url
-          .replace(/\[user_id\]/g, user_id)
-          .replace(/{user_id}/g, user_id);
-      }
+    console.log('[notik-offers] Total offers from Notik for', countryCode + ':', allOffers.length);
 
-      return normalizedOffer;
-    });
-    
-    console.log('[notik-offers] Total offers after processing:', processedOffers.length);
+    // The Notik v1 filtered API should already return country-filtered offers
+    // But we'll normalize the structure and ensure validity
+
+    // Replace user ID macros in click URLs and normalize offer structure
+    const processedOffers = allOffers
+      .filter((offer: any) => offer && offer.offer_id && offer.name) // Only valid offers
+      .map((offer: any) => {
+        // Normalize the offer structure to match frontend expectations
+        const normalizedOffer = {
+          offer_id: offer.offer_id || offer.id,
+          id: offer.id || offer.offer_id,
+          name: offer.name,
+          description1: offer.description || offer.description1,
+          description2: offer.description2,
+          description3: offer.description3,
+          image_url: offer.image_url || offer.image,
+          payout: convertToUSD(offer.payout),
+          click_url: offer.click_url,
+          categories: offer.categories || [],
+          events: offer.events?.map((event: any) => ({
+            id: event.id,
+            name: event.name,
+            payout: convertToUSD(event.payout),
+          })),
+        };
+
+        // Replace user ID macros in click URL - support multiple formats
+        if (normalizedOffer.click_url) {
+          normalizedOffer.click_url = normalizedOffer.click_url
+            .replace(/\[user_id\]/g, user_id)
+            .replace(/{user_id}/g, user_id)
+            .replace(/\[s1\]/g, s1 || '')
+            .replace(/{s1}/g, s1 || '');
+        }
+
+        return normalizedOffer;
+      });
+
+    console.log('[notik-offers] Total valid offers after processing:', processedOffers.length);
 
     return NextResponse.json({
       success: true,
       offers: processedOffers,
       total: processedOffers.length,
-      country: countryCode
+      country: countryCode,
+      device_os: device_os,
+      device_type: device_type,
+      endpoint_used: usedEndpoint
     });
 
   } catch (error) {
