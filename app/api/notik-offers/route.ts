@@ -172,17 +172,6 @@ export async function GET(request: NextRequest) {
     }
     // For Android and Windows, use 'other' as per Notik docs
 
-      deviceName,
-      deviceType: device_type,
-      deviceOs: device_os,
-      osVersion,
-      browserName,
-      browserVersion,
-      countryCode,
-      clientIp,
-      userAgent: userAgent.substring(0, 100) // Truncate for logging
-    });
-
     // Build Notik v1 Filtered Offers API URL with all parameters
     // This endpoint filters offers based on user device and location
     const apiUrl = new URL('https://notik.me/api/v1/get-offers/filtered');
