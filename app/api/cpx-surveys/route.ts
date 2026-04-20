@@ -86,6 +86,8 @@ export async function GET(request: NextRequest) {
           link: survey.href || "",
           score: parseFloat(survey.score) || 0,
           type: survey.type || "",
+          rating_count: parseInt(survey.statistics_rating_count) || 0,
+          rating_avg: parseFloat(survey.statistics_rating_avg) || 0,
         }))
       : [];
 

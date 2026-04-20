@@ -45,6 +45,8 @@ interface CPXSurvey {
   link: string;
   score?: number;
   type?: string;
+  rating_count?: number; // Number of user ratings
+  rating_avg?: number; // Average rating from 1 to 5 stars
 }
 
 // Offer Details Modal Component - Exact Freecash.com Style
