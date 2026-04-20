@@ -1043,7 +1043,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                     mb: { xs: 0.5, sm: 1 },
                   }}
                 >
-                CPX Surveys
+                CPX Survey
                 </Typography>
 
                 <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600, color: "#01D676" }}>
