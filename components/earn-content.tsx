@@ -15,6 +15,7 @@ type EarnContentProps = {
   userId: string;
   userName: string;
   userEmail: string;
+  cpxSecureHash: string;
 };
 
 type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik";
@@ -1197,7 +1198,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   );
 }
 
-export default function EarnContent({ userId, userName, userEmail }: EarnContentProps) {
+export default function EarnContent({ userId, userName, userEmail, cpxSecureHash }: EarnContentProps) {
   const [open, setOpen] = useState(false);
   const [activeWall, setActiveWall] = useState<WallType | null>(null);
   const [iframeLoading, setIframeLoading] = useState(true);
@@ -1263,11 +1264,10 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
     }
     if (activeWall === "CPX Research") {
       const appId = "32037"; 
-      const cpxHash = process.env.NEXT_PUBLIC_CPX_SECURE_HASH || "";
       const encodedName = encodeURIComponent(userName || "");
       const encodedEmail = encodeURIComponent(userEmail || "");
       
-      return `https://offers.cpx-research.com/index.php?app_id=${appId}&ext_user_id=${userId}&secure_hash=${cpxHash}&username=${encodedName}&email=${encodedEmail}&subid_1=&subid_2`;
+      return `https://offers.cpx-research.com/index.php?app_id=${appId}&ext_user_id=${userId}&secure_hash=${cpxSecureHash}&username=${encodedName}&email=${encodedEmail}&subid_1=&subid_2`;
     }
     if (activeWall === "Vortex") {
       const placementId = "69dfafd0a982f180b5caa54c";
