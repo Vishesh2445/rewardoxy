@@ -925,7 +925,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             </svg>
           </Box>
           <Typography variant="h6" isBold sx={{ fontSize: { xs: "1.125rem", sm: "1.25rem" } }}>
-            CPX Surveys
+          Surveys
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 1 }}>
@@ -1043,7 +1043,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                     mb: { xs: 0.5, sm: 1 },
                   }}
                 >
-                Survey
+                CPX Surveys
                 </Typography>
 
                 <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600, color: "#01D676" }}>
