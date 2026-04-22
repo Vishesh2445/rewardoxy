@@ -91,7 +91,7 @@ export default function AdminSettingsClient() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" isBold sx={{ mb: 3, color: colors.green }}>
+      <Typography variant="h4" isBold sx={{ mb: 3, color: "#01D676" }}>
         Application Settings
       </Typography>
 
@@ -125,7 +125,7 @@ export default function AdminSettingsClient() {
                   isBold
                   sx={{
                     fontSize: "1rem",
-                    color: colors.textPrimary,
+                    color: colors.text.primary,
                     mb: 0.5,
                     textTransform: "capitalize",
                   }}
@@ -135,7 +135,7 @@ export default function AdminSettingsClient() {
                 <Typography
                   sx={{
                     fontSize: "0.875rem",
-                    color: colors.textSecondary,
+                    color: colors.text.secondary,
                   }}
                 >
                   {setting.description}
@@ -150,10 +150,10 @@ export default function AdminSettingsClient() {
                     disabled={saving === setting.setting_key}
                     sx={{
                       "& .MuiSwitch-switchBase.Mui-checked": {
-                        color: colors.green,
+                        color: "#01D676",
                       },
                       "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                        backgroundColor: colors.green,
+                        backgroundColor: "#01D676",
                       },
                     }}
                   />
@@ -161,7 +161,7 @@ export default function AdminSettingsClient() {
                 label={isEnabled ? "Enabled" : "Disabled"}
                 sx={{
                   ml: 2,
-                  color: isEnabled ? colors.green : colors.textSecondary,
+                  color: isEnabled ? "#01D676" : colors.text.secondary,
                   fontWeight: 600,
                 }}
               />
@@ -181,10 +181,10 @@ export default function AdminSettingsClient() {
           p: 3,
         }}
       >
-        <Typography isBold sx={{ color: colors.green, mb: 1 }}>
+        <Typography isBold sx={{ color: "#01D676", mb: 1 }}>
           ℹ️ Information
         </Typography>
-        <Typography sx={{ fontSize: "0.875rem", color: colors.textSecondary, lineHeight: 1.7 }}>
+        <Typography sx={{ fontSize: "0.875rem", color: colors.text.secondary, lineHeight: 1.7 }}>
           • <strong>VPN Detection</strong>: When disabled, users can access and earn even with VPNs.
           <br />
           • <strong>Country Mismatch Detection</strong>: When disabled, users can access from different countries.
