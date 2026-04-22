@@ -106,7 +106,7 @@ export default function AdminSettingsClient() {
               key={setting.id}
               elevation={0}
               sx={{
-                bgcolor: colors.bgCard,
+                bgcolor: colors.background.secondary,
                 border: `1px solid ${colors.divider}`,
                 borderRadius: 2,
                 p: 3,
