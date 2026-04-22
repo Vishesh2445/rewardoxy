@@ -18,7 +18,7 @@ type EarnContentProps = {
   userEmail: string;
 };
 
-type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik";
+type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall";
 type DeviceOS = "android" | "ios" | "windows";
 
 interface NotikOffer {
@@ -1347,7 +1347,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       window.open(notikUrl, '_blank', 'noopener,noreferrer');
       return;
     }
-    
+
     setActiveWall(wall);
     setIframeLoading(true);
     setOpen(true);
@@ -1358,16 +1358,24 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       return `${myLeadBaseUrl}${myLeadBaseUrl.includes("?") ? "&" : "?"}uid=${userId}`;
     }
     if (activeWall === "CPX Research") {
-      const appId = "32037"; 
+      const appId = "32037";
       const cpxHash = process.env.NEXT_PUBLIC_CPX_SECURE_HASH || "";
       const encodedName = encodeURIComponent(userName || "");
       const encodedEmail = encodeURIComponent(userEmail || "");
-      
+
       return `https://offers.cpx-research.com/index.php?app_id=${appId}&ext_user_id=${userId}&secure_hash=${cpxHash}&username=${encodedName}&email=${encodedEmail}&subid_1=&subid_2`;
     }
     if (activeWall === "Vortex") {
       const placementId = "69dfafd0a982f180b5caa54c";
       return `https://vortexwall.com/ow/${placementId}/${userId}`;
+    }
+    if (activeWall === "Taskwall") {
+      const appId = process.env.NEXT_PUBLIC_TASKWALL_APP_ID || "";
+      if (!appId) {
+        console.error("Taskwall app_id not configured");
+        return "";
+      }
+      return `https://rewardtask.com/wall?app_id=${appId}&userid=${userId}`;
     }
     if (activeWall === "Notik") {
       const apiKey = process.env.NEXT_PUBLIC_NOTIK_API_KEY || "PYMTzu6owFJ8roFouth5bEYxoJRmg7q9";
@@ -1632,18 +1640,119 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Box>
           </Paper>
 
+          {/* Taskwall card */}
+          <Paper
+            onClick={() => handleOpenWall("Taskwall")}
+            elevation={0}
+            sx={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderRadius: 2,
+              p: 2,
+              cursor: "pointer",
+              background: "linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.25) 100%)",
+              border: "none",
+              transition: "all 0.2s ease",
+              minWidth: { xs: "auto", sm: 160 },
+              maxWidth: { xs: "none", sm: 160 },
+              width: { xs: "100%", sm: "auto" },
+              flexShrink: 0,
+              overflow: "hidden",
+              "&:hover": {
+                background: "linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.3) 100%)",
+                "& .wall-logo": {
+                  filter: "blur(8px)",
+                },
+                "& .wall-rating": {
+                  filter: "blur(8px)",
+                },
+                "& .hover-play-button": {
+                  opacity: 1,
+                },
+              },
+            }}
+          >
+            {/* Hover Play Button */}
+            <Box
+              className="hover-play-button"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                zIndex: 1000,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "opacity 0.2s ease",
+              }}
+            >
+              <Box
+                sx={{
+                  backgroundColor: colors.background.secondary,
+                  borderRadius: 10,
+                  padding: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <Box
+                  component="img"
+                  src="https://freecash.com/public/img/play-offer.svg"
+                  alt="play-button"
+                  sx={{ objectFit: "contain", objectPosition: "center" }}
+                />
+              </Box>
+            </Box>
+
+            {/* Logo */}
+            <Box
+              component="img"
+              src="/taskwall.svg"
+              alt="Taskwall"
+              sx={{
+                width: 100,
+                height: 100,
+                borderRadius: 1,
+                objectFit: "contain",
+                mb: 2,
+                transition: "filter 0.2s ease",
+              }}
+              className="wall-logo"
+            />
+
+            {/* Name */}
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+              Taskwall
+            </Typography>
+
+            {/* Star Rating */}
+            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                  ★
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+
           {/* Notik card */}
           <Paper
             onClick={() => handleOpenWall("Notik")}
             elevation={0}
             sx={{
               position: "relative",
-              display: "flex", 
-              flexDirection: "column", 
-              alignItems: "center", 
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
               justifyContent: "space-between",
-              borderRadius: 2, 
-              p: 2, 
+              borderRadius: 2,
+              p: 2,
               cursor: "pointer",
               background: "linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(109, 40, 217, 0.25) 100%)",
               border: "none",
@@ -1653,7 +1762,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               width: { xs: "100%", sm: "auto" },
               flexShrink: 0,
               overflow: "hidden",
-              "&:hover": { 
+              "&:hover": {
                 background: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(109, 40, 217, 0.3) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
@@ -1708,10 +1817,10 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               src="/notik.webp"
               alt="Notik"
               className="wall-logo"
-              sx={{ 
-                width: 100, 
-                height: 100, 
-                borderRadius: 1, 
+              sx={{
+                width: 100,
+                height: 100,
+                borderRadius: 1,
                 objectFit: "contain",
                 mb: 2,
                 transition: "filter 0.2s ease",
@@ -1917,7 +2026,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
           }}
         >
           <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#fff" }}>
-            {activeWall} {activeWall === "CPX Research" ? "" : "Offer Wall"}
+            {activeWall === "CPX Research" ? activeWall : `${activeWall} Offer Wall`}
           </Typography>
           <IconButton
             onClick={() => setOpen(false)}

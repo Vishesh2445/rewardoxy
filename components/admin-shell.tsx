@@ -25,6 +25,7 @@ import {
   Menu,
   X,
   ArrowLeft,
+  Settings,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Icons from "@/components/icons";
@@ -38,6 +39,7 @@ const ADMIN_NAV_ITEMS = [
   { label: "Users", href: "/admin/users", Icon: Users },
   { label: "Withdrawals", href: "/admin/withdrawals", Icon: Wallet },
   { label: "Notifications", href: "/admin/notifications", Icon: Bell },
+  { label: "Settings", href: "/admin/settings", Icon: Settings },
 ];
 
 interface AdminShellProps {

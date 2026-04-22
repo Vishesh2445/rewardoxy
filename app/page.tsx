@@ -680,6 +680,172 @@ export default function Home() {
         </Container>
       </Box>
 
+      {/* ===================== TRUSTED OFFER PROVIDERS ===================== */}
+      <Divider sx={{ borderColor: colors.divider }} />
+      <Box
+        component="section"
+        sx={{
+          px: { xs: 2, sm: 3, lg: 4 },
+          py: { xs: 10, sm: 14 },
+          bgcolor: colors.bgPage,
+        }}
+      >
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: "center", mb: 8 }}>
+            <Typography
+              variant="h2"
+              isBold
+              sx={{
+                fontSize: { xs: "1.875rem", sm: "2.25rem", lg: "3rem" },
+                color: colors.green,
+                mb: 2,
+              }}
+            >
+              Trusted offer providers
+            </Typography>
+            <Typography sx={{ fontSize: "1rem", color: colors.textSecondary, maxWidth: 600, mx: "auto" }}>
+              We partner with established offerwalls so you always have something new to complete.
+            </Typography>
+          </Box>
+
+          {/* Animated Carousel Container */}
+          <Box
+            sx={{
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            {/* Left gradient overlay */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: { xs: "20px", sm: "60px", md: "100px" },
+                height: "100%",
+                background: `linear-gradient(90deg, ${colors.bgPage} 0%, transparent 100%)`,
+                pointerEvents: "none",
+                zIndex: 10,
+              }}
+            />
+
+            {/* Right gradient overlay */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                right: 0,
+                width: { xs: "20px", sm: "60px", md: "100px" },
+                height: "100%",
+                background: `linear-gradient(90deg, transparent 0%, ${colors.bgPage} 100%)`,
+                pointerEvents: "none",
+                zIndex: 10,
+              }}
+            />
+
+            {/* Scrolling wrapper */}
+            <Box
+              sx={{
+                display: "flex",
+                animation: { xs: "scroll 5s linear infinite", sm: "scroll 15s linear infinite", md: "scroll 25s linear infinite" },
+                gap: { xs: 2, sm: 3, md: 4 },
+                "@keyframes scroll": {
+                  "0%": { transform: "translateX(0)" },
+                  "100%": { transform: "translateX(calc(-50% - var(--gap, 0px)))" },
+                },
+                "&:hover": {
+                  animationPlayState: "paused",
+                },
+              }}
+            >
+              {/* First set of logos */}
+              {[
+                { src: "/mylead_logo.svg", alt: "MyLead" },
+                { src: "/cpx.png", alt: "CPX Research" },
+                { src: "/mobivortex-icon.png", alt: "Vortex" },
+                { src: "/taskwall.svg", alt: "Taskwall" },
+                { src: "/notik.webp", alt: "Notik" },
+              ].map((logo, idx) => (
+                <Box
+                  key={`logo-1-${idx}`}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: { xs: 140, sm: 180, md: 200 },
+                    height: { xs: 80, sm: 90, md: 100 },
+                    borderRadius: 2,
+                    border: `1px solid ${colors.divider}`,
+                    bgcolor: colors.bgCard,
+                    flexShrink: 0,
+                    transition: "all 0.3s ease",
+                    cursor: "pointer",
+                    "&:hover": {
+                      borderColor: "rgba(1,214,118,0.5)",
+                      bgcolor: "rgba(1,214,118,0.05)",
+                      transform: "translateY(-4px)",
+                    },
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={logo.src}
+                    alt={logo.alt}
+                    sx={{
+                      maxWidth: "85%",
+                      maxHeight: "85%",
+                      objectFit: "contain",
+                    }}
+                  />
+                </Box>
+              ))}
+
+              {/* Duplicate set for seamless loop */}
+              {[
+                { src: "/mylead_logo.svg", alt: "MyLead" },
+                { src: "/cpx.png", alt: "CPX Research" },
+                { src: "/mobivortex-icon.png", alt: "Vortex" },
+                { src: "/taskwall.svg", alt: "Taskwall" },
+                { src: "/notik.webp", alt: "Notik" },
+              ].map((logo, idx) => (
+                <Box
+                  key={`logo-2-${idx}`}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: { xs: 140, sm: 180, md: 200 },
+                    height: { xs: 80, sm: 90, md: 100 },
+                    borderRadius: 2,
+                    border: `1px solid ${colors.divider}`,
+                    bgcolor: colors.bgCard,
+                    flexShrink: 0,
+                    transition: "all 0.3s ease",
+                    cursor: "pointer",
+                    "&:hover": {
+                      borderColor: "rgba(1,214,118,0.5)",
+                      bgcolor: "rgba(1,214,118,0.05)",
+                      transform: "translateY(-4px)",
+                    },
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={logo.src}
+                    alt={logo.alt}
+                    sx={{
+                      maxWidth: "85%",
+                      maxHeight: "85%",
+                      objectFit: "contain",
+                    }}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Container>
+      </Box>
+
       {/* ===================== BEST WAYS TO EARN ===================== */}
       <Divider sx={{ borderColor: colors.divider }} />
       <Box

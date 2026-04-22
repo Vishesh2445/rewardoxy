@@ -8,6 +8,24 @@ interface IPInfo {
 }
 
 /**
+ * Get app settings to check if VPN/country mismatch detection is enabled
+ */
+async function getAppSetting(settingKey: string): Promise<boolean> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("app_settings")
+      .select("setting_value")
+      .eq("setting_key", settingKey)
+      .single();
+
+    return data?.setting_value === "true" || data?.setting_value === true;
+  } catch {
+    return true; // Default to enabled if error
+  }
+}
+
+/**
  * Get IP info from vpnapi.io with fallback to ipapi.co and ipinfo.io
  */
 export async function getIPInfo(ip: string): Promise<IPInfo> {
@@ -33,8 +51,8 @@ export async function getIPInfo(ip: string): Promise<IPInfo> {
           isTor: data?.security?.tor === true,
         };
       }
-    } catch (err) {
-      console.error("[fraud-check] vpnapi.io failed, falling back:", err);
+    } catch {
+      // Fallback to next option
     }
   }
 
@@ -54,8 +72,8 @@ export async function getIPInfo(ip: string): Promise<IPInfo> {
         };
       }
     }
-  } catch (err) {
-    console.error("[fraud-check] ipapi.co fallback failed:", err);
+  } catch {
+    // Fallback to next option
   }
 
   // Fallback 2: ipinfo.io (free tier)
@@ -74,8 +92,8 @@ export async function getIPInfo(ip: string): Promise<IPInfo> {
         };
       }
     }
-  } catch (err) {
-    console.error("[fraud-check] ipinfo.io fallback also failed:", err);
+  } catch {
+    // All fallbacks exhausted
   }
 
   return { country: null, isVPN: false, isProxy: false, isTor: false };
@@ -105,6 +123,15 @@ export async function processFraudCheck(
   eventType: "offer_completion" | "cashout"
 ): Promise<{ isFraud: boolean; reason: "vpn" | "mismatch" | null }> {
   try {
+    // Check if VPN detection is enabled
+    const vpnDetectionEnabled = await getAppSetting("vpn_detection_enabled");
+    const countryMismatchEnabled = await getAppSetting("country_mismatch_detection_enabled");
+
+    // If both detections are disabled, skip fraud check
+    if (!vpnDetectionEnabled && !countryMismatchEnabled) {
+      return { isFraud: false, reason: null };
+    }
+
     const admin = createAdminClient();
     // Check user fraud state first so we can skip external VPN lookups for blocked users.
     const { data: userData } = await admin
@@ -142,8 +169,8 @@ export async function processFraudCheck(
       .update({ last_seen_country: detectedCountry })
       .eq("id", userId);
 
-    // Check VPN/Proxy/Tor
-    if (ipInfo.isVPN || ipInfo.isProxy || ipInfo.isTor) {
+    // Check VPN/Proxy/Tor (only if VPN detection is enabled)
+    if (vpnDetectionEnabled && (ipInfo.isVPN || ipInfo.isProxy || ipInfo.isTor)) {
       // Increment vpn_detected_count and set fraud_status silently
       await admin.rpc("increment_field", undefined); // we'll do it manually
       const { data: current } = await admin
@@ -189,8 +216,9 @@ export async function processFraudCheck(
       return { isFraud: true, reason: "vpn" };
     }
 
-    // Check country mismatch
+    // Check country mismatch (only if country mismatch detection is enabled)
     if (
+      countryMismatchEnabled &&
       signupCountry &&
       detectedCountry &&
       signupCountry !== detectedCountry
@@ -240,9 +268,7 @@ export async function processFraudCheck(
     }
 
     return { isFraud: false, reason: null };
-  } catch (err) {
-    console.error("[fraud-check] processFraudCheck error:", err);
-    // Never block on error - fail open
+  } catch {
     return { isFraud: false, reason: null };
   }
 }

@@ -41,6 +41,17 @@ export default function SignupClient() {
 
   const supabase = createClient();
 
+  // Check if user is already authenticated and redirect
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        router.push("/earn");
+      }
+    };
+    checkAuth();
+  }, [supabase, router]);
+
   // Auto-fill referral code from URL on mount
   useEffect(() => {
     if (ref) {
