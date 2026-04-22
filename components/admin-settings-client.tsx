@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 import {
   Box,
   Paper,
-  Typography,
-  Switch,
-  FormControlLabel,
   CircularProgress,
   Alert,
   Divider,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
+import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 
 interface Setting {
@@ -181,7 +181,7 @@ export default function AdminSettingsClient() {
           p: 3,
         }}
       >
-        <Typography variant="h6" isBold sx={{ color: colors.green, mb: 1 }}>
+        <Typography isBold sx={{ color: colors.green, mb: 1 }}>
           ℹ️ Information
         </Typography>
         <Typography sx={{ fontSize: "0.875rem", color: colors.textSecondary, lineHeight: 1.7 }}>
