@@ -395,7 +395,7 @@ export default function DashboardClient({
         ))}
       </Grid>
 
-      {/* ── DAILY BONUS CTA ── */}
+      {/* ─ DAILY BONUS CTA ─ */}
       <Paper
         elevation={0}
         component={Link}
