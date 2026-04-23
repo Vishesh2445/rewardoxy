@@ -4,6 +4,13 @@ const colors = {
   secondary: "#EC4899", // Pink
   tertiary: "#14B8A6", // Teal
   divider: "rgba(148, 163, 184, 0.2)",
+  
+  // Backward compatibility aliases
+  green: "#01D676",
+  bgPage: "#0a0b0f",
+  textPrimary: "#d9e3f6",
+  textSecondary: "#94a3b8",
+  
   text: {
     primary: "#d9e3f6",
     secondary: "#94a3b8",
