@@ -140,7 +140,10 @@ export async function POST(request: NextRequest) {
     turnstile_token?: string;
   };
 
+  console.log("Registration attempt:", { user_id, email, referred_by, is_google_oauth });
+
   if (!user_id || !email) {
+    console.error("Missing required fields:", { user_id, email });
     return NextResponse.json(
       { error: "user_id and email are required" },
       { status: 400 }
@@ -149,24 +152,32 @@ export async function POST(request: NextRequest) {
 
   // Verify Turnstile token
   if (!is_google_oauth && turnstile_token) {
+    console.log("Verifying Turnstile token...");
     const isValidToken = await verifyTurnstileToken(turnstile_token);
     if (!isValidToken) {
+      console.error("Turnstile verification failed");
       return NextResponse.json(
         { error: "Verification failed. Please try again." },
         { status: 400 }
       );
     }
+    console.log("Turnstile verification successful");
   }
 
   // VPN/Proxy/Tor check at signup
   const clientIp = getRealIP(request);
+  console.log("Client IP:", clientIp);
+  
   const ipInfo = await getIPInfo(clientIp);
+  console.log("IP Info:", ipInfo);
 
   if (ipInfo.isVPN || ipInfo.isProxy || ipInfo.isTor) {
+    console.error("VPN/Proxy/Tor detected, blocking registration");
     // Block account creation - delete the auth user that was just created
     const adminForCleanup = createAdminClient();
     try {
       await adminForCleanup.auth.admin.deleteUser(user_id);
+      console.log("Cleaned up auth user after VPN block");
     } catch (e) {
       console.error("Failed to cleanup auth user after VPN block:", e);
     }
@@ -177,6 +188,7 @@ export async function POST(request: NextRequest) {
   }
 
   const referral_code = randomBytes(4).toString("hex"); // 8-char alphanumeric
+  console.log("Generated referral code:", referral_code);
 
   const admin = createAdminClient();
 
@@ -197,15 +209,19 @@ export async function POST(request: NextRequest) {
       if (countryRes.ok) {
         const countryData = await countryRes.json();
         country = countryData.country || null;
+        console.log("Country from fallback API:", country);
       }
     } catch (err) {
       console.error("Failed to get country from fallback API:", err);
     }
   }
 
+  console.log("Final country:", country);
+
   // Validate referred_by: must be a real user's referral_code
   let referred_by_id: string | null = null;
   if (referred_by) {
+    console.log("Checking referral code:", referred_by);
     const { data: referrer } = await admin
       .from("users")
       .select("id")
@@ -214,19 +230,27 @@ export async function POST(request: NextRequest) {
 
     if (referrer) {
       referred_by_id = referrer.id;
+      console.log("Valid referrer found:", referred_by_id);
+    } else {
+      console.log("Referral code not found:", referred_by);
     }
   }
 
   let lastError: string | null = null;
 
   for (let attempt = 1; attempt <= INSERT_ATTEMPTS; attempt++) {
+    console.log(`Registration attempt ${attempt}/${INSERT_ATTEMPTS}`);
+    
     const { data: authData, error: authError } = await admin.auth.admin.getUserById(
       user_id
     );
 
     if (authError || !authData.user) {
       lastError = authError?.message ?? "Auth user not found";
+      console.error(`Attempt ${attempt} - Auth user not found:`, lastError);
     } else {
+      console.log(`Attempt ${attempt} - Auth user found, inserting into users table...`);
+      
       const { error } = await admin.from("users").insert({
         id: user_id,
         email,
@@ -241,14 +265,19 @@ export async function POST(request: NextRequest) {
       });
 
       if (!error) {
+        console.log("User profile created successfully");
+        
         // Create referral record if user was referred
         if (referred_by_id) {
+          console.log("Creating referral record...");
           await admin.from("referrals").insert({
             referrer_uid: referred_by_id,
             referee_uid: user_id,
             lifetime_coins_earned: 0,
           });
+          console.log("Referral record created");
         }
+        
         // Create email verification token for non-Google users
         if (!is_google_oauth) {
           // Create token
@@ -282,25 +311,31 @@ export async function POST(request: NextRequest) {
           }
 
           // Add notification to verify email
+          console.log("Adding verification notification...");
           await admin.from("notifications").insert({
             user_id: user_id,
             title: "Verify your email",
             message: "Please verify your email to start earning! Verified users earn 5% referral commission on their referrals' earnings.",
             read: false,
           });
+          console.log("Verification notification added");
         }
         
+        console.log("Registration completed successfully");
         return NextResponse.json({ success: true, needsVerification: !is_google_oauth });
       }
 
       lastError = error.message;
+      console.error(`Attempt ${attempt} - Database insert error:`, error);
     }
 
     if (attempt < INSERT_ATTEMPTS) {
+      console.log(`Waiting ${INSERT_RETRY_DELAY_MS}ms before retry...`);
       await sleep(INSERT_RETRY_DELAY_MS);
     }
   }
 
+  console.error("All registration attempts failed. Last error:", lastError);
   return NextResponse.json(
     { error: lastError ?? "Failed to create user profile" },
     { status: 500 }

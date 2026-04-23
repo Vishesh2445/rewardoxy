@@ -23,7 +23,8 @@
         "execute_sql",
         "list_projects",
         "apply_migration",
-        "list_tables"
+        "list_tables",
+        "get_advisors"
       ]
     },
     "stitch-mcp": {

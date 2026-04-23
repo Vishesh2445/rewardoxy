@@ -88,27 +88,43 @@ export default function SignupClient() {
     }
 
     if (data.user) {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: data.user.id,
-          email: data.user.email,
-          referred_by: ref || referralCode || undefined,
-          accepted_terms: true,
-          is_google_oauth: false,
-          turnstile_token: turnstileToken,
-        }),
-      });
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: data.user.id,
+            email: data.user.email,
+            referred_by: ref || referralCode || undefined,
+            accepted_terms: true,
+            is_google_oauth: false,
+            turnstile_token: turnstileToken,
+          }),
+        });
 
-      if (!res.ok) {
         const body = await res.json();
-        setError(body.error || "Failed to create user profile");
+
+        if (!res.ok) {
+          console.error("Registration API error:", body);
+          setError(body.error || "Failed to create user profile. Please contact support.");
+          setLoading(false);
+          
+          // Clean up the auth user if profile creation failed
+          await supabase.auth.signOut();
+          return;
+        }
+
+        console.log("Registration successful:", body);
+        router.push("/profile");
+      } catch (fetchError) {
+        console.error("Registration fetch error:", fetchError);
+        setError("Network error during registration. Please try again.");
         setLoading(false);
+        
+        // Clean up the auth user if profile creation failed
+        await supabase.auth.signOut();
         return;
       }
-
-      router.push("/profile");
     }
 
     setLoading(false);
