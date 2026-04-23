@@ -298,6 +298,8 @@ export async function GET(request: NextRequest) {
           payout: convertToUSD(offer.payout),
           click_url: offer.click_url,
           categories: offer.categories || [],
+          provider: 'Notik', // Add provider field
+          device: offer.device || offer.devices || [], // Add device field
           events: offer.events?.map((event: any) => ({
             id: event.id,
             name: event.name,
