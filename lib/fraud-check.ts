@@ -21,22 +21,70 @@ async function getAppSetting(settingKey: string): Promise<boolean> {
 
     return data?.setting_value === "true" || data?.setting_value === true;
   } catch {
-    return true; // Default to enabled if error
+    return false; // Default to disabled if error (safer approach)
   }
 }
 
 /**
- * Get IP info from vpnapi.io with fallback to ipapi.co and ipinfo.io
+ * Get IP info - optimized version that skips VPN API calls when detection is disabled
+ * @param ip - Client IP address
+ * @param checkVPN - Whether to check VPN/Proxy/Tor (set to false to skip expensive API calls)
  */
-export async function getIPInfo(ip: string): Promise<IPInfo> {
-  const apiKey = process.env.VPNAPI_KEY;
-
+export async function getIPInfo(ip: string, checkVPN: boolean = true): Promise<IPInfo> {
   // Skip for localhost
   if (!ip || ip === "127.0.0.1" || ip === "::1" || ip === "localhost") {
     return { country: "US", isVPN: false, isProxy: false, isTor: false };
   }
 
-  // Primary: vpnapi.io
+  // If VPN checking is disabled, only get country (cheaper/faster)
+  if (!checkVPN) {
+    // Use lightweight country-only API (ipapi.co or ipinfo.io)
+    try {
+      const res = await fetch(`https://ipapi.co/${ip}/json/`, {
+        signal: AbortSignal.timeout(5000),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.country_code) {
+          return {
+            country: data.country_code,
+            isVPN: false,
+            isProxy: false,
+            isTor: false,
+          };
+        }
+      }
+    } catch {
+      // Try fallback
+    }
+
+    // Fallback: ipinfo.io (free tier)
+    try {
+      const res = await fetch(`https://ipinfo.io/${ip}?token=${process.env.IPINFO_TOKEN || ""}`, {
+        signal: AbortSignal.timeout(5000),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.country) {
+          return {
+            country: data.country,
+            isVPN: false,
+            isProxy: false,
+            isTor: false,
+          };
+        }
+      }
+    } catch {
+      // All fallbacks exhausted
+    }
+
+    return { country: null, isVPN: false, isProxy: false, isTor: false };
+  }
+
+  // Full VPN detection (only when checkVPN is true)
+  const apiKey = process.env.VPNAPI_KEY;
+
+  // Primary: vpnapi.io (includes VPN detection)
   if (apiKey) {
     try {
       const res = await fetch(`https://vpnapi.io/api/${ip}?key=${apiKey}`, {
@@ -56,7 +104,7 @@ export async function getIPInfo(ip: string): Promise<IPInfo> {
     }
   }
 
-  // Fallback 1: ipapi.co
+  // Fallback 1: ipapi.co (no VPN detection)
   try {
     const res = await fetch(`https://ipapi.co/${ip}/json/`, {
       signal: AbortSignal.timeout(8000),
@@ -76,7 +124,7 @@ export async function getIPInfo(ip: string): Promise<IPInfo> {
     // Fallback to next option
   }
 
-  // Fallback 2: ipinfo.io (free tier)
+  // Fallback 2: ipinfo.io (free tier, no VPN detection)
   try {
     const res = await fetch(`https://ipinfo.io/${ip}?token=${process.env.IPINFO_TOKEN || ""}`, {
       signal: AbortSignal.timeout(8000),
@@ -127,7 +175,7 @@ export async function processFraudCheck(
     const vpnDetectionEnabled = await getAppSetting("vpn_detection_enabled");
     const countryMismatchEnabled = await getAppSetting("country_mismatch_detection_enabled");
 
-    // If both detections are disabled, skip fraud check
+    // If both detections are disabled, skip fraud check entirely
     if (!vpnDetectionEnabled && !countryMismatchEnabled) {
       return { isFraud: false, reason: null };
     }
@@ -158,7 +206,8 @@ export async function processFraudCheck(
       return { isFraud: true, reason: null };
     }
 
-    const ipInfo = await getIPInfo(ip);
+    // Only call VPN API if VPN detection is enabled
+    const ipInfo = await getIPInfo(ip, vpnDetectionEnabled);
 
     const signupCountry = userData.signup_country;
     const detectedCountry = ipInfo.country;
@@ -171,8 +220,6 @@ export async function processFraudCheck(
 
     // Check VPN/Proxy/Tor (only if VPN detection is enabled)
     if (vpnDetectionEnabled && (ipInfo.isVPN || ipInfo.isProxy || ipInfo.isTor)) {
-      // Increment vpn_detected_count and set fraud_status silently
-      await admin.rpc("increment_field", undefined); // we'll do it manually
       const { data: current } = await admin
         .from("users")
         .select("vpn_detected_count, fraud_flags")

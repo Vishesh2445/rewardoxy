@@ -164,19 +164,31 @@ export async function POST(request: NextRequest) {
     console.log("Turnstile verification successful");
   }
 
-  // VPN/Proxy/Tor check at signup
+  // VPN/Proxy/Tor check at signup (only if VPN detection is enabled)
   const clientIp = getRealIP(request);
   console.log("Client IP:", clientIp);
   
-  const ipInfo = await getIPInfo(clientIp);
+  const admin = createAdminClient();
+  
+  // Check if VPN detection is enabled in admin settings
+  const { data: vpnSetting } = await admin
+    .from("app_settings")
+    .select("setting_value")
+    .eq("setting_key", "vpn_detection_enabled")
+    .single();
+  
+  const vpnDetectionEnabled = vpnSetting?.setting_value === "true" || vpnSetting?.setting_value === true;
+  console.log("VPN Detection Enabled:", vpnDetectionEnabled);
+  
+  // Only call VPN API if detection is enabled (saves API calls and improves performance)
+  const ipInfo = await getIPInfo(clientIp, vpnDetectionEnabled);
   console.log("IP Info:", ipInfo);
 
-  if (ipInfo.isVPN || ipInfo.isProxy || ipInfo.isTor) {
+  if (vpnDetectionEnabled && (ipInfo.isVPN || ipInfo.isProxy || ipInfo.isTor)) {
     console.error("VPN/Proxy/Tor detected, blocking registration");
     // Block account creation - delete the auth user that was just created
-    const adminForCleanup = createAdminClient();
     try {
-      await adminForCleanup.auth.admin.deleteUser(user_id);
+      await admin.auth.admin.deleteUser(user_id);
       console.log("Cleaned up auth user after VPN block");
     } catch (e) {
       console.error("Failed to cleanup auth user after VPN block:", e);
@@ -189,8 +201,6 @@ export async function POST(request: NextRequest) {
 
   const referral_code = randomBytes(4).toString("hex"); // 8-char alphanumeric
   console.log("Generated referral code:", referral_code);
-
-  const admin = createAdminClient();
 
   // Country from the VPN check we already did
   let country = ipInfo.country;

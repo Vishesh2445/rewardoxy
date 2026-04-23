@@ -16,6 +16,20 @@ export async function POST(request: NextRequest) {
 
     const admin = createAdminClient();
 
+    // Check if VPN detection is enabled in admin settings
+    const { data: vpnSetting } = await admin
+      .from("app_settings")
+      .select("setting_value")
+      .eq("setting_key", "vpn_detection_enabled")
+      .single();
+    
+    const vpnDetectionEnabled = vpnSetting?.setting_value === "true" || vpnSetting?.setting_value === true;
+
+    // If VPN detection is disabled, skip all fraud checks and return success
+    if (!vpnDetectionEnabled) {
+      return NextResponse.json({ success: true, vpnDetected: false, disabled: true });
+    }
+
     const { data: userState } = await admin
       .from("users")
       .select("fraud_status, vpn_detected_count, mismatch_count")
@@ -101,7 +115,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         title: "Cashouts Paused",
         message:
-          "Hey! \uD83D\uDC4B We have noticed some unusual activity in your account. As a result, we've paused cashouts for now. If this doesn't seem right, please contact support so we can help clear it up.",
+          "Hey! 👋 We have noticed some unusual activity in your account. As a result, we've paused cashouts for now. If this doesn't seem right, please contact support so we can help clear it up.",
         type: "cashout_blocked",
         read: false,
         is_dismissed: false,

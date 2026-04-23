@@ -32,11 +32,22 @@ export async function GET(request: NextRequest) {
           .single();
 
         if (!existing) {
-          // VPN/Proxy/Tor check for new OAuth users
+          // VPN/Proxy/Tor check for new OAuth users (only if VPN detection is enabled)
           const clientIp = getRealIP(request);
-          const ipInfo = await getIPInfo(clientIp);
+          
+          // Check if VPN detection is enabled in admin settings
+          const { data: vpnSetting } = await admin
+            .from("app_settings")
+            .select("setting_value")
+            .eq("setting_key", "vpn_detection_enabled")
+            .single();
+          
+          const vpnDetectionEnabled = vpnSetting?.setting_value === "true" || vpnSetting?.setting_value === true;
+          
+          // Only call VPN API if detection is enabled (saves API calls and improves performance)
+          const ipInfo = await getIPInfo(clientIp, vpnDetectionEnabled);
 
-          if (ipInfo.isVPN || ipInfo.isProxy || ipInfo.isTor) {
+          if (vpnDetectionEnabled && (ipInfo.isVPN || ipInfo.isProxy || ipInfo.isTor)) {
             // Block: sign out and redirect with error
             await supabase.auth.signOut();
             try {
