@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     .from("users")
     .select("email_verified, email")
     .eq("id", user.id)
-    .single();
+    .maybeSingle(); // Use maybeSingle instead of single to handle missing rows
 
   if (userError) {
     console.error("Error fetching user data:", userError);
@@ -149,7 +149,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (userData?.email_verified) {
+  // If user doesn't exist in users table, they need to complete registration
+  if (!userData) {
+    console.error("User not found in users table:", user.id);
+    return NextResponse.json(
+      { error: "User profile not found. Please contact support." },
+      { status: 404 }
+    );
+  }
+
+  if (userData.email_verified) {
     return NextResponse.json(
       { error: "Email is already verified" },
       { status: 400 }
@@ -182,11 +191,19 @@ export async function POST(request: NextRequest) {
 
   // Send verification email
   try {
+    console.log(`Attempting to resend verification email to ${userData.email}`);
     await sendVerificationEmail(userData.email, newToken.token);
-  } catch (emailError) {
+    console.log(`Verification email resent successfully to ${userData.email}`);
+  } catch (emailError: any) {
     console.error("Error sending verification email:", emailError);
+    console.error("Email error details:", {
+      message: emailError.message,
+      stack: emailError.stack,
+      email: userData.email,
+      token: newToken.token
+    });
     return NextResponse.json(
-      { error: "Failed to send verification email" },
+      { error: "Failed to send verification email. Please try again later." },
       { status: 500 }
     );
   }
