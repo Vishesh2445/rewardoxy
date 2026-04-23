@@ -7,7 +7,11 @@ const colors = {
   
   // Backward compatibility aliases
   green: "#01D676",
+  greenTint: "rgba(1, 214, 118, 0.1)",
+  gradient: "linear-gradient(135deg, #01D676 0%, #00B894 100%)",
   bgPage: "#0a0b0f",
+  bgCard: "#12131c",
+  bgButton: "#1a1b2e",
   textPrimary: "#d9e3f6",
   textSecondary: "#94a3b8",
   
