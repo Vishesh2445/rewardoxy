@@ -62,7 +62,7 @@ export default function LoginClient() {
     }
 
     await supabase.rpc("update_streak");
-    router.push("/profile");
+    router.push("/earn");
   }
 
   async function handleGoogleLogin() {

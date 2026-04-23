@@ -115,7 +115,7 @@ export default function SignupClient() {
         }
 
         console.log("Registration successful:", body);
-        router.push("/profile");
+        router.push("/earn");
       } catch (fetchError) {
         console.error("Registration fetch error:", fetchError);
         setError("Network error during registration. Please try again.");

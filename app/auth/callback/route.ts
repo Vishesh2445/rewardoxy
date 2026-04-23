@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Create response and clear cookie if terms were accepted
-      const response = NextResponse.redirect(`${origin}/profile`);
+      const response = NextResponse.redirect(`${origin}/earn`);
       if (termsAccepted) {
         response.headers.append("Set-Cookie", "oauth_terms_accepted=; path=/; max-age=0");
       }
