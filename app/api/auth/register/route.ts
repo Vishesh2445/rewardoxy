@@ -106,11 +106,24 @@ async function sendVerificationEmail(email: string, token: string) {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    console.error("Brevo API error:", errorData);
-    throw new Error("Failed to send verification email");
+    const errorText = await response.text();
+    console.error("Brevo API error response:", {
+      status: response.status,
+      statusText: response.statusText,
+      body: errorText
+    });
+    
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    
+    throw new Error(`Failed to send verification email: ${response.status} - ${errorData.message || errorText}`);
   }
 
+  console.log("Brevo API response: Email sent successfully");
   return true;
 }
 
@@ -247,12 +260,25 @@ export async function POST(request: NextRequest) {
             .select("token")
             .single();
 
-          if (!tokenError && tokenData) {
+          if (tokenError) {
+            console.error("Failed to create verification token:", tokenError);
+          } else if (tokenData) {
             try {
+              console.log(`Attempting to send verification email to ${email}`);
               await sendVerificationEmail(email, tokenData.token);
-            } catch (emailError) {
+              console.log(`Verification email sent successfully to ${email}`);
+            } catch (emailError: any) {
               console.error("Failed to send verification email:", emailError);
+              console.error("Email error details:", {
+                message: emailError.message,
+                stack: emailError.stack,
+                email: email,
+                token: tokenData.token
+              });
+              // Don't fail registration, but log the error
             }
+          } else {
+            console.error("No token data returned after insert");
           }
 
           // Add notification to verify email

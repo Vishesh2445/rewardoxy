@@ -97,11 +97,24 @@ async function sendVerificationEmail(email: string, token: string) {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    console.error("Brevo API error:", errorData);
-    throw new Error("Failed to send verification email");
+    const errorText = await response.text();
+    console.error("Brevo API error response:", {
+      status: response.status,
+      statusText: response.statusText,
+      body: errorText
+    });
+    
+    let errorData;
+    try {
+      errorData = JSON.parse(errorText);
+    } catch {
+      errorData = { message: errorText };
+    }
+    
+    throw new Error(`Failed to send verification email: ${response.status} - ${errorData.message || errorText}`);
   }
 
+  console.log("Brevo API response: Email sent successfully");
   return true;
 }
 
