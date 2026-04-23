@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Button, Paper, TextField, CircularProgress } from "@mui/material";
-import { Users, Coins, Copy, Check, Link2, UserPlus, Gift, ArrowRight, Gift as GiftIcon } from "lucide-react";
+import { Users, Coins, Copy, Check, Link2, UserPlus, Gift, ArrowRight, Gift as GiftIcon, TrendingUp } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 
@@ -64,7 +64,7 @@ export default function ReferralsClient({
   }
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
+    <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -90,7 +90,7 @@ export default function ReferralsClient({
         }}
       >
         <Box sx={{ pointerEvents: "none", position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", background: "rgba(0, 208, 132, 0.07)", filter: "blur(60px)" }} />
-        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 3, flexWrap: "wrap" }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "auto 1fr" }, gap: 3, alignItems: "center" }}>
           <Box
             sx={{
               display: "flex",
@@ -107,7 +107,7 @@ export default function ReferralsClient({
           >
             <Gift size={30} color={colors.primary} />
           </Box>
-          <Box sx={{ flex: 1 }}>
+          <Box>
             <Typography variant="h6" isBold sx={{ mb: 0.5 }}>
               Earn{" "}
               <Box component="span" sx={{ background: "linear-gradient(90deg,#00D084,#00a855)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -115,7 +115,7 @@ export default function ReferralsClient({
               </Box>{" "}
               of Referral Earnings
             </Typography>
-            <Typography variant="body2" sx={{ color: colors.text.secondary, maxWidth: 480 }}>
+            <Typography variant="body2" sx={{ color: colors.text.secondary }}>
               Share your unique link with friends. When they earn coins, you earn 5% commission — no limits!
             </Typography>
           </Box>
@@ -307,13 +307,35 @@ export default function ReferralsClient({
       )}
 
       {/* Stats */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mb: 4 }}>
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" }, gap: 2, mb: 4 }}>
         {[
           {
-            icon: <Users size={22} color={colors.primary} />,
+            icon: <Users size={20} color={colors.primary} />,
+            label: "Total Referrals",
+            value: totalReferrals.toString(),
+            desc: "friends joined",
+            color: colors.primary
           },
           {
-            icon: <Coins size={22} color={colors.status.warning} />
+            icon: <Coins size={20} color={colors.status.warning} />,
+            label: "Total Earned",
+            value: totalCoins.toLocaleString(),
+            desc: "5% commission",
+            color: colors.status.warning
+          },
+          {
+            icon: <Gift size={20} color={colors.secondary} />,
+            label: "Pending",
+            value: pendingEarnings.toLocaleString(),
+            desc: "ready to claim",
+            color: colors.secondary
+          },
+          {
+            icon: <TrendingUp size={20} color={colors.primary} />,
+            label: "Commission Rate",
+            value: "5%",
+            desc: "of all earnings",
+            color: colors.primary
           },
         ].map((s, idx) => (
           <Paper
@@ -323,7 +345,7 @@ export default function ReferralsClient({
               borderRadius: 4,
               border: `1px solid ${colors.divider}`,
               bgcolor: colors.background.secondary,
-              p: { xs: 2.5, sm: 3 },
+              p: 2.5,
               transition: "all 0.2s",
               "&:hover": { borderColor: "rgba(0, 208, 132, 0.25)" },
             }}
@@ -333,24 +355,24 @@ export default function ReferralsClient({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 46,
-                height: 46,
+                width: 40,
+                height: 40,
                 borderRadius: 3,
                 bgcolor: colors.background.ternary,
                 border: `1px solid ${colors.divider}`,
-                mb: 2,
+                mb: 1.5,
               }}
             >
               {s.icon}
             </Box>
-            <Typography sx={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: colors.text.secondary }}>
-              {idx === 0 ? "Total Referrals" : "Total Earned"}
+            <Typography sx={{ fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: colors.text.secondary }}>
+              {s.label}
             </Typography>
-            <Typography sx={{ fontSize: "2rem", fontWeight: 900, color: idx === 0 ? colors.primary : colors.status.warning, lineHeight: 1.1, mt: 0.25 }}>
-              {idx === 0 ? totalReferrals.toString() : totalCoins.toLocaleString()}
+            <Typography sx={{ fontSize: "1.5rem", fontWeight: 900, color: s.color, lineHeight: 1.1, mt: 0.25 }}>
+              {s.value}
             </Typography>
-            <Typography sx={{ fontSize: "0.72rem", color: colors.text.secondary, mt: 0.25 }}>
-              {idx === 0 ? "friends joined" : "5% of referrals' earnings"}
+            <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, mt: 0.25 }}>
+              {s.desc}
             </Typography>
           </Paper>
         ))}

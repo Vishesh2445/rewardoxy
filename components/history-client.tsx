@@ -144,19 +144,19 @@ export default function HistoryClient({
   }
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
+    <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
       {/* Header */}
-      <Box sx={{ mb: 4, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
-        <Box>
-          <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <History size={26} color={colors.primary} />
-            Earning History
-          </Typography>
-          <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
-            All your completed tasks and rewards
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", gap: 1.5 }}>
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
+          <Box>
+            <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <History size={26} color={colors.primary} />
+              Earning History
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
+              All your completed tasks and rewards
+            </Typography>
+          </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, px: 2, py: 1 }}>
             <CheckCircle size={15} color={colors.primary} />
             <Box>

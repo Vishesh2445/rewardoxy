@@ -1,15 +1,7 @@
 import { Box, Container, Divider } from "@mui/material";
 import Icons from "@/components/icons";
 import Typography from "@/components/ui/Typography";
-
-const colors = {
-  bgPage: "#141523",
-  bgCard: "#1d1e30",
-  green: "#01D676",
-  textPrimary: "#ffffff",
-  textSecondary: "#a9a9ca",
-  divider: "#2a2b43",
-};
+import colors from "@/theme/colors";
 
 export const metadata = {
   title: "Terms of Service - Rewardoxy",
@@ -20,13 +12,13 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: colors.background.default, color: colors.text.primary, display: "flex", flexDirection: "column" }}>
       {/* Nav */}
       <Box
         component="nav"
         sx={{
           borderBottom: `1px solid ${colors.divider}`,
-          bgcolor: "rgba(20,21,35,0.8)",
+          bgcolor: colors.background.primary,
           backdropFilter: "blur(24px)",
         }}
       >
@@ -38,7 +30,7 @@ export default function TermsPage() {
         </Container>
       </Box>
 
-      <Container maxWidth="md" sx={{ py: { xs: 6, sm: 10 } }}>
+      <Container maxWidth="md" sx={{ py: { xs: 6, sm: 10 }, flex: 1 }}>
         <Typography
           variant="h3"
           isBold

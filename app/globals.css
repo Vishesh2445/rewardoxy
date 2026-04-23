@@ -66,6 +66,11 @@ body {
   background-clip: text;
 }
 
+/* Text glow effect */
+.text-glow-green {
+  text-shadow: 0 0 10px rgba(1, 214, 118, 0.3);
+}
+
 /* Smooth transitions */
 * {
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;

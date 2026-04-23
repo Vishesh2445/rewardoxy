@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get("token");
 
   if (!token) {
-    return NextResponse.redirect(new URL("/dashboard?verified=false&error=no_token", request.url));
+    return NextResponse.redirect(new URL("/profile?verified=false&error=no_token", request.url));
   }
 
   const admin = createAdminClient();
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     .single();
 
   if (tokenError || !tokenData) {
-    return NextResponse.redirect(new URL("/dashboard?verified=false&error=invalid_token", request.url));
+    return NextResponse.redirect(new URL("/profile?verified=false&error=invalid_token", request.url));
   }
 
   // Check if token has expired
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       .delete()
       .eq("id", tokenData.id);
 
-    return NextResponse.redirect(new URL("/dashboard?verified=false&error=expired_token", request.url));
+    return NextResponse.redirect(new URL("/profile?verified=false&error=expired_token", request.url));
   }
 
   // Update user's email_verified to true
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 
   if (updateError) {
     console.error("Error updating email_verified:", updateError);
-    return NextResponse.redirect(new URL("/dashboard?verified=false&error=update_failed", request.url));
+    return NextResponse.redirect(new URL("/profile?verified=false&error=update_failed", request.url));
   }
 
   // Delete the used token
@@ -58,6 +58,6 @@ export async function GET(request: NextRequest) {
     read: false,
   });
 
-  // Redirect to dashboard with success
-  return NextResponse.redirect(new URL("/dashboard?verified=true", request.url));
+  // Redirect to profile with success
+  return NextResponse.redirect(new URL("/profile?verified=true", request.url));
 }

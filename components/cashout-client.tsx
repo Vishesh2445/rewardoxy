@@ -67,6 +67,7 @@ interface CashoutClientProps {
   emailVerified?: boolean;
   fraudStatus?: string;
   fraudNotification?: { id: string; message: string } | null;
+  savedCryptoAddress?: string;
 }
 
 export default function CashoutClient({
@@ -78,10 +79,11 @@ export default function CashoutClient({
   emailVerified = false,
   fraudStatus = "clean",
   fraudNotification = null,
+  savedCryptoAddress = "",
 }: CashoutClientProps) {
   const router = useRouter();
   const [coins, setCoins] = useState(initialCoins);
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState(savedCryptoAddress);
   const [amountCoins, setAmountCoins] = useState<number | "">(initialCoins >= MIN_COINS ? initialCoins : "");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -183,7 +185,7 @@ export default function CashoutClient({
   }
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
+    <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
       {/* Fraud Detection Banner */}
       {(showFraudBanner || isFraudBlocked) && (
         <Paper
@@ -291,39 +293,39 @@ export default function CashoutClient({
         }}
       >
         <Box sx={{ pointerEvents: "none", position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(99, 102, 241, 0.08)", filter: "blur(50px)" }} />
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, alignItems: "center" }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "auto auto 1fr" }, gap: 3, alignItems: "center" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 2, background: `rgba(99, 102, 241, 0.15)`, border: `1px solid ${colors.glass.borderHover}` }}>
               <Coins size={26} color={colors.primary} />
             </Box>
             <Box>
               <Typography sx={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: colors.text.secondary }}>Available Balance</Typography>
-              <Typography sx={{ fontSize: "2rem", fontWeight: 800, background: colors.text.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", lineHeight: 1.1 }}>
+              <Typography sx={{ fontSize: "1.75rem", fontWeight: 800, background: colors.text.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", lineHeight: 1.1 }}>
                 {coins.toLocaleString()}
               </Typography>
-              <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary, opacity: 0.7 }}>coins</Typography>
+              <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary, opacity: 0.7 }}>coins</Typography>
             </Box>
           </Box>
 
-          <Box sx={{ borderLeft: { sm: `1px solid ${colors.glass.border}` }, pl: { sm: 3 } }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, pl: { sm: 3 }, borderLeft: { sm: `1px solid ${colors.glass.border}` } }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 2, background: colors.background.secondary, border: `1px solid ${colors.glass.border}` }}>
                 <DollarSign size={26} color={colors.primary} />
               </Box>
               <Box>
                 <Typography sx={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: colors.text.secondary }}>USD Value</Typography>
-                <Typography sx={{ fontSize: "2rem", fontWeight: 800, lineHeight: 1.1 }}>
+                <Typography sx={{ fontSize: "1.75rem", fontWeight: 800, lineHeight: 1.1 }}>
                   ${availableUsd.toFixed(2)}
                 </Typography>
-                <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary }}>USD</Typography>
+                <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>USD</Typography>
               </Box>
             </Box>
           </Box>
 
-          <Box sx={{ ml: { sm: "auto" }, display: "flex", flexDirection: "column", gap: 0.75 }}>
+          <Box sx={{ ml: { sm: "auto" }, display: "flex", flexDirection: "column", gap: 0.75, pl: { sm: 3 }, borderLeft: { sm: `1px solid ${colors.glass.border}` } }}>
             {[
-              { label: "Minimum cashout", value: `${MIN_COINS.toLocaleString()} coins ($${(MIN_COINS / COINS_PER_USD).toFixed(2)})` },
-              { label: "Rate", value: "1,000 coins = $1 USD" },
+              { label: "Minimum", value: `${MIN_COINS.toLocaleString()} coins` },
+              { label: "Rate", value: "1,000 = $1 USD" },
             ].map((row) => (
               <Box key={row.label} sx={{ display: "flex", gap: 1, fontSize: "0.75rem" }}>
                 <Typography sx={{ color: colors.text.secondary, fontSize: "inherit" }}>{row.label}:</Typography>

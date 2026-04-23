@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import {
   AppBar,
   Box,
@@ -20,7 +21,6 @@ import {
   ListItemText,
   Divider,
 } from "@mui/material";
-import Image from "next/image";
 import {
   LayoutDashboard,
   Gift,
@@ -41,32 +41,31 @@ import Icons from "@/components/icons";
 import Typography from "@/components/ui/Typography";
 import NotificationBell from "@/components/notification-bell";
 import BalanceDisplay from "@/components/balance-display";
+import BottomNavbar from "@/components/bottom-navbar";
 import colors from "@/theme/colors";
 
 const NAV_ITEMS = [
   { label: "Earn", href: "/earn", Icon: Gift },
-  { label: "My Offers", href: "/dashboard", Icon: LayoutDashboard },
+  { label: "Profile", href: "/profile", Icon: User },
   { label: "Cashout", href: "/cashout", Icon: Wallet },
   { label: "Rewards", href: "/daily-bonus", Icon: CalendarCheck },
 ];
 
 const DROPDOWN_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", Icon: LayoutDashboard },
+  { label: "Profile", href: "/profile", Icon: User },
   { label: "Leaderboard", href: "/leaderboard", Icon: Trophy },
   { label: "Referrals", href: "/referrals", Icon: Users },
   { label: "History", href: "/history", Icon: History },
-  { label: "Profile", href: "/profile", Icon: User },
 ];
 
 const ALL_NAV_ITEMS = [
   { label: "Earn", href: "/earn", Icon: Gift },
-  { label: "Dashboard", href: "/dashboard", Icon: LayoutDashboard },
+  { label: "Profile", href: "/profile", Icon: User },
   { label: "Daily Bonus", href: "/daily-bonus", Icon: CalendarCheck },
   { label: "Cashout", href: "/cashout", Icon: Wallet },
   { label: "Leaderboard", href: "/leaderboard", Icon: Trophy },
   { label: "Referrals", href: "/referrals", Icon: Users },
   { label: "History", href: "/history", Icon: History },
-  { label: "Profile", href: "/profile", Icon: User },
 ];
 
 const footerInfoList: { title: string; links: { text: string; url: string; isEmail?: boolean }[] }[] = [
@@ -152,66 +151,95 @@ export default function FullscreenShell({
         }}
       >
         <Toolbar sx={{ px: { xs: 2, sm: 3, md: 4 }, minHeight: { xs: 56, sm: 64 } }}>
-          {/* Mobile Menu Button */}
-          <IconButton
-            onClick={() => setMobileOpen(true)}
-            sx={{
-              display: { xs: "inline-flex", md: "none" },
-              mr: 1,
-              color: colors.text.secondary,
-            }}
-          >
-            <MenuIcon size={20} />
-          </IconButton>
-
-          {/* Logo */}
-          <Box sx={{ mr: { xs: 0, md: 4 } }}>
-            <Icons.Logo href="/earn" />
-          </Box>
-
-          {/* Desktop Navigation */}
-          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, flexGrow: 1 }}>
-            {NAV_ITEMS.map(({ label, href, Icon }) => {
-              const isActive = pathname === href;
-              return (
-                <Button
-                  key={href}
-                  component={Link}
-                  href={href}
-                  startIcon={<Icon size={18} />}
-                  sx={{
-                    color: isActive ? "#01D676" : colors.text.secondary,
-                    bgcolor: isActive ? "rgba(1, 214, 118, 0.1)" : "transparent",
-                    px: 2,
-                    py: 1,
-                    borderRadius: 2,
-                    textTransform: "none",
-                    fontWeight: isActive ? 600 : 500,
-                    fontSize: "0.9375rem",
-                    "&:hover": {
-                      bgcolor: isActive ? "rgba(1, 214, 118, 0.15)" : "rgba(255, 255, 255, 0.05)",
-                      color: isActive ? "#01D676" : colors.text.primary,
-                    },
-                  }}
-                >
-                  {label}
-                </Button>
-              );
-            })}
-          </Box>
-
-          {/* Right Side - Balance, Notifications, Profile */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 2 }, ml: "auto" }}>
-            {/* Balance Display */}
-            {userId && <BalanceDisplay userId={userId} initialBalance={coins} />}
-
-            {/* Notifications */}
-            <Box sx={{ display: { xs: "none", sm: "block" } }}>
-              <NotificationBell />
+          {/* Mobile/Tablet Layout */}
+          <Box sx={{ display: { xs: "flex", md: "none" }, alignItems: "center", width: "100%" }}>
+            {/* Left: Menu Icon + Logo */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <IconButton
+                onClick={() => setMobileOpen(true)}
+                sx={{
+                  color: colors.text.secondary,
+                  p: 1,
+                }}
+              >
+                <MenuIcon size={20} />
+              </IconButton>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                  width: 28,
+                  height: 24,
+                }}
+              >
+                <Image
+                  src="/logo.png"
+                  alt="Rewardoxy"
+                  width={28}
+                  height={24}
+                  style={{ objectFit: "contain" }}
+                />
+              </Box>
             </Box>
 
-            {/* Profile Dropdown - Desktop */}
-            <Box sx={{ display: { xs: "none", md: "block" } }}>
+            {/* Center: Balance Display */}
+            <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+              {userId && <BalanceDisplay userId={userId} initialBalance={coins} />}
+            </Box>
+
+            {/* Right: Notification Bell */}
+            <NotificationBell />
+          </Box>
+
+          {/* Desktop Layout */}
+          <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", width: "100%" }}>
+            {/* Logo */}
+            <Box sx={{ mr: 4 }}>
+              <Icons.Logo href="/earn" />
+            </Box>
+
+            {/* Desktop Navigation */}
+            <Box sx={{ display: "flex", gap: 1, flexGrow: 1 }}>
+              {NAV_ITEMS.map(({ label, href, Icon }) => {
+                const isActive = pathname === href;
+                return (
+                  <Button
+                    key={href}
+                    component={Link}
+                    href={href}
+                    startIcon={<Icon size={18} />}
+                    sx={{
+                      color: isActive ? "#01D676" : colors.text.secondary,
+                      bgcolor: isActive ? "rgba(1, 214, 118, 0.1)" : "transparent",
+                      px: 2,
+                      py: 1,
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontWeight: isActive ? 600 : 500,
+                      fontSize: "0.9375rem",
+                      "&:hover": {
+                        bgcolor: isActive ? "rgba(1, 214, 118, 0.15)" : "rgba(255, 255, 255, 0.05)",
+                        color: isActive ? "#01D676" : colors.text.primary,
+                      },
+                    }}
+                  >
+                    {label}
+                  </Button>
+                );
+              })}
+            </Box>
+
+            {/* Right Side - Balance, Notifications, Profile */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              {/* Balance Display */}
+              {userId && <BalanceDisplay userId={userId} initialBalance={coins} />}
+
+              {/* Notifications */}
+              <NotificationBell />
+
+              {/* Profile Dropdown */}
               <IconButton
                 onClick={handleMenuOpen}
                 sx={{
@@ -415,12 +443,16 @@ export default function FullscreenShell({
         sx={{
           flexGrow: 1,
           pt: { xs: 7, sm: 8 },
+          pb: { xs: 10, md: 0 }, // Add padding bottom for mobile bottom navbar
           bgcolor: "#0a0b0f",
           minHeight: "100vh",
         }}
       >
         {children}
       </Box>
+
+      {/* Bottom Navigation Bar - Mobile & Tablet Only */}
+      <BottomNavbar />
 
       {/* Footer */}
       <Box

@@ -227,7 +227,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
   };
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
+    <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
       <Box sx={{ mb: 3, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
         <Box>
           <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1 }}>

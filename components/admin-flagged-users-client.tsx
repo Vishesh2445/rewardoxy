@@ -156,7 +156,7 @@ export default function AdminFlaggedUsersClient() {
   function formatDate(d: string) { return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }); }
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
+    <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
       <Box sx={{ mb: 3, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
         <Box>
           <Button 

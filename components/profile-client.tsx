@@ -6,7 +6,7 @@ import {
   Box, Button, Paper, TextField, CircularProgress, Avatar,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
 } from "@mui/material";
-import { Settings, Save, CheckCircle, Wallet, TrendingUp, Flame, Mail, User, Calendar, AlertCircle, Send, Plus } from "lucide-react";
+import { Save, CheckCircle, Wallet, TrendingUp, Flame, Mail, User, Calendar, AlertCircle, Send, Plus } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 import Snackbar from "@mui/material/Snackbar";
@@ -96,7 +96,6 @@ export default function ProfileClient({
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
-  const [showSettings, setShowSettings] = useState(false);
 
   // Pagination states for Completions
   const [completions, setCompletions] = useState<Completion[]>([]);
@@ -219,18 +218,43 @@ export default function ProfileClient({
 
   const TABS = ["Withdrawals"] as const;
 
-  /* ── settings panel ─────────── */
-  if (showSettings) {
-    return (
-      <Box sx={{ px: { xs: 2, sm: 3 }, py: 4, pb: { xs: 12, lg: 4 } }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-          <Typography variant="h5" isBold>Settings</Typography>
-          <Button onClick={() => setShowSettings(false)} sx={{ color: colors.secondary, textTransform: "none", fontWeight: 600, fontSize: "0.875rem" }}>
-            Back to Profile
-          </Button>
-        </Box>
+  /* ── main profile view ─────── */
+  return (
+    <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
+      {/* header */}
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
+        <Typography variant="h5" isBold>My Profile</Typography>
+      </Box>
 
-        <Box component="form" onSubmit={handleSave} sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      {/* top cards */}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "300px 1fr" }, gap: 3, mb: 3 }}>
+        {/* avatar + info card */}
+        <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, p: 3, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <Avatar {...stringAvatar(initialName || email)} />
+          <Typography variant="h6" isBold sx={{ mt: 1.5 }}>{initialName || email.split("@")[0]}</Typography>
+          <Typography variant="caption" sx={{ color: colors.text.secondary }}>Joined {timeSince(memberSince)}</Typography>
+          <Typography variant="caption" sx={{ color: colors.text.secondary, mt: 0.5 }}>{email}</Typography>
+        </Paper>
+
+        {/* stats card */}
+        <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, p: 3 }}>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(3, 1fr)", lg: "repeat(5, 1fr)" }, gap: 2 }}>
+            {stats.map((s) => (
+              <Box key={s.label} sx={{ display: "flex", flexDirection: "column", gap: 0.5, p: 1.5, borderRadius: 3, bgcolor: colors.background.default, border: `1px solid ${colors.divider}` }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  {s.icon}
+                </Box>
+                <Typography sx={{ fontSize: "1.125rem", fontWeight: 700 }}>{s.value}</Typography>
+                <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary }}>{s.label}</Typography>
+              </Box>
+            ))}
+          </Box>
+        </Paper>
+      </Box>
+
+      {/* Account Settings */}
+      <Box component="form" onSubmit={handleSave} sx={{ display: "flex", flexDirection: "column", gap: 3, mb: 3 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 3 }}>
           <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 3 }}>
             <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
               <User size={20} color={colors.primary} /> Account Info
@@ -328,63 +352,20 @@ export default function ProfileClient({
               </Box>
             </Box>
           </Paper>
-
-          {error && <Box sx={{ borderRadius: 2, bgcolor: "rgba(255, 68, 68, 0.1)", border: "1px solid rgba(255, 68, 68, 0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: colors.status.error }}>{error}</Box>}
-          {saved && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, borderRadius: 2, bgcolor: colors.background.secondary, border: "1px solid rgba(0, 208, 132, 0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: colors.primary }}>
-              <CheckCircle size={16} /> Profile saved successfully
-            </Box>
-          )}
-
-          <Button type="submit" variant="contained" disabled={saving}
-            startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <Save size={16} />}
-            sx={{ alignSelf: "flex-start", background: colors.background.gradient, borderRadius: 2, px: 3, py: 1.5, fontWeight: 600, fontSize: "0.875rem", textTransform: "none", boxShadow: "0 4px 12px rgba(0, 208, 132, 0.2)", "&:hover": { filter: "brightness(1.1)" }, "&.Mui-disabled": { opacity: 0.5, color: "#fff" } }}>
-            Save Changes
-          </Button>
         </Box>
-      </Box>
-    );
-  }
 
-  /* ── main profile view ─────── */
-  return (
-    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4, pb: { xs: 12, lg: 4 } }}>
-      {/* header */}
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h5" isBold>My Profile</Typography>
-        <Button
-          onClick={() => setShowSettings(true)}
-          startIcon={<Settings size={16} />}
-          sx={{ color: colors.secondary, textTransform: "none", fontWeight: 600, fontSize: "0.875rem" }}
-        >
-          Settings
-        </Button>
-      </Box>
-
-      {/* top cards */}
-      <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" }, mb: 3 }}>
-        {/* avatar + info card */}
-        <Paper sx={{ flex: 1, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, p: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <Avatar {...stringAvatar(initialName || email)} />
-          <Typography variant="h6" isBold sx={{ mt: 1.5 }}>{initialName || email.split("@")[0]}</Typography>
-          <Typography variant="caption" sx={{ color: colors.text.secondary }}>Joined {timeSince(memberSince)}</Typography>
-          <Typography variant="caption" sx={{ color: colors.text.secondary, mt: 0.5 }}>{email}</Typography>
-        </Paper>
-
-        {/* stats card */}
-        <Paper sx={{ flex: 1, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, p: 3 }}>
-          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, height: "100%" }}>
-            {stats.map((s) => (
-              <Box key={s.label} sx={{ display: "flex", flexDirection: "column", gap: 0.5, p: 1.5, borderRadius: 3, bgcolor: colors.background.default, border: `1px solid ${colors.divider}` }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                  {s.icon}
-                </Box>
-                <Typography sx={{ fontSize: "1.125rem", fontWeight: 700 }}>{s.value}</Typography>
-                <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary }}>{s.label}</Typography>
-              </Box>
-            ))}
+        {error && <Box sx={{ borderRadius: 2, bgcolor: "rgba(255, 68, 68, 0.1)", border: "1px solid rgba(255, 68, 68, 0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: colors.status.error }}>{error}</Box>}
+        {saved && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, borderRadius: 2, bgcolor: colors.background.secondary, border: "1px solid rgba(0, 208, 132, 0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: colors.primary }}>
+            <CheckCircle size={16} /> Profile saved successfully
           </Box>
-        </Paper>
+        )}
+
+        <Button type="submit" variant="contained" disabled={saving}
+          startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <Save size={16} />}
+          sx={{ alignSelf: "flex-start", background: colors.background.gradient, borderRadius: 2, px: 3, py: 1.5, fontWeight: 600, fontSize: "0.875rem", textTransform: "none", boxShadow: "0 4px 12px rgba(0, 208, 132, 0.2)", "&:hover": { filter: "brightness(1.1)" }, "&.Mui-disabled": { opacity: 0.5, color: "#fff" } }}>
+          Save Changes
+        </Button>
       </Box>
 
       {/* tabs */}

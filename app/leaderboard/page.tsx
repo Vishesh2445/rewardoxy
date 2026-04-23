@@ -127,7 +127,7 @@ export default async function LeaderboardPage() {
     user
       ? supabase
           .from("users")
-          .select("coins_balance")
+          .select("coins_balance, display_name")
           .eq("id", user.id)
           .single()
       : Promise.resolve({ data: null }),
@@ -140,36 +140,43 @@ export default async function LeaderboardPage() {
   const myRank = leaderboard.find((r) => r.user_id === user?.id);
 
   return (
-    <AppShell coins={user ? coins : undefined}>
-      <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
+    <AppShell 
+      coins={user ? coins : undefined}
+      userId={user?.id}
+      userName={userResult.data?.display_name ?? "User"}
+      userAvatar={undefined}
+    >
+      <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
         {/* Header */}
-        <Box sx={{ mb: 5, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
-          <Box>
-            <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <Trophy size={26} color="#f59e0b" />
-              Leaderboard
-            </Typography>
-            <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 0.5 }}>
-              Top earners this month. Compete for exclusive rewards!
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.75,
-              borderRadius: 50,
-              border: `1px solid ${colors.divider}`,
-              bgcolor: colors.background.secondary,
-              px: 1.75,
-              py: 0.875,
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              color: colors.text.secondary,
-            }}
-          >
-            <Clock size={13} />
-            Updated every 6 hours
+        <Box sx={{ mb: 5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
+            <Box>
+              <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <Trophy size={26} color="#f59e0b" />
+                Leaderboard
+              </Typography>
+              <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 0.5 }}>
+                Top earners this month. Compete for exclusive rewards!
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.75,
+                borderRadius: 50,
+                border: `1px solid ${colors.divider}`,
+                bgcolor: colors.background.secondary,
+                px: 1.75,
+                py: 0.875,
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                color: colors.text.secondary,
+              }}
+            >
+              <Clock size={13} />
+              Updated every 6 hours
+            </Box>
           </Box>
         </Box>
 

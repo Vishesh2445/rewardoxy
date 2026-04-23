@@ -85,7 +85,12 @@ export default async function ProfilePage() {
   const coins = userData?.coins_balance ?? 0;
 
   return (
-    <AppShell coins={coins}>
+    <AppShell 
+      coins={coins} 
+      userId={user.id}
+      userName={userData?.display_name ?? "User"}
+      userAvatar={undefined}
+    >
       <ProfileClient
         userId={user.id}
         email={user.email ?? ""}

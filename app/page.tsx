@@ -239,7 +239,7 @@ export default function Home() {
             {isAuthenticated ? (
               <Button
                 component={Link}
-                href="/dashboard"
+                href="/earn"
                 variant="contained"
                 sx={{
                   ...sxGradientBtn,
@@ -249,7 +249,7 @@ export default function Home() {
                   borderRadius: "8px",
                 }}
               >
-                Dashboard
+                Earn
               </Button>
             ) : (
               <>
@@ -1234,7 +1234,7 @@ export default function Home() {
                   title: "Quick Links",
                   links: [
                     { text: "Earn", url: "/earn" },
-                    { text: "Dashboard", url: "/dashboard" },
+                    { text: "Profile", url: "/profile" },
                     { text: "Leaderboard", url: "/leaderboard" },
                   ],
                 },

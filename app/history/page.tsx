@@ -21,7 +21,7 @@ export default async function HistoryPage() {
   const [userResult, completionsResult, cpxResult, notikResult] = await Promise.all([
     supabase
       .from("users")
-      .select("coins_balance")
+      .select("coins_balance, display_name")
       .eq("id", user.id)
       .single(),
 
@@ -81,7 +81,12 @@ export default async function HistoryPage() {
   const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0);
 
   return (
-    <AppShell coins={coins}>
+    <AppShell 
+      coins={coins}
+      userId={user.id}
+      userName={userResult.data?.display_name ?? "User"}
+      userAvatar={undefined}
+    >
       <HistoryClient
         userId={user.id}
         initialCompletions={allCompletions.slice(0, PAGE_SIZE)}

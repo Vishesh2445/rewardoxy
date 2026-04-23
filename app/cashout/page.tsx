@@ -24,7 +24,7 @@ export default async function CashoutPage() {
   const [userResult, withdrawalsResult, fraudNotifResult] = await Promise.all([
     supabase
       .from("users")
-      .select("coins_balance, is_banned, email_verified, fraud_status")
+      .select("coins_balance, is_banned, email_verified, fraud_status, crypto_address, display_name")
       .eq("id", user.id)
       .single(),
 
@@ -52,6 +52,7 @@ export default async function CashoutPage() {
   const isBanned = userResult.data?.is_banned ?? false;
   const emailVerified = userResult.data?.email_verified ?? false;
   const fraudStatus = userResult.data?.fraud_status ?? "clean";
+  const cryptoAddress = userResult.data?.crypto_address ?? "";
   const withdrawals = withdrawalsResult.data ?? [];
   const total = withdrawalsResult.count ?? 0;
 
@@ -59,7 +60,12 @@ export default async function CashoutPage() {
   const fraudNotification = fraudNotifResult.data?.[0] ?? null;
 
   return (
-    <AppShell coins={coins}>
+    <AppShell 
+      coins={coins}
+      userId={user.id}
+      userName={userResult.data?.display_name ?? "User"}
+      userAvatar={undefined}
+    >
       <CashoutClient
         userId={user.id}
         initialCoins={coins}
@@ -69,6 +75,7 @@ export default async function CashoutPage() {
         emailVerified={emailVerified}
         fraudStatus={fraudStatus}
         fraudNotification={fraudNotification}
+        savedCryptoAddress={cryptoAddress}
       />
     </AppShell>
   );

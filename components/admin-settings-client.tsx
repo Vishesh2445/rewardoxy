@@ -90,7 +90,7 @@ export default function AdminSettingsClient() {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ maxWidth: 1400, mx: "auto", p: { xs: 2, sm: 3, md: 4 }, pb: { xs: 12, lg: 4 } }}>
       <Typography variant="h4" isBold sx={{ mb: 3, color: "#01D676" }}>
         Application Settings
       </Typography>

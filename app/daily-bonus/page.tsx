@@ -18,7 +18,7 @@ export default async function DailyBonusPage() {
 
   const { data: userData } = await supabase
     .from("users")
-    .select("coins_balance, streak_count")
+    .select("coins_balance, streak_count, display_name")
     .eq("id", user.id)
     .single();
 
@@ -75,7 +75,12 @@ export default async function DailyBonusPage() {
   const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik;
 
   return (
-    <AppShell coins={coins}>
+    <AppShell 
+      coins={coins}
+      userId={user.id}
+      userName={userData?.display_name ?? "User"}
+      userAvatar={undefined}
+    >
       <DailyBonusClient
         streakCount={userData?.streak_count ?? 0}
         alreadyClaimed={!!todayClaim}

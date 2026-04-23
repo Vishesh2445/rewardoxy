@@ -32,7 +32,7 @@ export default async function ReferralsPage() {
   const [userResult, referredUsersResult] = await Promise.all([
     supabase
       .from("users")
-      .select("referral_code, coins_balance, total_earned, pending_referral_earnings")
+      .select("referral_code, coins_balance, total_earned, pending_referral_earnings, display_name")
       .eq("id", user.id)
       .single(),
 
@@ -62,7 +62,12 @@ export default async function ReferralsPage() {
   }));
 
   return (
-    <AppShell coins={coins}>
+    <AppShell 
+      coins={coins}
+      userId={user.id}
+      userName={userResult.data?.display_name ?? "User"}
+      userAvatar={undefined}
+    >
       <ReferralsClient
         referralCode={referralCode}
         totalReferrals={totalReferrals}

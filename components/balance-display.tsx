@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Box } from "@mui/material";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import Typography from "@/components/ui/Typography";
 
@@ -68,17 +67,33 @@ export default function BalanceDisplay({ userId, initialBalance = 0 }: BalanceDi
       sx={{
         display: "flex",
         alignItems: "center",
-        gap: { xs: 0.5, sm: 1 },
+        gap: 0.25,
         bgcolor: "rgba(1, 214, 118, 0.1)",
         border: "1px solid rgba(1, 214, 118, 0.2)",
         borderRadius: 2,
-        px: { xs: 1, sm: 2 },
+        px: { xs: 1.5, sm: 2 },
         py: 0.75,
       }}
     >
-      <Image src="/logo.png" alt="Coins" width={16} height={16} />
-      <Typography sx={{ fontSize: { xs: "0.875rem", sm: "1rem" }, fontWeight: 700, color: "#01D676" }}>
-        ${(balance / 1000).toFixed(2)}
+      <Typography 
+        component="span"
+        sx={{ 
+          fontSize: { xs: "0.875rem", sm: "1rem" }, 
+          fontWeight: 700, 
+          color: "#01D676" 
+        }}
+      >
+        $
+      </Typography>
+      <Typography 
+        component="span"
+        sx={{ 
+          fontSize: { xs: "0.875rem", sm: "1rem" }, 
+          fontWeight: 700, 
+          color: "#ffffff" 
+        }}
+      >
+        {(balance / 1000).toFixed(2)}
       </Typography>
     </Box>
   );

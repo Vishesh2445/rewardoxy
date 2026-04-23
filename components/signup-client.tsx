@@ -108,7 +108,7 @@ export default function SignupClient() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push("/profile");
     }
 
     setLoading(false);

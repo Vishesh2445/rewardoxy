@@ -141,7 +141,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
   }
 
   return (
-    <Box sx={{ px: { xs: 2, sm: 3 }, py: 4 }}>
+    <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Wallet size={24} color="#01D676" />
