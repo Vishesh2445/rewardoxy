@@ -25,6 +25,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get user's country from headers
+    const cfCountry = request.headers.get("cf-ipcountry");
+    const vercelCountry = request.headers.get("x-vercel-ip-country");
+    const userCountry = cfCountry || vercelCountry || "US";
+    
+    console.log("User country detected:", userCountry);
+
     // Build Gemiad API URL
     const gemiadUrl = new URL("https://api.gemiwall.com/api/offers/static");
     gemiadUrl.searchParams.set("placementId", placementId);
@@ -50,7 +57,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     
     console.log("Gemiad API response success:", data.success);
-    console.log("Gemiad offers count:", data.offers?.length || 0);
+    console.log("Gemiad total offers count:", data.offers?.length || 0);
 
     if (!data.success || !Array.isArray(data.offers)) {
       return NextResponse.json(
@@ -59,8 +66,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Filter offers by user's country
+    const filteredOffers = data.offers.filter((offer: any) => {
+      // If offer has no country restrictions, include it
+      if (!offer.country || !Array.isArray(offer.country) || offer.country.length === 0) {
+        return true;
+      }
+      // Check if user's country is in the offer's country list
+      return offer.country.includes(userCountry);
+    });
+
+    console.log(`Filtered offers for ${userCountry}: ${filteredOffers.length} out of ${data.offers.length}`);
+
     // Transform Gemiad offers to match our format
-    const offers = data.offers.map((offer: any) => {
+    const offers = filteredOffers.map((offer: any) => {
       // Replace [USER_ID] in the URL with actual user ID
       const clickUrl = offer.url?.replace("[USER_ID]", userId) || "";
       
@@ -103,6 +122,8 @@ export async function GET(request: NextRequest) {
       success: true,
       offers: offers,
       count: offers.length,
+      userCountry: userCountry,
+      totalOffersBeforeFilter: data.offers.length,
     });
   } catch (error) {
     console.error("Error fetching Gemiad offers:", error);
