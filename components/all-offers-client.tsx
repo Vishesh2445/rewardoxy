@@ -917,16 +917,18 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                   lg: "repeat(7, 1fr)",
                   xl: "repeat(8, 1fr)",
                 },
-                gap: { xs: 1, sm: 1.5, md: 1.5 },
+                gap: { xs: 0.75, sm: 1, md: 1 },
+                columnGap: { xs: 0.5, sm: 0.75, md: 0.75 },
               }}
             >
               {displayedOffers.map((offer, index) => (
                 <Box
                   key={`${offer.offer_id}-${index}`}
                   sx={{
+                    minWidth: { xs: 100, sm: 140 },
+                    maxWidth: { xs: 100, sm: 140 },
+                    flexShrink: 0,
                     cursor: "pointer",
-                    minWidth: { xs: 90, sm: 100, md: 140, lg: 140 },
-                    maxWidth: { xs: 90, sm: 100, md: 140, lg: 140 },
                   }}
                   onClick={() => {
                     setSelectedOffer(offer);
@@ -935,61 +937,54 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                 >
                   <Box
                     sx={{
-                      bgcolor: "#12131c",
-                      border: "1px solid rgba(255, 255, 255, 0.05)",
-                      p: { xs: 1, md: 1.25 },
-                      borderRadius: { xs: 2, md: 2.5 },
+                      bgcolor: "#222339",
+                      p: { xs: 0.75, sm: 1.5 },
+                      borderRadius: { xs: 1.5, sm: 2.5 },
                       transition: "all 0.2s",
                       "&:hover": {
-                        bgcolor: "#1a1b2e",
-                        transform: "translateY(-2px)",
-                        borderColor: "rgba(1, 214, 118, 0.3)",
+                        bgcolor: "#2a2b45",
                       },
                     }}
                   >
-                    <Box sx={{ position: "relative", mb: { xs: 1, md: 1.25 } }}>
-                      {offer.image_url ? (
-                        <Box
-                          component="img"
-                          src={offer.image_url}
-                          alt={offer.name}
-                          sx={{
-                            width: "100%",
-                            aspectRatio: "1",
-                            borderRadius: { xs: 1, md: 1.5 },
-                            overflow: "hidden",
-                            bgcolor: "#1a1b2e",
-                            objectFit: "cover",
-                          }}
-                          onError={(e: any) => {
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      ) : (
+                    <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
+                      <Box
+                        sx={{
+                          width: "100%",
+                          aspectRatio: "1",
+                          borderRadius: { xs: 1, sm: 1.5 },
+                          overflow: "hidden",
+                          bgcolor: "#1a1b2e",
+                          backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }}
+                      />
+                      {offer.categories && (
                         <Box
                           sx={{
-                            width: "100%",
-                            aspectRatio: "1",
-                            borderRadius: { xs: 1, md: 1.5 },
-                            overflow: "hidden",
-                            bgcolor: "#1a1b2e",
+                            position: "absolute",
+                            top: { xs: 4, sm: 8 },
+                            right: { xs: 4, sm: 8 },
+                            bgcolor: "rgba(30, 30, 46, 0.6)",
+                            px: { xs: 0.5, sm: 1 },
+                            py: { xs: 0.25, sm: 0.5 },
+                            borderRadius: 10,
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "center",
+                            gap: 0.5,
                           }}
                         >
-                          <Gamepad2 size={20} color="#444" />
+                          <Gamepad2 size={8} color="#fff" />
                         </Box>
                       )}
-
                     </Box>
 
-                    <Box sx={{ height: { xs: 32, md: 40 }, overflow: "hidden", mb: { xs: 0.5, md: 0.75 } }}>
+                    <Box sx={{ height: 40, overflow: "hidden", mb: 0.5 }}>
                       <Typography
                         sx={{
-                          fontSize: { xs: "0.75rem", md: "0.8125rem" },
+                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
                           fontWeight: 500,
-                          lineHeight: 1.2,
+                          lineHeight: 1.3,
                           display: "-webkit-box",
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: "vertical",
@@ -1000,7 +995,21 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                       </Typography>
                     </Box>
 
-                    <Typography sx={{ fontSize: { xs: "0.8rem", md: "0.875rem" }, fontWeight: 600, color: "#01D676" }}>
+                    <Typography
+                      sx={{
+                        fontSize: { xs: "0.6rem", sm: "0.6875rem" },
+                        color: colors.text.secondary,
+                        opacity: 0.6,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        fontWeight: 600,
+                        mb: { xs: 0.5, sm: 1 },
+                      }}
+                    >
+                      {offer.provider || 'Game'}
+                    </Typography>
+
+                    <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600 }}>
                       ${offer.payout}
                     </Typography>
                   </Box>
