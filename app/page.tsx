@@ -747,14 +747,19 @@ export default function Home() {
             <Box
               sx={{
                 display: "flex",
-                animation: { xs: "scroll 5s linear infinite", sm: "scroll 15s linear infinite", md: "scroll 25s linear infinite" },
+                animation: { 
+                  xs: "scroll 20s linear infinite", 
+                  sm: "scroll 25s linear infinite", 
+                  md: "scroll 30s linear infinite" 
+                },
                 gap: { xs: 2, sm: 3, md: 4 },
+                willChange: "transform",
                 "@keyframes scroll": {
                   "0%": { transform: "translateX(0)" },
-                  "100%": { transform: "translateX(calc(-50% - var(--gap, 0px)))" },
+                  "100%": { transform: "translateX(-50%)" },
                 },
                 "&:hover": {
-                  animationPlayState: "paused",
+                  animationPlayState: { xs: "running", md: "paused" },
                 },
               }}
             >
@@ -765,6 +770,7 @@ export default function Home() {
                 { src: "/mobivortex-icon.png", alt: "Vortex" },
                 { src: "/taskwall.svg", alt: "Taskwall" },
                 { src: "/notik.webp", alt: "Notik" },
+                { src: "/gemiad.svg", alt: "Gemiad" },
               ].map((logo, idx) => (
                 <Box
                   key={`logo-1-${idx}`}
@@ -807,6 +813,7 @@ export default function Home() {
                 { src: "/mobivortex-icon.png", alt: "Vortex" },
                 { src: "/taskwall.svg", alt: "Taskwall" },
                 { src: "/notik.webp", alt: "Notik" },
+                { src: "/gemiad.svg", alt: "Gemiad" },
               ].map((logo, idx) => (
                 <Box
                   key={`logo-2-${idx}`}
