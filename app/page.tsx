@@ -166,7 +166,7 @@ export default function Home() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push("/earn");
     }
 
     setSignupLoading(false);
