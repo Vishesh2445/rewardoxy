@@ -14,17 +14,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const placementId = "69e46bc7a982f180b5cae8fa";
-    const apiKey = "3701379f-cbb6-4f78-a565-dba3a08072d1";
+    const placementId = process.env.NEXT_PUBLIC_GEMIAD_API_PLACEMENT_ID;
+    const apiKey = process.env.GEMIAD_API_KEY;
 
-    // Build Vortex API URL
-    const vortexUrl = new URL("https://api.vortexwall.com/api/v1/offers/static");
-    vortexUrl.searchParams.set("placementId", placementId);
-    vortexUrl.searchParams.set("apiKey", apiKey);
+    if (!placementId || !apiKey) {
+      console.error("Missing Gemiad configuration");
+      return NextResponse.json(
+        { success: false, error: "Gemiad configuration not found", offers: [] },
+        { status: 200 }
+      );
+    }
 
-    console.log("Fetching Vortex offers:", vortexUrl.toString());
+    // Build Gemiad API URL
+    const gemiadUrl = new URL("https://api.gemiwall.com/api/offers/static");
+    gemiadUrl.searchParams.set("placementId", placementId);
+    gemiadUrl.searchParams.set("apiKey", apiKey);
 
-    const response = await fetch(vortexUrl.toString(), {
+    console.log("Fetching Gemiad offers:", gemiadUrl.toString());
+
+    const response = await fetch(gemiadUrl.toString(), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -32,27 +40,27 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      console.error("Vortex API error:", response.status, response.statusText);
+      console.error("Gemiad API error:", response.status, response.statusText);
       return NextResponse.json(
-        { success: false, error: "Failed to fetch offers from Vortex", offers: [] },
+        { success: false, error: "Failed to fetch offers from Gemiad", offers: [] },
         { status: 200 }
       );
     }
 
     const data = await response.json();
     
-    console.log("Vortex API response success:", data.success);
-    console.log("Vortex offers count:", data.data?.length || 0);
+    console.log("Gemiad API response success:", data.success);
+    console.log("Gemiad offers count:", data.offers?.length || 0);
 
-    if (!data.success || !Array.isArray(data.data)) {
+    if (!data.success || !Array.isArray(data.offers)) {
       return NextResponse.json(
-        { success: false, error: "Invalid response from Vortex", offers: [] },
+        { success: false, error: "Invalid response from Gemiad", offers: [] },
         { status: 200 }
       );
     }
 
-    // Transform Vortex offers to match our format
-    const offers = data.data.map((offer: any) => {
+    // Transform Gemiad offers to match our format
+    const offers = data.offers.map((offer: any) => {
       // Replace [USER_ID] in the URL with actual user ID
       const clickUrl = offer.url?.replace("[USER_ID]", userId) || "";
       
@@ -62,7 +70,7 @@ export async function GET(request: NextRequest) {
       // Calculate total payout from events
       const totalPayout = offer.payout || 0;
       
-      // Transform events
+      // Transform events - only include events with payout
       const events = Array.isArray(offer.events)
         ? offer.events
             .filter((event: any) => event.payout && event.payout > 0)
@@ -84,7 +92,7 @@ export async function GET(request: NextRequest) {
         click_url: clickUrl,
         categories: offer.category || "app",
         events: events,
-        provider: "Vortex", // Add provider field
+        provider: "Gemiad", // Add provider field
         device: offer.device || [],
         country: offer.country || [],
         trackingType: offer.trackingType || "", // Add tracking type (CPI, CPE, CPA, CPC, CPL)
@@ -97,7 +105,7 @@ export async function GET(request: NextRequest) {
       count: offers.length,
     });
   } catch (error) {
-    console.error("Error fetching Vortex offers:", error);
+    console.error("Error fetching Gemiad offers:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error", offers: [] },
       { status: 200 }

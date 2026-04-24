@@ -35,6 +35,7 @@ import {
   X,
   Mail,
   ChevronDown,
+  ShoppingBag,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Icons from "@/components/icons";
@@ -46,7 +47,7 @@ import colors from "@/theme/colors";
 
 const NAV_ITEMS = [
   { label: "Earn", href: "/earn", Icon: Gift },
-  { label: "Profile", href: "/profile", Icon: User },
+  { label: "Offers", href: "/offers/all", Icon: ShoppingBag },
   { label: "Cashout", href: "/cashout", Icon: Wallet },
   { label: "Rewards", href: "/daily-bonus", Icon: CalendarCheck },
 ];

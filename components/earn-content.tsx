@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Box, Dialog, DialogTitle, DialogContent, IconButton, Paper, CircularProgress } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -36,7 +36,8 @@ interface NotikOffer {
     name: string;
     payout: number;
   }[];
-  provider?: string; // Add provider field (Notik, Vortex, etc.)
+  provider?: string; // Add provider field (Notik, Vortex, Gemiad)
+  trackingType?: string; // Add tracking type (CPI, CPE, CPA, CPC, CPL)
 }
 
 interface CPXSurvey {
@@ -668,10 +669,15 @@ function PlatformSelector({
 }
 
 function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: DeviceOS[] }) {
-  const [offers, setOffers] = useState<NotikOffer[]>([]);
-  const [loading, setLoading] = useState(false); // Start as false to show skeleton
+  const [displayedOffers, setDisplayedOffers] = useState<NotikOffer[]>([]);
+  const [allOffers, setAllOffers] = useState<NotikOffer[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<NotikOffer | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const currentIndex = useRef(0);
 
   useEffect(() => {
     fetchOffers();
@@ -682,39 +688,65 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       setLoading(true);
       const primaryOS = deviceOS.length > 0 ? deviceOS[0] : 'android';
       
-      // Fetch from both Notik and Vortex APIs in parallel
-      const [notikResponse, vortexResponse] = await Promise.all([
+      // Fetch from Gemiad, Notik, and Vortex APIs in parallel
+      const [gemiadResponse, notikResponse, vortexResponse] = await Promise.all([
+        fetch(`/api/gemiad-offers?user_id=${userId}`),
         fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
         fetch(`/api/vortex-offers?user_id=${userId}`)
       ]);
       
-      let allOffers: NotikOffer[] = [];
+      let gemiadOffers: NotikOffer[] = [];
+      let notikOffers: NotikOffer[] = [];
+      let vortexOffers: NotikOffer[] = [];
       
-      // Process Notik offers
+      // Process Gemiad offers (Priority 1)
+      if (gemiadResponse.ok) {
+        const gemiadData = await gemiadResponse.json();
+        if (gemiadData.success && gemiadData.offers && Array.isArray(gemiadData.offers)) {
+          gemiadOffers = gemiadData.offers;
+          console.log(`Gemiad offers loaded: ${gemiadOffers.length}`);
+        }
+      }
+      
+      // Process Notik offers (Priority 2)
       if (notikResponse.ok) {
         const notikText = await notikResponse.text();
         if (notikText) {
           const notikData = JSON.parse(notikText);
           if (notikData.success && notikData.offers && Array.isArray(notikData.offers)) {
-            const notikOffers = notikData.offers.map((offer: NotikOffer) => ({
+            notikOffers = notikData.offers.map((offer: NotikOffer) => ({
               ...offer,
               provider: "Notik"
             }));
-            allOffers = [...allOffers, ...notikOffers];
+            console.log(`Notik offers loaded: ${notikOffers.length}`);
           }
         }
       }
       
-      // Process Vortex offers
+      // Process Vortex offers (Priority 3)
       if (vortexResponse.ok) {
         const vortexData = await vortexResponse.json();
         if (vortexData.success && vortexData.offers && Array.isArray(vortexData.offers)) {
-          allOffers = [...allOffers, ...vortexData.offers];
+          vortexOffers = vortexData.offers;
+          console.log(`Vortex offers loaded: ${vortexOffers.length}`);
         }
       }
       
+      // Combine offers with priority: Gemiad > Notik > Vortex
+      // Mix them in a round-robin fashion for better distribution
+      const combinedOffers: NotikOffer[] = [];
+      const maxProviderLength = Math.max(gemiadOffers.length, notikOffers.length, vortexOffers.length);
+      
+      for (let i = 0; i < maxProviderLength; i++) {
+        if (i < gemiadOffers.length) combinedOffers.push(gemiadOffers[i]);
+        if (i < notikOffers.length) combinedOffers.push(notikOffers[i]);
+        if (i < vortexOffers.length) combinedOffers.push(vortexOffers[i]);
+      }
+      
+      console.log(`Total combined offers: ${combinedOffers.length}`);
+      
       // Filter for non-gaming offers
-      const gamingOffers = allOffers
+      const gamingOffers = combinedOffers
         .filter((offer: NotikOffer) => {
           const name = offer.name?.toLowerCase() || '';
           const desc1 = offer.description1?.toLowerCase() || '';
@@ -729,10 +761,44 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
                  categoriesStr.includes('game') ||
                  name.includes('play') ||
                  desc1.includes('play'));
-        })
-        .slice(0, 10);
+        });
       
-      setOffers(gamingOffers);
+      console.log(`Filtered gaming offers: ${gamingOffers.length}`);
+      
+      // Separate offers by tracking type for priority sorting
+      const cpeOffers = gamingOffers.filter(o => o.trackingType?.toUpperCase() === 'CPE');
+      const cpiOffers = gamingOffers.filter(o => o.trackingType?.toUpperCase() === 'CPI');
+      const cpaOffers = gamingOffers.filter(o => o.trackingType?.toUpperCase() === 'CPA');
+      const otherOffers = gamingOffers.filter(o => {
+        const type = o.trackingType?.toUpperCase();
+        return type !== 'CPE' && type !== 'CPI' && type !== 'CPA';
+      });
+      
+      console.log(`Tracking type distribution - CPE: ${cpeOffers.length}, CPI: ${cpiOffers.length}, CPA: ${cpaOffers.length}, Others: ${otherOffers.length}`);
+      
+      // Mix offers with priority: CPE > CPI > CPA > Others (round-robin within each priority)
+      const sortedOffers: NotikOffer[] = [];
+      const maxLength = Math.max(cpeOffers.length, cpiOffers.length, cpaOffers.length, otherOffers.length);
+      
+      for (let i = 0; i < maxLength; i++) {
+        if (i < cpeOffers.length) sortedOffers.push(cpeOffers[i]);
+        if (i < cpiOffers.length) sortedOffers.push(cpiOffers[i]);
+        if (i < cpaOffers.length) sortedOffers.push(cpaOffers[i]);
+        if (i < otherOffers.length) sortedOffers.push(otherOffers[i]);
+      }
+      
+      console.log(`Sorted gaming offers: ${sortedOffers.length}`);
+      
+      // Store all offers
+      setAllOffers(sortedOffers);
+      
+      // Display first 12 offers
+      const initialBatch = sortedOffers.slice(0, 12);
+      setDisplayedOffers(initialBatch);
+      currentIndex.current = initialBatch.length;
+      
+      // Check if there are more offers
+      setHasMore(initialBatch.length < sortedOffers.length);
     } catch (error) {
       console.error("Error fetching offers:", error);
     } finally {
@@ -740,14 +806,58 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
     }
   }
 
+  // Load more offers when user reaches the end
+  const loadMoreOffers = () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    
+    // Load next 12 offers
+    const nextBatch = allOffers.slice(currentIndex.current, currentIndex.current + 12);
+    
+    if (nextBatch.length > 0) {
+      console.log(`Loading ${nextBatch.length} more offers...`);
+      setDisplayedOffers(prev => [...prev, ...nextBatch]);
+      currentIndex.current += nextBatch.length;
+      
+      // Check if there are more offers
+      if (currentIndex.current >= allOffers.length) {
+        setHasMore(false);
+        console.log('No more offers to load');
+      }
+    } else {
+      setHasMore(false);
+    }
+    
+    setLoadingMore(false);
+  };
+
+  // Handle scroll event to detect when near the end
   const handleScroll = (direction: 'left' | 'right') => {
-    const container = document.getElementById('gaming-offers-scroll');
+    const container = scrollContainerRef.current;
     if (container) {
       const scrollAmount = 300;
       const newPosition = direction === 'left' 
         ? container.scrollLeft - scrollAmount 
         : container.scrollLeft + scrollAmount;
       container.scrollTo({ left: newPosition, behavior: 'smooth' });
+    }
+  };
+
+  // Detect when user reaches the last offer
+  const onScroll = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    
+    // Calculate if user has scrolled to the end (within 50px threshold)
+    const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 50;
+    
+    // Load more when user reaches the end
+    if (isAtEnd && hasMore && !loadingMore) {
+      console.log('User reached the end, loading more offers...');
+      loadMoreOffers();
     }
   };
 
@@ -935,6 +1045,8 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       </Box>
 
       <Box
+        ref={scrollContainerRef}
+        onScroll={onScroll}
         id="gaming-offers-scroll"
         sx={{
           px: { xs: 1.5, sm: 2 },
@@ -947,7 +1059,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
           scrollbarWidth: "none",
         }}
       >
-        {loading || offers.length === 0 ? (
+        {loading ? (
           // Show skeleton loaders while loading
           <>
             {[1, 2, 3, 4, 5].map((i) => (
@@ -956,7 +1068,8 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
           </>
         ) : (
           // Show actual offers
-          offers.map((offer) => (
+          <>
+            {displayedOffers.map((offer) => (
           <Box
             key={offer.offer_id}
             sx={{
@@ -1049,7 +1162,15 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
               </Typography>
             </Box>
           </Box>
-        ))
+        ))}
+        
+        {/* Loading indicator when fetching more */}
+        {loadingMore && (
+          <Box sx={{ minWidth: 140, maxWidth: 140, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <CircularProgress size={24} sx={{ color: "#01D676" }} />
+          </Box>
+        )}
+        </>
         )}
       </Box>
 

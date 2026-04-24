@@ -190,7 +190,7 @@ function OfferDetailsModal({
                 Available on:
               </Typography>
               <Box sx={{ display: "flex", gap: 0.75 }}>
-                {offer.device.map((platform) => {
+                {offer.device.map((platform, platformIndex) => {
                   const platformLower = platform.toLowerCase();
                   let icon = null;
                   let label = platform;
@@ -216,7 +216,7 @@ function OfferDetailsModal({
 
                   return icon ? (
                     <Box
-                      key={platform}
+                      key={`${platform}-${platformIndex}`}
                       sx={{
                         display: "flex",
                         alignItems: "center",
@@ -812,34 +812,76 @@ export default function AllOffersClient({ userId }: { userId: string }) {
       
       const primaryOS = selectedPlatforms.length > 0 ? selectedPlatforms[0] : 'android';
       
-      const response = await fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`);
+      // Fetch from Gemiad, Notik, and Vortex APIs in parallel (Priority order)
+      const [gemiadResponse, notikResponse, vortexResponse] = await Promise.all([
+        fetch(`/api/gemiad-offers?user_id=${userId}`),
+        fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
+        fetch(`/api/vortex-offers?user_id=${userId}`)
+      ]);
       
-      if (!response.ok) {
-        setLoading(false);
-        return;
+      let gemiadOffers: any[] = [];
+      let notikOffers: any[] = [];
+      let vortexOffers: any[] = [];
+      
+      // Process Gemiad offers (Priority 1)
+      if (gemiadResponse.ok) {
+        const gemiadData = await gemiadResponse.json();
+        if (gemiadData.success && gemiadData.offers && Array.isArray(gemiadData.offers)) {
+          gemiadOffers = gemiadData.offers;
+          console.log(`All Offers - Gemiad: ${gemiadOffers.length}`);
+        }
       }
-
-      const data = await response.json();
       
-      if (data.success && data.offers && Array.isArray(data.offers)) {
-        
+      // Process Notik offers (Priority 2)
+      if (notikResponse.ok) {
+        const notikData = await notikResponse.json();
+        if (notikData.success && notikData.offers && Array.isArray(notikData.offers)) {
+          notikOffers = notikData.offers;
+          console.log(`All Offers - Notik: ${notikOffers.length}`);
+        }
+      }
+      
+      // Process Vortex offers (Priority 3)
+      if (vortexResponse.ok) {
+        const vortexData = await vortexResponse.json();
+        if (vortexData.success && vortexData.offers && Array.isArray(vortexData.offers)) {
+          vortexOffers = vortexData.offers;
+          console.log(`All Offers - Vortex: ${vortexOffers.length}`);
+        }
+      }
+      
+      // Combine offers with priority: Gemiad > Notik > Vortex
+      // Mix them in a round-robin fashion for better distribution
+      const allOffersData: any[] = [];
+      const maxLength = Math.max(gemiadOffers.length, notikOffers.length, vortexOffers.length);
+      
+      for (let i = 0; i < maxLength; i++) {
+        if (i < gemiadOffers.length) allOffersData.push(gemiadOffers[i]);
+        if (i < notikOffers.length) allOffersData.push(notikOffers[i]);
+        if (i < vortexOffers.length) allOffersData.push(vortexOffers[i]);
+      }
+      
+      console.log(`All Offers - Total combined: ${allOffersData.length}`);
+      
+      if (allOffersData.length > 0) {
         // Store all offers
-        setAllOffers(data.offers);
+        setAllOffers(allOffersData);
         
         // Display first 20 offers immediately
-        const initialBatch = data.offers.slice(0, 20);
+        const initialBatch = allOffersData.slice(0, 20);
         setDisplayedOffers(initialBatch);
         currentIndex.current = initialBatch.length;
         setLoading(false);
         
         // Check if there are more offers
-        if (initialBatch.length >= data.offers.length) {
+        if (initialBatch.length >= allOffersData.length) {
           setHasMore(false);
         }
       } else {
         setLoading(false);
       }
     } catch (error) {
+      console.error("Error fetching offers:", error);
       setLoading(false);
     }
   }
@@ -871,11 +913,11 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                 gridTemplateColumns: {
                   xs: "repeat(3, 1fr)",
                   sm: "repeat(4, 1fr)",
-                  md: "repeat(4, 1fr)",
-                  lg: "repeat(5, 1fr)",
-                  xl: "repeat(6, 1fr)",
+                  md: "repeat(6, 1fr)",
+                  lg: "repeat(7, 1fr)",
+                  xl: "repeat(8, 1fr)",
                 },
-                gap: { xs: 1, sm: 1.5, md: 2.5 },
+                gap: { xs: 1, sm: 1.5, md: 1.5 },
               }}
             >
               {displayedOffers.map((offer, index) => (
@@ -883,8 +925,8 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                   key={`${offer.offer_id}-${index}`}
                   sx={{
                     cursor: "pointer",
-                    minWidth: { xs: 90, sm: 100, md: 160, lg: 180 },
-                    maxWidth: { xs: 90, sm: 100, md: 160, lg: 180 },
+                    minWidth: { xs: 90, sm: 100, md: 140, lg: 140 },
+                    maxWidth: { xs: 90, sm: 100, md: 140, lg: 140 },
                   }}
                   onClick={() => {
                     setSelectedOffer(offer);

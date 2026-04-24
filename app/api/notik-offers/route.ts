@@ -300,6 +300,7 @@ export async function GET(request: NextRequest) {
           categories: offer.categories || [],
           provider: 'Notik', // Add provider field
           device: offer.device || offer.devices || [], // Add device field
+          trackingType: offer.tracking_type || offer.trackingType || '', // Add tracking type
           events: offer.events?.map((event: any) => ({
             id: event.id,
             name: event.name,
