@@ -51,7 +51,21 @@ export default async function ProfilePage() {
     .eq("userid", user.id)
     .eq("status", 1); // Only count completed transactions, not reversals
 
-  const totalCompletions = (completionCount ?? 0) + (cpxCompletionCount ?? 0);
+  // Get Notik completion count
+  const { count: notikCompletionCount } = await supabase
+    .from("notik_transactions")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .gt("amount", 0);
+
+  // Get GemiAd completion count
+  const { count: gemiadCompletionCount } = await supabase
+    .from("gemiad_transactions")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("status", "completed");
+
+  const totalCompletions = (completionCount ?? 0) + (cpxCompletionCount ?? 0) + (notikCompletionCount ?? 0) + (gemiadCompletionCount ?? 0);
 
   const { count: withdrawalCount } = await supabase
     .from("withdrawals")
@@ -75,12 +89,34 @@ export default async function ProfilePage() {
     .eq("userid", user.id)
     .gte("created_at", startOfMonth);
 
+  // Get this month's Notik earnings
+  const { data: monthlyNotik } = await supabase
+    .from("notik_transactions")
+    .select("amount")
+    .eq("user_id", user.id)
+    .gte("created_at", startOfMonth);
+
+  // Get this month's GemiAd earnings
+  const { data: monthlyGemiad } = await supabase
+    .from("gemiad_transactions")
+    .select("reward, status")
+    .eq("user_id", user.id)
+    .gte("created_at", startOfMonth);
+
   const monthEarnedFromCompletions = monthlyCompletions?.reduce((sum, c) => sum + (c.coins_awarded || 0), 0) || 0;
   const monthEarnedFromCpx = monthlyCpx?.reduce((sum, c) => {
     const amount = Math.round(Number(c.amount_local || 0));
     return sum + (c.status === 2 ? -amount : amount); // Subtract reversals
   }, 0) || 0;
-  const monthEarned = monthEarnedFromCompletions + monthEarnedFromCpx;
+  const monthEarnedFromNotik = monthlyNotik?.reduce((sum, n) => {
+    const amount = Math.round(Number(n.amount || 0));
+    return sum + amount; // Notik amount can be negative for chargebacks
+  }, 0) || 0;
+  const monthEarnedFromGemiad = monthlyGemiad?.reduce((sum, g) => {
+    const amount = Math.round(Number(g.reward || 0));
+    return sum + amount; // GemiAd reward can be negative for reversals
+  }, 0) || 0;
+  const monthEarned = monthEarnedFromCompletions + monthEarnedFromCpx + monthEarnedFromNotik + monthEarnedFromGemiad;
 
   const coins = userData?.coins_balance ?? 0;
 

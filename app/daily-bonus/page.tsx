@@ -57,6 +57,13 @@ export default async function DailyBonusPage() {
     .eq("user_id", user.id)
     .gte("created_at", todayStart.toISOString());
 
+  // Get today's GemiAd earnings
+  const { data: todayGemiad } = await supabase
+    .from("gemiad_transactions")
+    .select("reward, status")
+    .eq("user_id", user.id)
+    .gte("created_at", todayStart.toISOString());
+
   const todayCoinsFromCompletions = todayCompletions?.reduce(
     (sum, c) => sum + (c.coins_awarded || 0),
     0
@@ -72,7 +79,12 @@ export default async function DailyBonusPage() {
     return sum + amount; // Notik amount can be negative for chargebacks
   }, 0) || 0;
 
-  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik;
+  const todayCoinsFromGemiad = todayGemiad?.reduce((sum, g) => {
+    const amount = Math.round(Number(g.reward || 0));
+    return sum + amount; // GemiAd reward can be negative for reversals
+  }, 0) || 0;
+
+  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad;
 
   return (
     <AppShell 

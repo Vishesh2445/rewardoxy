@@ -91,8 +91,8 @@ export default function HistoryClient({
     const from = newPage * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
     
-    // Fetch completions, CPX transactions, and Notik transactions
-    const [completionsResult, cpxResult, notikResult] = await Promise.all([
+    // Fetch completions, CPX transactions, Notik transactions, and GemiAd transactions
+    const [completionsResult, cpxResult, notikResult, gemiadResult] = await Promise.all([
       supabase
         .from("completions")
         .select("id, program_id, payout_decimal, coins_awarded, created_at, source", { count: "exact" })
@@ -110,6 +110,13 @@ export default function HistoryClient({
       supabase
         .from("notik_transactions")
         .select("id, txn_id, amount, offer_name, event_name, created_at", { count: "exact" })
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .range(from, to),
+
+      supabase
+        .from("gemiad_transactions")
+        .select("id, txid, reward, offer_name, event_name, status, created_at", { count: "exact" })
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .range(from, to),
@@ -134,9 +141,17 @@ export default function HistoryClient({
         created_at: notik.created_at,
         source: 'notik',
       })),
+      ...(gemiadResult.data ?? []).map((gemiad) => ({
+        id: gemiad.id,
+        program_id: gemiad.event_name ? `GemiAd - ${gemiad.event_name}` : gemiad.offer_name || 'GemiAd Offer',
+        payout_decimal: gemiad.reward / 700, // Convert coins back to USD for display
+        coins_awarded: gemiad.reward,
+        created_at: gemiad.created_at,
+        source: 'gemiad',
+      })),
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0);
+    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0);
 
     if (merged) setCompletions(merged.slice(0, PAGE_SIZE));
     if (totalCount !== null) setTotal(totalCount);

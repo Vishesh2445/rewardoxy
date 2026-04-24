@@ -18,7 +18,7 @@ export default async function HistoryPage() {
     redirect("/auth/login");
   }
 
-  const [userResult, completionsResult, cpxResult, notikResult] = await Promise.all([
+  const [userResult, completionsResult, cpxResult, notikResult, gemiadResult] = await Promise.all([
     supabase
       .from("users")
       .select("coins_balance, display_name")
@@ -53,11 +53,21 @@ export default async function HistoryPage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .range(0, PAGE_SIZE - 1),
+
+    // Fetch GemiAd transactions
+    supabase
+      .from("gemiad_transactions")
+      .select("id, txid, reward, offer_name, event_name, status, created_at", {
+        count: "exact",
+      })
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .range(0, PAGE_SIZE - 1),
   ]);
 
   const coins = userResult.data?.coins_balance ?? 0;
 
-  // Merge completions, CPX transactions, and Notik transactions
+  // Merge completions, CPX transactions, Notik transactions, and GemiAd transactions
   const allCompletions = [
     ...(completionsResult.data ?? []),
     ...(cpxResult.data ?? []).map((cpx) => ({
@@ -76,9 +86,17 @@ export default async function HistoryPage() {
       created_at: notik.created_at,
       source: 'notik',
     })),
+    ...(gemiadResult.data ?? []).map((gemiad) => ({
+      id: gemiad.id,
+      program_id: gemiad.event_name ? `GemiAd - ${gemiad.event_name}` : gemiad.offer_name || 'GemiAd Offer',
+      payout_decimal: gemiad.reward / 700, // Convert coins back to USD for display
+      coins_awarded: gemiad.reward,
+      created_at: gemiad.created_at,
+      source: 'gemiad',
+    })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0);
+  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0);
 
   return (
     <AppShell 

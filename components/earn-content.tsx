@@ -18,7 +18,7 @@ type EarnContentProps = {
   userEmail: string;
 };
 
-type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall";
+type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd";
 type DeviceOS = "android" | "ios" | "windows";
 
 interface NotikOffer {
@@ -1383,6 +1383,11 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       const appId = process.env.NEXT_PUBLIC_NOTIK_APP_ID || "dOTR7kmvMw";
       return `https://notik.me/coins?api_key=${apiKey}&pub_id=${pubId}&app_id=${appId}&user_id=${userId}`;
     }
+    if (activeWall === "GemiAd") {
+      const placementId = process.env.NEXT_PUBLIC_GEMIAD_PLACEMENT_ID || "your_placement_id_here";
+      // Using path parameters format (recommended by GemiAd)
+      return `https://gemiwall.com/${placementId}/${userId}`;
+    }
     return "";
   };
 
@@ -1438,107 +1443,6 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
           "&::-webkit-scrollbar": { display: "none" }, 
           scrollbarWidth: "none" 
         }}>
-          {/* MyLead card */}
-          <Paper
-            onClick={() => handleOpenWall("MyLead")}
-            elevation={0}
-            sx={{
-              position: "relative",
-              display: "flex", 
-              flexDirection: "column", 
-              alignItems: "center", 
-              justifyContent: "space-between",
-              borderRadius: 2, 
-              p: 2, 
-              cursor: "pointer",
-              background: "linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.25) 100%)",
-              border: "none",
-              transition: "all 0.2s ease",
-              minWidth: { xs: "auto", sm: 160 },
-              maxWidth: { xs: "none", sm: 160 },
-              width: { xs: "100%", sm: "auto" },
-              flexShrink: 0,
-              overflow: "hidden",
-              "&:hover": { 
-                background: "linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.3) 100%)",
-                "& .wall-logo": {
-                  filter: "blur(8px)",
-                },
-                "& .wall-rating": {
-                  filter: "blur(8px)",
-                },
-                "& .hover-play-button": {
-                  opacity: 1,
-                },
-              },
-            }}
-          >
-            {/* Hover Play Button */}
-            <Box
-              className="hover-play-button"
-              sx={{
-                position: "absolute",
-                inset: 0,
-                opacity: 0,
-                zIndex: 1000,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "opacity 0.2s ease",
-              }}
-            >
-              <Box
-                sx={{
-                  backgroundColor: colors.background.secondary,
-                  borderRadius: 10,
-                  padding: 2,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: 40,
-                  height: 40,
-                }}
-              >
-                <Box
-                  component="img"
-                  src="https://freecash.com/public/img/play-offer.svg"
-                  alt="play-button"
-                  sx={{ objectFit: "contain", objectPosition: "center" }}
-                />
-              </Box>
-            </Box>
-
-            {/* Logo */}
-            <Box
-              component="img"
-              src="/mylead_logo.svg"
-              alt="MyLead"
-              className="wall-logo"
-              sx={{ 
-                width: 100, 
-                height: 100, 
-                borderRadius: 1, 
-                objectFit: "contain",
-                mb: 2,
-                transition: "filter 0.2s ease",
-              }}
-            />
-
-            {/* Name */}
-            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
-              MyLead
-            </Typography>
-
-            {/* Star Rating */}
-            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 3 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
-                  ★
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-
           {/* Vortex card */}
           <Paper
             onClick={() => handleOpenWall("Vortex")}
@@ -1552,8 +1456,8 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2, 
               p: 2, 
               cursor: "pointer",
-              background: "linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(180, 83, 9, 0.25) 100%)",
-              border: "none",
+              background: "linear-gradient(180deg, #1a1d2e 0%, #3d2f1f 40%, rgba(217, 119, 6, 0.3) 100%)",
+              border: "1px solid rgba(217, 119, 6, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1561,7 +1465,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": { 
-                background: "linear-gradient(135deg, rgba(217, 119, 6, 0.2) 0%, rgba(180, 83, 9, 0.3) 100%)",
+                background: "linear-gradient(180deg, #1a1d2e 0%, #3d2f1f 40%, rgba(217, 119, 6, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1653,8 +1557,8 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: 2,
               cursor: "pointer",
-              background: "linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.25) 100%)",
-              border: "none",
+              background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.3) 100%)",
+              border: "1px solid rgba(34, 197, 94, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1662,7 +1566,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.3) 100%)",
+                background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1754,8 +1658,8 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: 2,
               cursor: "pointer",
-              background: "linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(109, 40, 217, 0.25) 100%)",
-              border: "none",
+              background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(124, 58, 237, 0.3) 100%)",
+              border: "1px solid rgba(124, 58, 237, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1763,7 +1667,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(109, 40, 217, 0.3) 100%)",
+                background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(124, 58, 237, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1841,6 +1745,208 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               ))}
             </Box>
           </Paper>
+
+          {/* GemiAd card */}
+          <Paper
+            onClick={() => handleOpenWall("GemiAd")}
+            elevation={0}
+            sx={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderRadius: 2,
+              p: 2,
+              cursor: "pointer",
+              background: "linear-gradient(180deg, rgba(168, 85, 247, 0.25) 0%, rgba(147, 51, 234, 0.2) 50%, rgba(126, 34, 206, 0.3) 100%)",
+              border: "none",
+              transition: "all 0.2s ease",
+              minWidth: { xs: "auto", sm: 160 },
+              maxWidth: { xs: "none", sm: 160 },
+              width: { xs: "100%", sm: "auto" },
+              flexShrink: 0,
+              overflow: "hidden",
+              "&:hover": {
+                background: "linear-gradient(180deg, rgba(168, 85, 247, 0.4) 0%, rgba(147, 51, 234, 0.35) 50%, rgba(126, 34, 206, 0.5) 100%)",
+                "& .wall-logo": {
+                  filter: "blur(8px)",
+                },
+                "& .wall-rating": {
+                  filter: "blur(8px)",
+                },
+                "& .hover-play-button": {
+                  opacity: 1,
+                },
+              },
+            }}
+          >
+            {/* Hover Play Button */}
+            <Box
+              className="hover-play-button"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                zIndex: 1000,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "opacity 0.2s ease",
+              }}
+            >
+              <Box
+                sx={{
+                  backgroundColor: colors.background.secondary,
+                  borderRadius: 10,
+                  padding: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <Box
+                  component="img"
+                  src="https://freecash.com/public/img/play-offer.svg"
+                  alt="play-button"
+                  sx={{ objectFit: "contain", objectPosition: "center" }}
+                />
+              </Box>
+            </Box>
+
+            {/* Logo */}
+            <Box
+              component="img"
+              src="/gemiad.svg"
+              alt="GemiAd"
+              className="wall-logo"
+              sx={{
+                width: 100,
+                height: 100,
+                borderRadius: 1,
+                objectFit: "contain",
+                mb: 2,
+                transition: "filter 0.2s ease",
+              }}
+            />
+
+            {/* Name */}
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+              GemiAd
+            </Typography>
+
+            {/* Star Rating */}
+            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Box key={star} sx={{ color: star <= 5 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                  ★
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+
+          {/* MyLead card */}
+          <Paper
+            onClick={() => handleOpenWall("MyLead")}
+            elevation={0}
+            sx={{
+              position: "relative",
+              display: "flex", 
+              flexDirection: "column", 
+              alignItems: "center", 
+              justifyContent: "space-between",
+              borderRadius: 2, 
+              p: 2, 
+              cursor: "pointer",
+              background: "linear-gradient(180deg, #1a1d2e 0%, #2d3748 40%, rgba(59, 130, 246, 0.3) 100%)",
+              border: "1px solid rgba(59, 130, 246, 0.2)",
+              transition: "all 0.2s ease",
+              minWidth: { xs: "auto", sm: 160 },
+              maxWidth: { xs: "none", sm: 160 },
+              width: { xs: "100%", sm: "auto" },
+              flexShrink: 0,
+              overflow: "hidden",
+              "&:hover": { 
+                background: "linear-gradient(180deg, #1a1d2e 0%, #2d3748 40%, rgba(59, 130, 246, 0.4) 100%)",
+                "& .wall-logo": {
+                  filter: "blur(8px)",
+                },
+                "& .wall-rating": {
+                  filter: "blur(8px)",
+                },
+                "& .hover-play-button": {
+                  opacity: 1,
+                },
+              },
+            }}
+          >
+            {/* Hover Play Button */}
+            <Box
+              className="hover-play-button"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                zIndex: 1000,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "opacity 0.2s ease",
+              }}
+            >
+              <Box
+                sx={{
+                  backgroundColor: colors.background.secondary,
+                  borderRadius: 10,
+                  padding: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <Box
+                  component="img"
+                  src="https://freecash.com/public/img/play-offer.svg"
+                  alt="play-button"
+                  sx={{ objectFit: "contain", objectPosition: "center" }}
+                />
+              </Box>
+            </Box>
+
+            {/* Logo */}
+            <Box
+              component="img"
+              src="/mylead_logo.svg"
+              alt="MyLead"
+              className="wall-logo"
+              sx={{ 
+                width: 100, 
+                height: 100, 
+                borderRadius: 1, 
+                objectFit: "contain",
+                mb: 2,
+                transition: "filter 0.2s ease",
+              }}
+            />
+
+            {/* Name */}
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+              MyLead
+            </Typography>
+
+            {/* Star Rating */}
+            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Box key={star} sx={{ color: star <= 3 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                  ★
+                </Box>
+              ))}
+            </Box>
+          </Paper>
         </Box>
       </Box>
 
@@ -1890,8 +1996,8 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2, 
               p: 2, 
               cursor: "pointer",
-              background: "linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(13, 148, 136, 0.25) 100%)",
-              border: "none",
+              background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d3d 40%, rgba(20, 184, 166, 0.3) 100%)",
+              border: "1px solid rgba(20, 184, 166, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1899,7 +2005,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": { 
-                background: "linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(13, 148, 136, 0.3) 100%)",
+                background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d3d 40%, rgba(20, 184, 166, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2094,8 +2200,3 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
     </Box>
   );
 }
-
-
-
-
-

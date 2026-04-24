@@ -76,6 +76,13 @@ export async function POST() {
     .eq("user_id", user.id)
     .gte("created_at", todayStart.toISOString());
 
+  // Check GemiAd earnings today
+  const { data: todayGemiad } = await supabase
+    .from("gemiad_transactions")
+    .select("reward, status")
+    .eq("user_id", user.id)
+    .gte("created_at", todayStart.toISOString());
+
   const todayCoinsFromCompletions = todayCompletions?.reduce(
     (sum, c) => sum + (c.coins_awarded || 0),
     0
@@ -91,7 +98,12 @@ export async function POST() {
     return sum + amount; // Notik amount can be negative for chargebacks
   }, 0) || 0;
 
-  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik;
+  const todayCoinsFromGemiad = todayGemiad?.reduce((sum, g) => {
+    const amount = Math.round(Number(g.reward || 0));
+    return sum + amount; // GemiAd reward can be negative for reversals
+  }, 0) || 0;
+
+  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad;
 
   if (todayCoinsEarned < 1000) {
     return NextResponse.json(
