@@ -770,7 +770,7 @@ export default function Home() {
                 { src: "/mobivortex-icon.png", alt: "Vortex" },
                 { src: "/taskwall.svg", alt: "Taskwall" },
                 { src: "/notik.webp", alt: "Notik" },
-                { src: "/gemiad.svg", alt: "Gemiad" },
+                { src: "https://cdn.gemiad.com/logos/Asset_2.png", alt: "Gemiad" },
               ].map((logo, idx) => (
                 <Box
                   key={`logo-1-${idx}`}
@@ -813,7 +813,7 @@ export default function Home() {
                 { src: "/mobivortex-icon.png", alt: "Vortex" },
                 { src: "/taskwall.svg", alt: "Taskwall" },
                 { src: "/notik.webp", alt: "Notik" },
-                { src: "/gemiad.svg", alt: "Gemiad" },
+                { src: "https://cdn.gemiad.com/logos/Asset_2.png", alt: "Gemiad" },
               ].map((logo, idx) => (
                 <Box
                   key={`logo-2-${idx}`}

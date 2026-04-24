@@ -1940,7 +1940,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             {/* Logo */}
             <Box
               component="img"
-              src="/gemiad.svg"
+              src="https://cdn.gemiad.com/logos/Asset_2.png"
               alt="GemiAd"
               className="wall-logo"
               sx={{
