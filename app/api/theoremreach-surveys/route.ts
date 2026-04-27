@@ -72,6 +72,19 @@ export async function GET(request: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[theoremreach-surveys] API error:', response.status, errorText);
+      
+      // Handle 401 - Publisher API not enabled
+      if (response.status === 401) {
+        console.log('[theoremreach-surveys] Publisher API access not enabled. Contact TheoremReach to enable.');
+        // Return empty surveys array instead of error to allow graceful degradation
+        return NextResponse.json({
+          success: true,
+          surveys: [],
+          count: 0,
+          message: 'Publisher API access not enabled. Contact publishers@theoremreach.com to enable.'
+        });
+      }
+      
       return NextResponse.json(
         { error: 'Failed to fetch surveys from TheoremReach', details: errorText },
         { status: response.status }
