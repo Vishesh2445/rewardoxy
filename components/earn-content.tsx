@@ -1517,10 +1517,14 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
     // For TheoremReach, fetch secure URL from server
     if (wall === "TheoremReach") {
       try {
+        console.log(`[TheoremReach] Fetching URL for user: ${userId}`);
         const response = await fetch(`/api/theoremreach-url?user_id=${userId}`);
         const data = await response.json();
         
+        console.log(`[TheoremReach] API Response:`, data);
+        
         if (data.success && data.url) {
+          console.log(`[TheoremReach] Setting URL:`, data.url);
           setTheoremReachUrl(data.url);
           setActiveWall(wall);
           setIframeLoading(true);
@@ -2497,19 +2501,28 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               
               {/* Show iframe when URL is ready or for other walls */}
               {(activeWall !== "TheoremReach" || theoremReachUrl) && (
-                <Box
-                  component="iframe"
-                  src={iframeSrc}
-                  onLoad={() => setIframeLoading(false)}
-                  title={`${activeWall}`}
-                  sx={{ 
-                    width: "100%", 
+                <>
+                  {activeWall === "TheoremReach" && theoremReachUrl && (() => {
+                    console.log(`[Iframe] TheoremReach URL: ${theoremReachUrl}`);
+                    return null;
+                  })()}
+                  <Box
+                    component="iframe"
+                    src={iframeSrc}
+                    onLoad={() => {
+                      console.log(`[Iframe] Loaded with src: ${iframeSrc}`);
+                      setIframeLoading(false);
+                    }}
+                    title={`${activeWall}`}
+                    sx={{ 
+                      width: "100%", 
                     height: "100%", 
                     border: "none", 
                     bgcolor: colors.background.default,
                     display: adBlockDetected ? "none" : "block" 
                   }}
-                />
+                  />
+                </>
               )}
             </>
           )}

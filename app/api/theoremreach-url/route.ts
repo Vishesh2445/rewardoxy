@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('user_id');
 
+    console.log(`[theoremreach-url] Received request for user_id: ${userId}`);
+
     if (!userId) {
+      console.error('[theoremreach-url] Missing user_id parameter');
       return NextResponse.json(
         { error: 'user_id is required' },
         { status: 400 }
@@ -29,6 +32,8 @@ export async function GET(request: NextRequest) {
     const apiKey = process.env.THEOREMREACH_API_KEY;
     const secretKey = process.env.THEOREMREACH_SECRET_KEY;
     const placementId = process.env.NEXT_PUBLIC_THEOREMREACH_PLACEMENT_ID;
+
+    console.log(`[theoremreach-url] Credentials check - apiKey: ${apiKey ? 'present' : 'MISSING'}, secretKey: ${secretKey ? 'present' : 'MISSING'}, placementId: ${placementId}`);
 
     if (!apiKey || !secretKey || !placementId) {
       console.error('Missing TheoremReach credentials');
@@ -57,6 +62,8 @@ export async function GET(request: NextRequest) {
     // Create the full URL without hash
     const urlBeforeHash = `${baseUrl}?${params.toString()}`;
 
+    console.log(`[theoremreach-url] URL before hash: ${urlBeforeHash}`);
+
     // Generate SHA1-HMAC hash
     const hmac = crypto.createHmac('sha1', secretKey);
     hmac.update(urlBeforeHash);
@@ -67,6 +74,8 @@ export async function GET(request: NextRequest) {
 
     // Add hash to URL
     const secureUrl = `${urlBeforeHash}&hash=${hash}`;
+
+    console.log(`[theoremreach-url] Generated secure URL: ${secureUrl}`);
 
     return NextResponse.json({
       success: true,
