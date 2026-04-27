@@ -18,7 +18,7 @@ export default async function HistoryPage() {
     redirect("/auth/login");
   }
 
-  const [userResult, completionsResult, cpxResult, notikResult, gemiadResult] = await Promise.all([
+  const [userResult, completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult] = await Promise.all([
     supabase
       .from("users")
       .select("coins_balance, display_name")
@@ -63,11 +63,21 @@ export default async function HistoryPage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .range(0, PAGE_SIZE - 1),
+
+    // Fetch TheoremReach transactions
+    supabase
+      .from("theoremreach_transactions")
+      .select("id, tx_id, reward, offer_name, created_at", {
+        count: "exact",
+      })
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .range(0, PAGE_SIZE - 1),
   ]);
 
   const coins = userResult.data?.coins_balance ?? 0;
 
-  // Merge completions, CPX transactions, Notik transactions, and GemiAd transactions
+  // Merge completions, CPX transactions, Notik transactions, GemiAd transactions, and TheoremReach transactions
   const allCompletions = [
     ...(completionsResult.data ?? []),
     ...(cpxResult.data ?? []).map((cpx) => ({
@@ -94,9 +104,17 @@ export default async function HistoryPage() {
       created_at: gemiad.created_at,
       source: 'gemiad',
     })),
+    ...(theoremreachResult.data ?? []).map((tr) => ({
+      id: tr.id,
+      program_id: tr.offer_name || 'TheoremReach Survey',
+      payout_decimal: tr.reward / 700, // Convert coins back to USD for display (assuming 700:1 ratio)
+      coins_awarded: tr.reward,
+      created_at: tr.created_at,
+      source: 'theoremreach',
+    })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0);
+  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0);
 
   return (
     <AppShell 

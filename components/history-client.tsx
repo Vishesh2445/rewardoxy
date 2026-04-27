@@ -91,8 +91,8 @@ export default function HistoryClient({
     const from = newPage * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
     
-    // Fetch completions, CPX transactions, Notik transactions, and GemiAd transactions
-    const [completionsResult, cpxResult, notikResult, gemiadResult] = await Promise.all([
+    // Fetch completions, CPX transactions, Notik transactions, GemiAd transactions, and TheoremReach transactions
+    const [completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult] = await Promise.all([
       supabase
         .from("completions")
         .select("id, program_id, payout_decimal, coins_awarded, created_at, source", { count: "exact" })
@@ -117,6 +117,13 @@ export default function HistoryClient({
       supabase
         .from("gemiad_transactions")
         .select("id, txid, reward, offer_name, event_name, status, created_at", { count: "exact" })
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .range(from, to),
+
+      supabase
+        .from("theoremreach_transactions")
+        .select("id, tx_id, reward, offer_name, created_at", { count: "exact" })
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .range(from, to),
@@ -149,9 +156,17 @@ export default function HistoryClient({
         created_at: gemiad.created_at,
         source: 'gemiad',
       })),
+      ...(theoremreachResult.data ?? []).map((tr) => ({
+        id: tr.id,
+        program_id: tr.offer_name || 'TheoremReach Survey',
+        payout_decimal: tr.reward / 700, // Convert coins back to USD for display (assuming 700:1 ratio)
+        coins_awarded: tr.reward,
+        created_at: tr.created_at,
+        source: 'theoremreach',
+      })),
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0);
+    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0);
 
     if (merged) setCompletions(merged.slice(0, PAGE_SIZE));
     if (totalCount !== null) setTotal(totalCount);

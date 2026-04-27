@@ -1192,20 +1192,13 @@ function CPXSurveysSection({ userId }: { userId: string }) {
     try {
       setLoading(true);
       
-      // Fetch both CPX and TheoremReach surveys in parallel
-      const [cpxResponse, theoremReachResponse] = await Promise.all([
-        fetch(`/api/cpx-surveys?user_id=${userId}`).catch(err => {
-          console.error("CPX fetch error:", err);
-          return null;
-        }),
-        fetch(`/api/theoremreach-surveys?user_id=${userId}`).catch(err => {
-          console.error("TheoremReach fetch error:", err);
-          return null;
-        })
-      ]);
+      // Fetch CPX surveys
+      const cpxResponse = await fetch(`/api/cpx-surveys?user_id=${userId}`).catch(err => {
+        console.error("CPX fetch error:", err);
+        return null;
+      });
 
       let cpxSurveys: CPXSurvey[] = [];
-      let theoremReachSurveys: CPXSurvey[] = [];
 
       // Process CPX surveys
       if (cpxResponse && cpxResponse.ok) {
@@ -1219,38 +1212,8 @@ function CPXSurveysSection({ userId }: { userId: string }) {
         }
       }
 
-      // Process TheoremReach surveys
-      if (theoremReachResponse && theoremReachResponse.ok) {
-        const trData = await theoremReachResponse.json();
-        if (trData.success && trData.surveys && Array.isArray(trData.surveys)) {
-          theoremReachSurveys = trData.surveys.map((s: any) => ({
-            id: s.id,
-            loi: s.loi,
-            payout_usd: s.payout_usd,
-            conversion_rate: s.conversion_rate,
-            link: s.entry_link,
-            score: s.rank || 0,
-            type: 'theoremreach',
-            rating_count: s.rating_count || 0,
-            rating_avg: s.rating_avg || 0,
-          }));
-          console.log(`TheoremReach surveys loaded: ${theoremReachSurveys.length}`);
-        }
-      }
-
-      // Mix surveys in a round-robin fashion for better distribution
-      const mixedSurveys: CPXSurvey[] = [];
-      const maxLength = Math.max(cpxSurveys.length, theoremReachSurveys.length);
-      
-      for (let i = 0; i < maxLength; i++) {
-        if (i < cpxSurveys.length) mixedSurveys.push(cpxSurveys[i]);
-        if (i < theoremReachSurveys.length) mixedSurveys.push(theoremReachSurveys[i]);
-      }
-
-      console.log(`Total mixed surveys: ${mixedSurveys.length} (CPX: ${cpxSurveys.length}, TheoremReach: ${theoremReachSurveys.length})`);
-      
       // Limit to 20 surveys for display
-      setSurveys(mixedSurveys.slice(0, 20));
+      setSurveys(cpxSurveys.slice(0, 20));
       
     } catch (error) {
       console.error("Error fetching surveys:", error);
@@ -1443,7 +1406,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                     mb: { xs: 0.5, sm: 1 },
                   }}
                 >
-                  {survey.type === 'theoremreach' ? 'TheoremReach' : 'CPX Research'}
+                  CPX Research
                 </Typography>
 
                 <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600, color: "#01D676" }}>
@@ -1464,7 +1427,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
   const [iframeLoading, setIframeLoading] = useState(true);
   const [adBlockDetected, setAdBlockDetected] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<DeviceOS[]>(["android", "windows"]);
-  const [theoremReachUrl, setTheoremReachUrl] = useState<string>("");
+
   
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
@@ -1514,29 +1477,12 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       return;
     }
 
-    // For TheoremReach, fetch secure URL from server
+    // TheoremReach opens in new window
     if (wall === "TheoremReach") {
-      try {
-        console.log(`[TheoremReach] Fetching URL for user: ${userId}`);
-        const response = await fetch(`/api/theoremreach-url?user_id=${userId}`);
-        const data = await response.json();
-        
-        console.log(`[TheoremReach] API Response:`, data);
-        
-        if (data.success && data.url) {
-          console.log(`[TheoremReach] Setting URL:`, data.url);
-          setTheoremReachUrl(data.url);
-          setActiveWall(wall);
-          setIframeLoading(true);
-          setOpen(true);
-        } else {
-          console.error('Failed to get TheoremReach URL:', data.error);
-          alert('Failed to load TheoremReach. Please try again.');
-        }
-      } catch (error) {
-        console.error('Error fetching TheoremReach URL:', error);
-        alert('Failed to load TheoremReach. Please try again.');
-      }
+      const apiKey = process.env.NEXT_PUBLIC_THEOREMREACH_API_KEY || "";
+      const placementId = process.env.NEXT_PUBLIC_THEOREMREACH_PLACEMENT_ID || "";
+      const theoremReachUrl = `https://theoremreach.com/respondent_entry/direct?api_key=${apiKey}&user_id=${userId}&transaction_id=${Date.now()}_${userId}${placementId ? `&placement_id=${placementId}` : ''}`;
+      window.open(theoremReachUrl, '_blank', 'noopener,noreferrer');
       return;
     }
 
@@ -1579,10 +1525,6 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       const placementId = process.env.NEXT_PUBLIC_GEMIAD_PLACEMENT_ID || "your_placement_id_here";
       // Using path parameters format (recommended by GemiAd)
       return `https://gemiwall.com/${placementId}/${userId}`;
-    }
-    if (activeWall === "TheoremReach") {
-      // Return the secure URL fetched from server
-      return theoremReachUrl;
     }
     return "";
   };
@@ -2293,8 +2235,8 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: 2,
               cursor: "pointer",
-              background: "linear-gradient(180deg, #1a1d2e 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.3) 100%)",
-              border: "1px solid rgba(16, 185, 129, 0.2)",
+              background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(139, 92, 246, 0.3) 100%)",
+              border: "1px solid rgba(139, 92, 246, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2302,7 +2244,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #1a1d2e 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.4) 100%)",
+                background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(139, 92, 246, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2353,7 +2295,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             {/* Logo */}
             <Box
               component="img"
-              src="/theoremreach.svg"
+              src="https://theoremreach.com/images/logo.png"
               alt="TheoremReach"
               className="wall-logo"
               sx={{
@@ -2380,6 +2322,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               ))}
             </Box>
           </Paper>
+
         </Box>
       </Box>
 
@@ -2480,51 +2423,19 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
           )}
 
           {activeWall && (
-            <>
-              {/* For TheoremReach, only show iframe when URL is ready */}
-              {activeWall === "TheoremReach" && !theoremReachUrl && (
-                <Box sx={{ 
-                  width: "100%", 
-                  height: "100%", 
-                  display: "flex", 
-                  alignItems: "center", 
-                  justifyContent: "center",
-                  flexDirection: "column",
-                  gap: 2
-                }}>
-                  <CircularProgress sx={{ color: "#01D676" }} />
-                  <Typography sx={{ color: colors.text.secondary }}>
-                    Loading TheoremReach surveywall...
-                  </Typography>
-                </Box>
-              )}
-              
-              {/* Show iframe when URL is ready or for other walls */}
-              {(activeWall !== "TheoremReach" || theoremReachUrl) && (
-                <>
-                  {activeWall === "TheoremReach" && theoremReachUrl && (() => {
-                    console.log(`[Iframe] TheoremReach URL: ${theoremReachUrl}`);
-                    return null;
-                  })()}
-                  <Box
-                    component="iframe"
-                    src={iframeSrc}
-                    onLoad={() => {
-                      console.log(`[Iframe] Loaded with src: ${iframeSrc}`);
-                      setIframeLoading(false);
-                    }}
-                    title={`${activeWall}`}
-                    sx={{ 
-                      width: "100%", 
-                    height: "100%", 
-                    border: "none", 
-                    bgcolor: colors.background.default,
-                    display: adBlockDetected ? "none" : "block" 
-                  }}
-                  />
-                </>
-              )}
-            </>
+            <Box
+              component="iframe"
+              src={iframeSrc}
+              onLoad={() => setIframeLoading(false)}
+              title={`${activeWall}`}
+              sx={{ 
+                width: "100%", 
+                height: "100%", 
+                border: "none", 
+                bgcolor: colors.background.default,
+                display: adBlockDetected ? "none" : "block" 
+              }}
+            />
           )}
         </DialogContent>
       </Dialog>
