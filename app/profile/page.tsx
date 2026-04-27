@@ -65,7 +65,14 @@ export default async function ProfilePage() {
     .eq("user_id", user.id)
     .eq("status", "completed");
 
-  const totalCompletions = (completionCount ?? 0) + (cpxCompletionCount ?? 0) + (notikCompletionCount ?? 0) + (gemiadCompletionCount ?? 0);
+  // Get TheoremReach completion count
+  const { count: theoremreachCompletionCount } = await supabase
+    .from("theoremreach_transactions")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("is_reversal", false); // Only count completions, not reversals
+
+  const totalCompletions = (completionCount ?? 0) + (cpxCompletionCount ?? 0) + (notikCompletionCount ?? 0) + (gemiadCompletionCount ?? 0) + (theoremreachCompletionCount ?? 0);
 
   const { count: withdrawalCount } = await supabase
     .from("withdrawals")
@@ -103,6 +110,13 @@ export default async function ProfilePage() {
     .eq("user_id", user.id)
     .gte("created_at", startOfMonth);
 
+  // Get this month's TheoremReach earnings
+  const { data: monthlyTheoremreach } = await supabase
+    .from("theoremreach_transactions")
+    .select("reward, is_reversal")
+    .eq("user_id", user.id)
+    .gte("created_at", startOfMonth);
+
   const monthEarnedFromCompletions = monthlyCompletions?.reduce((sum, c) => sum + (c.coins_awarded || 0), 0) || 0;
   const monthEarnedFromCpx = monthlyCpx?.reduce((sum, c) => {
     const amount = Math.round(Number(c.amount_local || 0));
@@ -116,7 +130,11 @@ export default async function ProfilePage() {
     const amount = Math.round(Number(g.reward || 0));
     return sum + amount; // GemiAd reward can be negative for reversals
   }, 0) || 0;
-  const monthEarned = monthEarnedFromCompletions + monthEarnedFromCpx + monthEarnedFromNotik + monthEarnedFromGemiad;
+  const monthEarnedFromTheoremreach = monthlyTheoremreach?.reduce((sum, t) => {
+    const amount = Math.round(Number(t.reward || 0));
+    return sum + (t.is_reversal ? -Math.abs(amount) : amount); // Reversals are negative
+  }, 0) || 0;
+  const monthEarned = monthEarnedFromCompletions + monthEarnedFromCpx + monthEarnedFromNotik + monthEarnedFromGemiad + monthEarnedFromTheoremreach;
 
   const coins = userData?.coins_balance ?? 0;
 

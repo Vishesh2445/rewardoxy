@@ -18,7 +18,7 @@ type EarnContentProps = {
   userEmail: string;
 };
 
-type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd";
+type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd" | "TheoremReach";
 type DeviceOS = "android" | "ios" | "windows";
 
 interface NotikOffer {
@@ -1191,25 +1191,69 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   async function fetchSurveys() {
     try {
       setLoading(true);
-      const response = await fetch(`/api/cpx-surveys?user_id=${userId}`);
       
-      if (!response.ok) {
-        console.error("Failed to fetch CPX surveys:", response.status);
-        setSurveys([]);
-        setLoading(false);
-        return;
+      // Fetch both CPX and TheoremReach surveys in parallel
+      const [cpxResponse, theoremReachResponse] = await Promise.all([
+        fetch(`/api/cpx-surveys?user_id=${userId}`).catch(err => {
+          console.error("CPX fetch error:", err);
+          return null;
+        }),
+        fetch(`/api/theoremreach-surveys?user_id=${userId}`).catch(err => {
+          console.error("TheoremReach fetch error:", err);
+          return null;
+        })
+      ]);
+
+      let cpxSurveys: CPXSurvey[] = [];
+      let theoremReachSurveys: CPXSurvey[] = [];
+
+      // Process CPX surveys
+      if (cpxResponse && cpxResponse.ok) {
+        const cpxData = await cpxResponse.json();
+        if (cpxData.success && cpxData.surveys && Array.isArray(cpxData.surveys)) {
+          cpxSurveys = cpxData.surveys.map((s: any) => ({
+            ...s,
+            type: 'cpx'
+          }));
+          console.log(`CPX surveys loaded: ${cpxSurveys.length}`);
+        }
       }
 
-      const data = await response.json();
-      
-      if (data.success && data.surveys && Array.isArray(data.surveys)) {
-        setSurveys(data.surveys.slice(0, 12));
-      } else {
-        console.warn("Invalid CPX surveys response:", data);
-        setSurveys([]);
+      // Process TheoremReach surveys
+      if (theoremReachResponse && theoremReachResponse.ok) {
+        const trData = await theoremReachResponse.json();
+        if (trData.success && trData.surveys && Array.isArray(trData.surveys)) {
+          theoremReachSurveys = trData.surveys.map((s: any) => ({
+            id: s.id,
+            loi: s.loi,
+            payout_usd: s.payout_usd,
+            conversion_rate: s.conversion_rate,
+            link: s.entry_link,
+            score: s.rank || 0,
+            type: 'theoremreach',
+            rating_count: s.rating_count || 0,
+            rating_avg: s.rating_avg || 0,
+          }));
+          console.log(`TheoremReach surveys loaded: ${theoremReachSurveys.length}`);
+        }
       }
+
+      // Mix surveys in a round-robin fashion for better distribution
+      const mixedSurveys: CPXSurvey[] = [];
+      const maxLength = Math.max(cpxSurveys.length, theoremReachSurveys.length);
+      
+      for (let i = 0; i < maxLength; i++) {
+        if (i < cpxSurveys.length) mixedSurveys.push(cpxSurveys[i]);
+        if (i < theoremReachSurveys.length) mixedSurveys.push(theoremReachSurveys[i]);
+      }
+
+      console.log(`Total mixed surveys: ${mixedSurveys.length} (CPX: ${cpxSurveys.length}, TheoremReach: ${theoremReachSurveys.length})`);
+      
+      // Limit to 20 surveys for display
+      setSurveys(mixedSurveys.slice(0, 20));
+      
     } catch (error) {
-      console.error("Error fetching CPX surveys:", error);
+      console.error("Error fetching surveys:", error);
       setSurveys([]);
     } finally {
       setLoading(false);
@@ -1399,7 +1443,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                     mb: { xs: 0.5, sm: 1 },
                   }}
                 >
-                CPX Survey
+                  {survey.type === 'theoremreach' ? 'TheoremReach' : 'CPX Research'}
                 </Typography>
 
                 <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600, color: "#01D676" }}>
@@ -1420,6 +1464,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
   const [iframeLoading, setIframeLoading] = useState(true);
   const [adBlockDetected, setAdBlockDetected] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<DeviceOS[]>(["android", "windows"]);
+  const [theoremReachUrl, setTheoremReachUrl] = useState<string>("");
   
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
@@ -1458,7 +1503,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
 
   const myLeadBaseUrl = process.env.NEXT_PUBLIC_MYLEAD_WALL_URL ?? "";
 
-  const handleOpenWall = (wall: WallType) => {
+  const handleOpenWall = async (wall: WallType) => {
     // Notik doesn't support iframe embedding, open in new window
     if (wall === "Notik") {
       const apiKey = process.env.NEXT_PUBLIC_NOTIK_API_KEY || "PYMTzu6owFJ8roFouth5bEYxoJRmg7q9";
@@ -1466,6 +1511,28 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       const appId = process.env.NEXT_PUBLIC_NOTIK_APP_ID || "dOTR7kmvMw";
       const notikUrl = `https://notik.me/coins?api_key=${apiKey}&pub_id=${pubId}&app_id=${appId}&user_id=${userId}`;
       window.open(notikUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    // For TheoremReach, fetch secure URL from server
+    if (wall === "TheoremReach") {
+      try {
+        const response = await fetch(`/api/theoremreach-url?user_id=${userId}`);
+        const data = await response.json();
+        
+        if (data.success && data.url) {
+          setTheoremReachUrl(data.url);
+          setActiveWall(wall);
+          setIframeLoading(true);
+          setOpen(true);
+        } else {
+          console.error('Failed to get TheoremReach URL:', data.error);
+          alert('Failed to load TheoremReach. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error fetching TheoremReach URL:', error);
+        alert('Failed to load TheoremReach. Please try again.');
+      }
       return;
     }
 
@@ -1508,6 +1575,10 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       const placementId = process.env.NEXT_PUBLIC_GEMIAD_PLACEMENT_ID || "your_placement_id_here";
       // Using path parameters format (recommended by GemiAd)
       return `https://gemiwall.com/${placementId}/${userId}`;
+    }
+    if (activeWall === "TheoremReach") {
+      // Return the secure URL fetched from server
+      return theoremReachUrl;
     }
     return "";
   };
@@ -2110,12 +2181,12 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             elevation={0}
             sx={{
               position: "relative",
-              display: "flex", 
-              flexDirection: "column", 
-              alignItems: "center", 
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
               justifyContent: "space-between",
-              borderRadius: 2, 
-              p: 2, 
+              borderRadius: 2,
+              p: 2,
               cursor: "pointer",
               background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d3d 40%, rgba(20, 184, 166, 0.3) 100%)",
               border: "1px solid rgba(20, 184, 166, 0.2)",
@@ -2125,7 +2196,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               width: { xs: "100%", sm: "auto" },
               flexShrink: 0,
               overflow: "hidden",
-              "&:hover": { 
+              "&:hover": {
                 background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d3d 40%, rgba(20, 184, 166, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
@@ -2180,10 +2251,10 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               src="/cpx.png"
               alt="CPX Research"
               className="wall-logo"
-              sx={{ 
-                width: 100, 
-                height: 100, 
-                borderRadius: 1, 
+              sx={{
+                width: 100,
+                height: 100,
+                borderRadius: 1,
                 objectFit: "contain",
                 mb: 2,
                 transition: "filter 0.2s ease",
@@ -2193,6 +2264,107 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             {/* Name */}
             <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
               CPX Research
+            </Typography>
+
+            {/* Star Rating */}
+            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                  ★
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+
+          {/* TheoremReach card */}
+          <Paper
+            onClick={() => handleOpenWall("TheoremReach")}
+            elevation={0}
+            sx={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderRadius: 2,
+              p: 2,
+              cursor: "pointer",
+              background: "linear-gradient(180deg, #1a1d2e 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.3) 100%)",
+              border: "1px solid rgba(16, 185, 129, 0.2)",
+              transition: "all 0.2s ease",
+              minWidth: { xs: "auto", sm: 160 },
+              maxWidth: { xs: "none", sm: 160 },
+              width: { xs: "100%", sm: "auto" },
+              flexShrink: 0,
+              overflow: "hidden",
+              "&:hover": {
+                background: "linear-gradient(180deg, #1a1d2e 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.4) 100%)",
+                "& .wall-logo": {
+                  filter: "blur(8px)",
+                },
+                "& .wall-rating": {
+                  filter: "blur(8px)",
+                },
+                "& .hover-play-button": {
+                  opacity: 1,
+                },
+              },
+            }}
+          >
+            {/* Hover Play Button */}
+            <Box
+              className="hover-play-button"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                zIndex: 1000,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "opacity 0.2s ease",
+              }}
+            >
+              <Box
+                sx={{
+                  backgroundColor: colors.background.secondary,
+                  borderRadius: 10,
+                  padding: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <Box
+                  component="img"
+                  src="https://freecash.com/public/img/play-offer.svg"
+                  alt="play-button"
+                  sx={{ objectFit: "contain", objectPosition: "center" }}
+                />
+              </Box>
+            </Box>
+
+            {/* Logo */}
+            <Box
+              component="img"
+              src="/theoremreach.svg"
+              alt="TheoremReach"
+              className="wall-logo"
+              sx={{
+                width: 100,
+                height: 100,
+                borderRadius: 1,
+                objectFit: "contain",
+                mb: 2,
+                transition: "filter 0.2s ease",
+              }}
+            />
+
+            {/* Name */}
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+              TheoremReach
             </Typography>
 
             {/* Star Rating */}
