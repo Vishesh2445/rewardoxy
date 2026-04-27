@@ -2476,17 +2476,42 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
           )}
 
           {activeWall && (
-            <Box
-              component="iframe"
-              src={iframeSrc}
-              onLoad={() => setIframeLoading(false)}
-              title={`${activeWall}`}
-              sx={{ 
-                width: "100%", height: "100%", border: "none", 
-                bgcolor: colors.background.default,
-                display: adBlockDetected ? "none" : "block" 
-              }}
-            />
+            <>
+              {/* For TheoremReach, only show iframe when URL is ready */}
+              {activeWall === "TheoremReach" && !theoremReachUrl && (
+                <Box sx={{ 
+                  width: "100%", 
+                  height: "100%", 
+                  display: "flex", 
+                  alignItems: "center", 
+                  justifyContent: "center",
+                  flexDirection: "column",
+                  gap: 2
+                }}>
+                  <CircularProgress sx={{ color: "#01D676" }} />
+                  <Typography sx={{ color: colors.text.secondary }}>
+                    Loading TheoremReach surveywall...
+                  </Typography>
+                </Box>
+              )}
+              
+              {/* Show iframe when URL is ready or for other walls */}
+              {(activeWall !== "TheoremReach" || theoremReachUrl) && (
+                <Box
+                  component="iframe"
+                  src={iframeSrc}
+                  onLoad={() => setIframeLoading(false)}
+                  title={`${activeWall}`}
+                  sx={{ 
+                    width: "100%", 
+                    height: "100%", 
+                    border: "none", 
+                    bgcolor: colors.background.default,
+                    display: adBlockDetected ? "none" : "block" 
+                  }}
+                />
+              )}
+            </>
           )}
         </DialogContent>
       </Dialog>
