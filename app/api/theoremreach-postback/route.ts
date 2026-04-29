@@ -253,10 +253,10 @@ export async function GET(request: NextRequest) {
           is_screenout: isScreenout,
           is_profiler: isProfiler,
           is_offer: isOffer,
-          offer_name: offer_name,
+          offer_name: offer_name && !offer_name.includes('{') ? offer_name : null, // Don't save placeholder values
           offer_id: offer_id,
           ip_address: ip,
-          placement_id: placement_id,
+          placement_id: placement_id && !placement_id.includes('{') ? placement_id : null, // Don't save placeholder values
         });
 
       if (transactionError) {
@@ -311,10 +311,10 @@ export async function GET(request: NextRequest) {
           is_screenout: isScreenout,
           is_profiler: isProfiler,
           is_offer: isOffer,
-          offer_name: offer_name,
+          offer_name: offer_name && !offer_name.includes('{') ? offer_name : null, // Don't save placeholder values
           offer_id: offer_id,
           ip_address: ip,
-          placement_id: placement_id,
+          placement_id: placement_id && !placement_id.includes('{') ? placement_id : null, // Don't save placeholder values
         });
 
       if (transactionError) {
