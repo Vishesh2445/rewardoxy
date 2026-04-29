@@ -80,7 +80,7 @@ export default function AdminShell({ children }: AdminShellProps) {
     <Box sx={{ p: 1.5 }}>
       <ListItemButton
         LinkComponent={Link}
-        href="/dashboard"
+        href="/profile"
         sx={{
           "&:hover": {
             bgcolor: "rgba(1, 214, 118, 0.1) !important",

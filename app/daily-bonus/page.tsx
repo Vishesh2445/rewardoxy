@@ -98,17 +98,6 @@ export default async function DailyBonusPage() {
 
   const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad + todayCoinsFromTheoremreach;
 
-  // Debug logging
-  console.log('[Daily Bonus] Today earnings breakdown:', {
-    completions: todayCoinsFromCompletions,
-    cpx: todayCoinsFromCpx,
-    notik: todayCoinsFromNotik,
-    gemiad: todayCoinsFromGemiad,
-    theoremreach: todayCoinsFromTheoremreach,
-    total: todayCoinsEarned,
-    theoremreachCount: todayTheoremreach?.length ?? 0,
-  });
-
   return (
     <AppShell 
       coins={coins}
