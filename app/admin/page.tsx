@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminDashboardPage() {
   const { adminSupabase } = await requireAdmin();
 
-  const [usersResult, coinsResult, pendingResult, completionsResult, bannedResult] =
+  const [usersResult, coinsResult, pendingResult, completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, bannedResult] =
     await Promise.all([
       adminSupabase.from("users").select("id", { count: "exact", head: true }),
       adminSupabase.from("users").select("coins_balance"),
@@ -18,6 +18,23 @@ export default async function AdminDashboardPage() {
       adminSupabase
         .from("completions")
         .select("id", { count: "exact", head: true }),
+      adminSupabase
+        .from("cpx_transactions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", 1), // Only count completions, not reversals
+      adminSupabase
+        .from("notik_transactions")
+        .select("id", { count: "exact", head: true })
+        .gt("amount", 0), // Only count positive amounts
+      adminSupabase
+        .from("gemiad_transactions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "completed"),
+      adminSupabase
+        .from("theoremreach_transactions")
+        .select("id", { count: "exact", head: true })
+        .eq("is_reversal", false)
+        .gt("reward", 0),
       adminSupabase
         .from("users")
         .select("id", { count: "exact", head: true })
@@ -30,7 +47,7 @@ export default async function AdminDashboardPage() {
     0
   );
   const pendingWithdrawals = pendingResult.count ?? 0;
-  const totalCompletions = completionsResult.count ?? 0;
+  const totalCompletions = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0);
   const bannedUsers = bannedResult.count ?? 0;
 
   return (
