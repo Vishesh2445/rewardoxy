@@ -5,20 +5,30 @@
  * 
  * IMPORTANT: Configure this URL in TheoremReach Dashboard → App Settings → Postback URL
  * 
- * Correct Postback URL Format:
- * https://rewardoxy.app/api/theoremreach-postback?transaction_id={YOUR_UNIQUE_TRANSACTION_ID}&currency={CURRENCY}&reward={REWARD}&partner_id={YOUR_PUBLISHER_IDS}&hash={HASH_STRING}
- * 
- * Parameter Mapping (TheoremReach macros → query params):
- * - transaction_id: Unique identifier for every transaction (format: userId_timestamp)
- * - currency: USD amount earned
- * - reward: Converted reward amount in your app's currency
- * - partner_id: Your publisher ID (correlates to Placements)
- * - debug: Testing flag (when true, don't credit user)
- * - hash: SHA-1 HMAC security hash for verification
+ * Postback Parameters (from TheoremReach documentation):
+ * - reward: The amount of in-app currency that should be rewarded to the user
+ * - currency: Amount in US currency being paid for this transaction (floating point, e.g. 3.31)
+ * - user_id: Your unique user ID
+ * - tx_id: The unique TheoremReach transaction ID for the callback
+ * - hash: The SHA-1 hash of the URL for validation
+ * - reversal: (optional) true if the callback is for a reversal (negative transaction)
+ * - debug: (optional) if debug=true then completely ignore this callback (testing only)
+ * - transaction_id: (optional) Your own unique transaction id (web iframe/direct entry only)
+ * - screenout: 1 = true, 2 = false. If true, user was screened out and receiving partial reward
+ * - profiler: 1 = true, 2 = false. If true, user completed the profiler
+ * - offer: true if the reward is for an offer rather than a survey
+ * - offer_name: the name of the offer
+ * - ip: the ip address of the user
+ * - offer_id: the survey or offer ID
+ * - placement_id: the placement ID
  * 
  * Security:
  * - Hash verification: Base64(SHA1-HMAC(full_url, secret_key))
- * - Duplicate prevention: Check transaction_id before processing
+ * - Duplicate prevention: Check tx_id before processing
+ * 
+ * Note: Test postbacks from TheoremReach dashboard (with placeholder values like {currency})
+ * are processed like production to allow integration testing. Only callbacks with debug=true
+ * are ignored per TheoremReach documentation.
  * 
  * CRITICAL: Always return HTTP 200 with JSON response
  */
@@ -69,12 +79,13 @@ export async function GET(request: NextRequest) {
 
     log(`Received: user_id=${user_id}, tx_id=${tx_id}, reward=${reward}, currency=${currency}, reversal=${reversal}, debug=${debug}, status=${status}`);
 
-    // Don't credit if debug mode (check for "1", "true", or placeholder values)
-    if (debug === "1" || debug === "true" || debug === "{debug}" || currency === "{currency}") {
-      log("Debug/Test mode - not crediting user");
+    // Skip ONLY if debug=true (actual test mode per TheoremReach docs)
+    // Note: Placeholder values like {debug} are NOT the same as debug=true
+    if (debug === "true") {
+      log("Debug mode (debug=true) - ignoring callback per TheoremReach documentation");
       return NextResponse.json({ 
         success: true, 
-        message: "Debug callback received" 
+        message: "Debug callback ignored" 
       });
     }
 
@@ -86,6 +97,8 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    log("Processing transaction (test postback or production)");
 
     // Verify hash for security (skip if no secret key configured)
     const secretKey = process.env.THEOREMREACH_SECRET_KEY;
@@ -135,11 +148,18 @@ export async function GET(request: NextRequest) {
     }
 
     // Convert reward to number
-    const rewardAmount = parseFloat(reward);
-    const currencyAmount = parseFloat(currency || "0");
+    // Handle placeholder values from test callbacks by treating them as 0
+    let rewardAmount = parseFloat(reward || "0");
+    let currencyAmount = parseFloat(currency || "0");
+    
+    // If parsing fails (e.g., {currency} placeholder), default to 0
+    if (isNaN(currencyAmount)) {
+      log(`Currency value "${currency}" is not a number, defaulting to 0`);
+      currencyAmount = 0;
+    }
     
     if (isNaN(rewardAmount)) {
-      log("Invalid reward amount");
+      log(`Invalid reward amount: "${reward}"`);
       return NextResponse.json(
         { success: false, error: "Invalid reward amount" },
         { status: 400 }
