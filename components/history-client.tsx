@@ -123,7 +123,7 @@ export default function HistoryClient({
 
       supabase
         .from("theoremreach_transactions")
-        .select("id, tx_id, reward, offer_name, created_at", { count: "exact" })
+        .select("id, tx_id, reward, offer_name, is_reversal, is_screenout, is_profiler, is_offer, created_at", { count: "exact" })
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .range(from, to),
@@ -156,14 +156,24 @@ export default function HistoryClient({
         created_at: gemiad.created_at,
         source: 'gemiad',
       })),
-      ...(theoremreachResult.data ?? []).map((tr) => ({
-        id: tr.id,
-        program_id: tr.offer_name || 'TheoremReach Survey',
-        payout_decimal: tr.reward / 700, // Convert coins back to USD for display (assuming 700:1 ratio)
-        coins_awarded: tr.reward,
-        created_at: tr.created_at,
-        source: 'theoremreach',
-      })),
+      ...(theoremreachResult.data ?? []).map((tr) => {
+        let programName = 'TheoremReach';
+        if (tr.is_screenout) programName = 'TheoremReach Screen-out';
+        else if (tr.is_profiler) programName = 'TheoremReach Profiler';
+        else if (tr.is_offer) programName = 'TheoremReach Offer';
+        else programName = 'TheoremReach Survey';
+        
+        if (tr.offer_name) programName = `${programName} - ${tr.offer_name}`;
+        
+        return {
+          id: tr.id,
+          program_id: programName,
+          payout_decimal: Math.abs(tr.reward) / 700, // Convert coins to USD for display
+          coins_awarded: tr.reward,
+          created_at: tr.created_at,
+          source: 'theoremreach',
+        };
+      }),
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0);

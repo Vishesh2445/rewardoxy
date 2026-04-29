@@ -64,6 +64,13 @@ export default async function DailyBonusPage() {
     .eq("user_id", user.id)
     .gte("created_at", todayStart.toISOString());
 
+  // Get today's TheoremReach earnings
+  const { data: todayTheoremreach } = await supabase
+    .from("theoremreach_transactions")
+    .select("reward")
+    .eq("user_id", user.id)
+    .gte("created_at", todayStart.toISOString());
+
   const todayCoinsFromCompletions = todayCompletions?.reduce(
     (sum, c) => sum + (c.coins_awarded || 0),
     0
@@ -84,7 +91,12 @@ export default async function DailyBonusPage() {
     return sum + amount; // GemiAd reward can be negative for reversals
   }, 0) || 0;
 
-  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad;
+  const todayCoinsFromTheoremreach = todayTheoremreach?.reduce((sum, tr) => {
+    const amount = Math.round(Number(tr.reward || 0));
+    return sum + amount; // TheoremReach reward can be negative for reversals
+  }, 0) || 0;
+
+  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad + todayCoinsFromTheoremreach;
 
   return (
     <AppShell 

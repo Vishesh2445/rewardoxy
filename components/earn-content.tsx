@@ -1477,15 +1477,6 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       return;
     }
 
-    // TheoremReach opens in new window
-    if (wall === "TheoremReach") {
-      const apiKey = process.env.NEXT_PUBLIC_THEOREMREACH_API_KEY || "";
-      const placementId = process.env.NEXT_PUBLIC_THEOREMREACH_PLACEMENT_ID || "";
-      const theoremReachUrl = `https://theoremreach.com/respondent_entry/direct?api_key=${apiKey}&user_id=${userId}&transaction_id=${Date.now()}_${userId}${placementId ? `&placement_id=${placementId}` : ''}`;
-      window.open(theoremReachUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
     setActiveWall(wall);
     setIframeLoading(true);
     setOpen(true);
@@ -1525,6 +1516,10 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       const placementId = process.env.NEXT_PUBLIC_GEMIAD_PLACEMENT_ID || "your_placement_id_here";
       // Using path parameters format (recommended by GemiAd)
       return `https://gemiwall.com/${placementId}/${userId}`;
+    }
+    if (activeWall === "TheoremReach") {
+      const apiKey = process.env.NEXT_PUBLIC_THEOREMREACH_API_KEY || "";
+      return `https://theoremreach.com/respondent_entry/direct?api_key=${apiKey}&user_id=${userId}`;
     }
     return "";
   };
@@ -2235,8 +2230,8 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: 2,
               cursor: "pointer",
-              background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(139, 92, 246, 0.3) 100%)",
-              border: "1px solid rgba(139, 92, 246, 0.2)",
+              background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(147, 51, 234, 0.3) 100%)",
+              border: "1px solid rgba(147, 51, 234, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2244,7 +2239,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(139, 92, 246, 0.4) 100%)",
+                background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(147, 51, 234, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2295,7 +2290,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             {/* Logo */}
             <Box
               component="img"
-              src="https://theoremreach.com/images/logo.png"
+              src="/theoremreach.svg"
               alt="TheoremReach"
               className="wall-logo"
               sx={{
@@ -2316,7 +2311,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             {/* Star Rating */}
             <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                <Box key={star} sx={{ color: star <= 5 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
                   ★
                 </Box>
               ))}

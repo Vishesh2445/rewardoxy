@@ -24,7 +24,8 @@
         "list_projects",
         "apply_migration",
         "list_tables",
-        "get_advisors"
+        "get_advisors",
+        "get_project"
       ]
     },
     "stitch-mcp": {
