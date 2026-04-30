@@ -178,6 +178,33 @@ async function handleCpxPostback(request: NextRequest) {
           const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
           log(`SUCCESS: Credited ${amount} to user ${userid}. New balance: ${newBalance}, New total: ${newTotal}`);
         }
+
+        // CPX Research doesn't have event-based milestones like Notik
+        // But we can update offer status if the offer exists in user_offer_interactions
+        if (offerid) {
+          const { data: interaction } = await supabase
+            .from('user_offer_interactions')
+            .select('id')
+            .eq('user_id', userid)
+            .eq('offer_id', offerid)
+            .eq('provider', 'cpx research')
+            .single();
+
+          if (interaction) {
+            log(`Updating CPX offer status to completed: offer_id=${offerid}`);
+            
+            const { error: updateError } = await supabase
+              .from('user_offer_interactions')
+              .update({ status: 'completed' })
+              .eq('id', interaction.id);
+
+            if (updateError) {
+              log(`CPX offer status update failed: ${updateError.message}`);
+            } else {
+              log(`CPX offer status updated to completed`);
+            }
+          }
+        }
       } else {
         log(`Amount is 0, skipping credit (type=${type})`);
       }

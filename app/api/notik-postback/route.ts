@@ -221,6 +221,74 @@ async function handleNotikPostback(request: NextRequest) {
         log(`SUCCESS: Credited ${amountNum} to user ${user_id}. New balance: ${newBalance}, New total: ${newTotal}`);
       }
 
+      // Record milestone progress if event_id is present
+      if (event_id && event_id.trim() !== '') {
+        log(`Recording milestone progress: event_id=${event_id}, event_name=${event_name}`);
+        
+        const { error: milestoneError } = await supabase
+          .from('milestone_progress')
+          .insert({
+            user_id: user_id,
+            offer_id: offer_id,
+            provider: 'notik',
+            event_id: event_id,
+            event_name: event_name || 'Unknown Event',
+            payout: payoutNum,
+            is_reversed: false
+          });
+
+        if (milestoneError) {
+          log(`Milestone progress insert failed: ${milestoneError.message}`);
+        } else {
+          log(`Milestone progress recorded: event_id=${event_id}`);
+        }
+
+        // Update offer status to 'in_progress' or 'completed'
+        // First, check if this offer exists in user_offer_interactions
+        const { data: interaction } = await supabase
+          .from('user_offer_interactions')
+          .select('id, events_json')
+          .eq('user_id', user_id)
+          .eq('offer_id', offer_id)
+          .eq('provider', 'notik')
+          .single();
+
+        if (interaction) {
+          // Count completed milestones
+          const { data: completedMilestones } = await supabase
+            .from('milestone_progress')
+            .select('event_id')
+            .eq('user_id', user_id)
+            .eq('offer_id', offer_id)
+            .eq('provider', 'notik')
+            .eq('is_reversed', false);
+
+          const totalMilestones = interaction.events_json?.length || 0;
+          const completedCount = completedMilestones?.length || 0;
+
+          // Determine new status
+          let newStatus = 'started';
+          if (completedCount > 0 && completedCount < totalMilestones) {
+            newStatus = 'in_progress';
+          } else if (completedCount >= totalMilestones && totalMilestones > 0) {
+            newStatus = 'completed';
+          }
+
+          log(`Updating offer status: ${newStatus} (${completedCount}/${totalMilestones} milestones)`);
+
+          const { error: updateError } = await supabase
+            .from('user_offer_interactions')
+            .update({ status: newStatus })
+            .eq('id', interaction.id);
+
+          if (updateError) {
+            log(`Offer status update failed: ${updateError.message}`);
+          } else {
+            log(`Offer status updated to: ${newStatus}`);
+          }
+        }
+      }
+
       // Note: We do NOT insert into completions table here because the history page
       // queries notik_transactions directly. Inserting into both would cause duplicates.
     } else {

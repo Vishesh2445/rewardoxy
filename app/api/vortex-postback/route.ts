@@ -171,6 +171,97 @@ async function handleVortexPostback(request: NextRequest) {
         const newBalance = creditResult?.[0]?.new_balance ?? creditResult?.new_balance ?? '?';
         const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
         log(`SUCCESS: Credited ${pointsAmount} to user ${identity_id}. New balance: ${newBalance}, New total: ${newTotal}`);
+
+        // Record milestone progress if event_id is present
+        if (event_id && event_id.trim() !== '') {
+          log(`Recording milestone progress: event_id=${event_id}, event_name=${event_name}`);
+          
+          const { error: milestoneError } = await supabase
+            .from('milestone_progress')
+            .insert({
+              user_id: identity_id,
+              offer_id: campaign_id,
+              provider: 'vortex',
+              event_id: event_id,
+              event_name: event_name || 'Unknown Event',
+              payout: payoutAmount,
+              is_reversed: false
+            });
+
+          if (milestoneError) {
+            log(`Milestone progress insert failed: ${milestoneError.message}`);
+          } else {
+            log(`Milestone progress recorded: event_id=${event_id}`);
+          }
+
+          // Update offer status to 'in_progress' or 'completed'
+          const { data: interaction } = await supabase
+            .from('user_offer_interactions')
+            .select('id, events_json')
+            .eq('user_id', identity_id)
+            .eq('offer_id', campaign_id)
+            .eq('provider', 'vortex')
+            .single();
+
+          if (interaction) {
+            // Count completed milestones
+            const { data: completedMilestones } = await supabase
+              .from('milestone_progress')
+              .select('event_id')
+              .eq('user_id', identity_id)
+              .eq('offer_id', campaign_id)
+              .eq('provider', 'vortex')
+              .eq('is_reversed', false);
+
+            const totalMilestones = interaction.events_json?.length || 0;
+            const completedCount = completedMilestones?.length || 0;
+
+            // Determine new status
+            let newStatus = 'started';
+            if (completedCount > 0 && completedCount < totalMilestones) {
+              newStatus = 'in_progress';
+            } else if (completedCount >= totalMilestones && totalMilestones > 0) {
+              newStatus = 'completed';
+            }
+
+            log(`Updating offer status: ${newStatus} (${completedCount}/${totalMilestones} milestones)`);
+
+            const { error: updateError } = await supabase
+              .from('user_offer_interactions')
+              .update({ status: newStatus })
+              .eq('id', interaction.id);
+
+            if (updateError) {
+              log(`Offer status update failed: ${updateError.message}`);
+            } else {
+              log(`Offer status updated to: ${newStatus}`);
+            }
+          }
+        } else {
+          // No event_id means this is a single-event offer, mark as completed
+          const { data: interaction } = await supabase
+            .from('user_offer_interactions')
+            .select('id')
+            .eq('user_id', identity_id)
+            .eq('offer_id', campaign_id)
+            .eq('provider', 'vortex')
+            .single();
+
+          if (interaction) {
+            log(`Updating Vortex offer status to completed: campaign_id=${campaign_id}`);
+            
+            const { error: updateError } = await supabase
+              .from('user_offer_interactions')
+              .update({ status: 'completed' })
+              .eq('id', interaction.id);
+
+            if (updateError) {
+              log(`Vortex offer status update failed: ${updateError.message}`);
+            } else {
+              log(`Vortex offer status updated to completed`);
+            }
+          }
+        }
       } else {
         log(`Points is 0, skipping credit`);
       }

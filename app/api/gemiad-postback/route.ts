@@ -178,6 +178,97 @@ async function handleGemiadPostback(request: NextRequest) {
         const newBalance = creditResult?.[0]?.new_balance ?? creditResult?.new_balance ?? '?';
         const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
         log(`SUCCESS: Credited ${rewardAmount} to user ${userId}. New balance: ${newBalance}, New total: ${newTotal}`);
+
+        // Record milestone progress if eventId is present
+        if (eventId && eventId.trim() !== '') {
+          log(`Recording milestone progress: eventId=${eventId}, eventName=${eventName}`);
+          
+          const { error: milestoneError } = await supabase
+            .from('milestone_progress')
+            .insert({
+              user_id: userId,
+              offer_id: offerId,
+              provider: 'gemiad',
+              event_id: eventId,
+              event_name: eventName || 'Unknown Event',
+              payout: payoutAmount,
+              is_reversed: false
+            });
+
+          if (milestoneError) {
+            log(`Milestone progress insert failed: ${milestoneError.message}`);
+          } else {
+            log(`Milestone progress recorded: eventId=${eventId}`);
+          }
+
+          // Update offer status to 'in_progress' or 'completed'
+          const { data: interaction } = await supabase
+            .from('user_offer_interactions')
+            .select('id, events_json')
+            .eq('user_id', userId)
+            .eq('offer_id', offerId)
+            .eq('provider', 'gemiad')
+            .single();
+
+          if (interaction) {
+            // Count completed milestones
+            const { data: completedMilestones } = await supabase
+              .from('milestone_progress')
+              .select('event_id')
+              .eq('user_id', userId)
+              .eq('offer_id', offerId)
+              .eq('provider', 'gemiad')
+              .eq('is_reversed', false);
+
+            const totalMilestones = interaction.events_json?.length || 0;
+            const completedCount = completedMilestones?.length || 0;
+
+            // Determine new status
+            let newStatus = 'started';
+            if (completedCount > 0 && completedCount < totalMilestones) {
+              newStatus = 'in_progress';
+            } else if (completedCount >= totalMilestones && totalMilestones > 0) {
+              newStatus = 'completed';
+            }
+
+            log(`Updating offer status: ${newStatus} (${completedCount}/${totalMilestones} milestones)`);
+
+            const { error: updateError } = await supabase
+              .from('user_offer_interactions')
+              .update({ status: newStatus })
+              .eq('id', interaction.id);
+
+            if (updateError) {
+              log(`Offer status update failed: ${updateError.message}`);
+            } else {
+              log(`Offer status updated to: ${newStatus}`);
+            }
+          }
+        } else {
+          // No eventId means this is a single-event offer, mark as completed
+          const { data: interaction } = await supabase
+            .from('user_offer_interactions')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('offer_id', offerId)
+            .eq('provider', 'gemiad')
+            .single();
+
+          if (interaction) {
+            log(`Updating GemiAd offer status to completed: offerId=${offerId}`);
+            
+            const { error: updateError } = await supabase
+              .from('user_offer_interactions')
+              .update({ status: 'completed' })
+              .eq('id', interaction.id);
+
+            if (updateError) {
+              log(`GemiAd offer status update failed: ${updateError.message}`);
+            } else {
+              log(`GemiAd offer status updated to completed`);
+            }
+          }
+        }
       } else {
         log(`Reward is 0, skipping credit`);
       }

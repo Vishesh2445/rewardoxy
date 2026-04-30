@@ -56,11 +56,15 @@ interface CPXSurvey {
 function OfferDetailsModal({ 
   offer, 
   open, 
-  onClose 
+  onClose,
+  userId,
+  milestoneProgress = []
 }: { 
   offer: NotikOffer | null; 
   open: boolean; 
   onClose: () => void;
+  userId?: string;
+  milestoneProgress?: string[];
 }) {
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
@@ -71,7 +75,30 @@ function OfferDetailsModal({
 
   const hasEvents = offer.events && offer.events.length > 0;
 
-  const handlePlayClick = () => {
+  const handlePlayClick = async () => {
+    // Track offer click before opening
+    if (userId && offer) {
+      try {
+        await fetch('/api/track-offer-click', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: userId,
+            offer_id: offer.offer_id,
+            offer_name: offer.name,
+            provider: offer.provider || 'Unknown',
+            click_url: offer.click_url,
+            image_url: offer.image_url,
+            payout: offer.payout,
+            tracking_type: offer.trackingType,
+            events: offer.events || []
+          })
+        });
+      } catch (error) {
+        console.error('Failed to track offer click:', error);
+      }
+    }
+
     if (isMobile) {
       // On mobile, open the link directly
       window.open(offer.click_url, "_blank");
@@ -377,61 +404,76 @@ function OfferDetailsModal({
 
           {/* Milestones List */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {offer.events.map((event, index) => (
-              <Box
-                key={event.id}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  p: 1.5,
-                  bgcolor: "#222339",
-                  borderRadius: 2,
-                  border: "1px solid rgba(255,255,255,0.05)",
-                  transition: "all 0.2s",
-                  "&:hover": {
-                    borderColor: "rgba(1, 214, 118, 0.3)",
-                    bgcolor: "#252640",
-                  },
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flex: 1 }}>
-                  <Box
-                    sx={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: "50%",
-                      bgcolor: "#3d3f54",
-                    }}
-                  />
-                  <Typography sx={{ fontSize: "0.8125rem", color: "#fff", fontWeight: 500 }}>
-                    {event.name}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                  <Typography 
-                    sx={{ 
+            {offer.events.map((event, index) => {
+              const isCompleted = milestoneProgress.includes(event.id);
+              
+              return (
+                <Box
+                  key={event.id}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    p: 1.5,
+                    bgcolor: isCompleted ? "rgba(1, 214, 118, 0.05)" : "#222339",
+                    borderRadius: 2,
+                    border: `1px solid ${isCompleted ? "rgba(1, 214, 118, 0.2)" : "rgba(255,255,255,0.05)"}`,
+                    transition: "all 0.2s",
+                    "&:hover": {
+                      borderColor: isCompleted ? "rgba(1, 214, 118, 0.4)" : "rgba(1, 214, 118, 0.3)",
+                      bgcolor: isCompleted ? "rgba(1, 214, 118, 0.08)" : "#252640",
+                    },
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flex: 1 }}>
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        bgcolor: isCompleted ? "#01D676" : "#3d3f54",
+                      }}
+                    />
+                    <Typography sx={{ 
                       fontSize: "0.8125rem", 
-                      color: "#01D676",
-                      fontWeight: 700,
-                    }}
-                  >
-                    ${event.payout}
-                  </Typography>
-                  <Box
-                    sx={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: "50%",
-                      border: "1.5px solid #3d3f54",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  />
+                      color: isCompleted ? "#01D676" : "#fff", 
+                      fontWeight: 500,
+                      textDecoration: isCompleted ? "line-through" : "none",
+                      opacity: isCompleted ? 0.8 : 1
+                    }}>
+                      {event.name}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Typography 
+                      sx={{ 
+                        fontSize: "0.8125rem", 
+                        color: "#01D676",
+                        fontWeight: 700,
+                      }}
+                    >
+                      ${event.payout}
+                    </Typography>
+                    <Box
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: "50%",
+                        border: `1.5px solid ${isCompleted ? "#01D676" : "#3d3f54"}`,
+                        bgcolor: isCompleted ? "#01D676" : "transparent",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {isCompleted && (
+                        <CheckIcon sx={{ fontSize: 14, color: "#000" }} />
+                      )}
+                    </Box>
+                  </Box>
                 </Box>
-              </Box>
-            ))}
+              );
+            })}
           </Box>
         </Box>
       )}
@@ -1175,7 +1217,12 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       </Box>
 
       {/* Offer Details Modal */}
-      <OfferDetailsModal offer={selectedOffer} open={modalOpen} onClose={() => setModalOpen(false)} />
+      <OfferDetailsModal 
+        offer={selectedOffer} 
+        open={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        userId={userId}
+      />
     </Box>
   );
 }

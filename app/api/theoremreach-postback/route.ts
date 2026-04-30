@@ -295,6 +295,33 @@ export async function GET(request: NextRequest) {
         const newBalance = creditResult?.[0]?.new_balance ?? creditResult?.new_balance ?? '?';
         const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
         log(`SUCCESS: Credited ${rewardAmount} to user ${user_id}. New balance: ${newBalance}, New total: ${newTotal}`);
+
+        // TheoremReach doesn't have event-based milestones like Notik
+        // But we can update offer status if the offer exists in user_offer_interactions
+        if (offer_id) {
+          const { data: interaction } = await supabase
+            .from('user_offer_interactions')
+            .select('id')
+            .eq('user_id', user_id)
+            .eq('offer_id', offer_id)
+            .eq('provider', 'theoremreach')
+            .single();
+
+          if (interaction) {
+            log(`Updating TheoremReach offer status to completed: offer_id=${offer_id}`);
+            
+            const { error: updateError } = await supabase
+              .from('user_offer_interactions')
+              .update({ status: 'completed' })
+              .eq('id', interaction.id);
+
+            if (updateError) {
+              log(`TheoremReach offer status update failed: ${updateError.message}`);
+            } else {
+              log(`TheoremReach offer status updated to completed`);
+            }
+          }
+        }
       } else {
         log(`Reward is 0 or negative, skipping credit`);
       }
