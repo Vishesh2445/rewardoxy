@@ -69,6 +69,11 @@ function offerIcon(name: string, source?: string) {
     return Gift; // Use Gift icon for Notik offers
   }
   
+  // Revtoo-specific icons
+  if (source === 'revtoo') {
+    return Gift; // Use Gift icon for Revtoo offers
+  }
+  
   // Regular offer icons
   const lower = name.toLowerCase();
   if (lower.includes("game") || lower.includes("play")) return OFFER_ICONS.game;
@@ -91,8 +96,8 @@ export default function HistoryClient({
     const from = newPage * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
     
-    // Fetch completions, CPX transactions, Notik transactions, GemiAd transactions, and TheoremReach transactions
-    const [completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult] = await Promise.all([
+    // Fetch completions, CPX transactions, Notik transactions, GemiAd transactions, TheoremReach transactions, and Revtoo transactions
+    const [completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, revtooResult] = await Promise.all([
       supabase
         .from("completions")
         .select("id, program_id, payout_decimal, coins_awarded, created_at, source", { count: "exact" })
@@ -124,6 +129,13 @@ export default function HistoryClient({
       supabase
         .from("theoremreach_transactions")
         .select("id, tx_id, reward, offer_name, is_reversal, is_screenout, is_profiler, is_offer, created_at", { count: "exact" })
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .range(from, to),
+
+      supabase
+        .from("revtoo_transactions")
+        .select("id, trans_id, reward, offer_name, status, created_at", { count: "exact" })
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .range(from, to),
@@ -174,9 +186,17 @@ export default function HistoryClient({
           source: 'theoremreach',
         };
       }),
+      ...(revtooResult.data ?? []).map((revtoo) => ({
+        id: revtoo.id,
+        program_id: revtoo.offer_name || 'Revtoo Offer',
+        payout_decimal: Math.abs(revtoo.reward) / 1000, // Convert coins to USD for display (1000 coins = $1)
+        coins_awarded: revtoo.status === 2 ? -Math.abs(revtoo.reward) : revtoo.reward,
+        created_at: revtoo.created_at,
+        source: 'revtoo',
+      })),
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0);
+    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0) + (revtooResult.count ?? 0);
 
     if (merged) setCompletions(merged.slice(0, PAGE_SIZE));
     if (totalCount !== null) setTotal(totalCount);
@@ -274,7 +294,7 @@ export default function HistoryClient({
                       <Typography variant="body2" sx={{ fontWeight: 600 }} truncate>
                         {c.program_id}
                       </Typography>
-                      <Box sx={{ borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : c.source === 'notik' ? 'rgba(168,85,247,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : c.source === 'notik' ? '1px solid rgba(168,85,247,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1, py: 0.1, fontSize: '0.6rem', fontWeight: 700, color: c.source === 'cpx' ? '#3b82f6' : c.source === 'notik' ? '#a855f7' : '#f97316', textTransform: 'uppercase', flexShrink: 0 }}>
+                      <Box sx={{ borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : c.source === 'notik' ? 'rgba(168,85,247,0.1)' : c.source === 'revtoo' ? 'rgba(34,197,94,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : c.source === 'notik' ? '1px solid rgba(168,85,247,0.25)' : c.source === 'revtoo' ? '1px solid rgba(34,197,94,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1, py: 0.1, fontSize: '0.6rem', fontWeight: 700, color: c.source === 'cpx' ? '#3b82f6' : c.source === 'notik' ? '#a855f7' : c.source === 'revtoo' ? '#22c55e' : '#f97316', textTransform: 'uppercase', flexShrink: 0 }}>
                         {c.source || 'unknown'}
                       </Box>
                     </Box>
@@ -382,7 +402,7 @@ export default function HistoryClient({
                         </Box>
                       </TableCell>
                       <TableCell sx={{ borderColor: colors.divider }}>
-                        <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : c.source === 'notik' ? 'rgba(168,85,247,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : c.source === 'notik' ? '1px solid rgba(168,85,247,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1.5, py: 0.25, fontSize: '0.75rem', fontWeight: 600, color: c.source === 'cpx' ? '#3b82f6' : c.source === 'notik' ? '#a855f7' : '#f97316', textTransform: 'capitalize' }}>
+                        <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: c.source === 'cpx' ? 'rgba(59,130,246,0.1)' : c.source === 'notik' ? 'rgba(168,85,247,0.1)' : c.source === 'revtoo' ? 'rgba(34,197,94,0.1)' : 'rgba(249,115,22,0.1)', border: c.source === 'cpx' ? '1px solid rgba(59,130,246,0.25)' : c.source === 'notik' ? '1px solid rgba(168,85,247,0.25)' : c.source === 'revtoo' ? '1px solid rgba(34,197,94,0.25)' : '1px solid rgba(249,115,22,0.25)', px: 1.5, py: 0.25, fontSize: '0.75rem', fontWeight: 600, color: c.source === 'cpx' ? '#3b82f6' : c.source === 'notik' ? '#a855f7' : c.source === 'revtoo' ? '#22c55e' : '#f97316', textTransform: 'capitalize' }}>
                           {c.source || 'unknown'}
                         </Box>
                       </TableCell>

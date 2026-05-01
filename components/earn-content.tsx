@@ -18,7 +18,7 @@ type EarnContentProps = {
   userEmail: string;
 };
 
-type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd" | "TheoremReach";
+type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd" | "TheoremReach" | "Revtoo";
 type DeviceOS = "android" | "ios" | "windows";
 
 interface NotikOffer {
@@ -56,15 +56,11 @@ interface CPXSurvey {
 function OfferDetailsModal({ 
   offer, 
   open, 
-  onClose,
-  userId,
-  milestoneProgress = []
+  onClose 
 }: { 
   offer: NotikOffer | null; 
   open: boolean; 
   onClose: () => void;
-  userId?: string;
-  milestoneProgress?: string[];
 }) {
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
@@ -75,30 +71,7 @@ function OfferDetailsModal({
 
   const hasEvents = offer.events && offer.events.length > 0;
 
-  const handlePlayClick = async () => {
-    // Track offer click before opening
-    if (userId && offer) {
-      try {
-        await fetch('/api/track-offer-click', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_id: userId,
-            offer_id: offer.offer_id,
-            offer_name: offer.name,
-            provider: offer.provider || 'Unknown',
-            click_url: offer.click_url,
-            image_url: offer.image_url,
-            payout: offer.payout,
-            tracking_type: offer.trackingType,
-            events: offer.events || []
-          })
-        });
-      } catch (error) {
-        console.error('Failed to track offer click:', error);
-      }
-    }
-
+  const handlePlayClick = () => {
     if (isMobile) {
       // On mobile, open the link directly
       window.open(offer.click_url, "_blank");
@@ -404,76 +377,61 @@ function OfferDetailsModal({
 
           {/* Milestones List */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {offer.events.map((event, index) => {
-              const isCompleted = milestoneProgress.includes(event.id);
-              
-              return (
-                <Box
-                  key={event.id}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    p: 1.5,
-                    bgcolor: isCompleted ? "rgba(1, 214, 118, 0.05)" : "#222339",
-                    borderRadius: 2,
-                    border: `1px solid ${isCompleted ? "rgba(1, 214, 118, 0.2)" : "rgba(255,255,255,0.05)"}`,
-                    transition: "all 0.2s",
-                    "&:hover": {
-                      borderColor: isCompleted ? "rgba(1, 214, 118, 0.4)" : "rgba(1, 214, 118, 0.3)",
-                      bgcolor: isCompleted ? "rgba(1, 214, 118, 0.08)" : "#252640",
-                    },
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flex: 1 }}>
-                    <Box
-                      sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        bgcolor: isCompleted ? "#01D676" : "#3d3f54",
-                      }}
-                    />
-                    <Typography sx={{ 
-                      fontSize: "0.8125rem", 
-                      color: isCompleted ? "#01D676" : "#fff", 
-                      fontWeight: 500,
-                      textDecoration: isCompleted ? "line-through" : "none",
-                      opacity: isCompleted ? 0.8 : 1
-                    }}>
-                      {event.name}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <Typography 
-                      sx={{ 
-                        fontSize: "0.8125rem", 
-                        color: "#01D676",
-                        fontWeight: 700,
-                      }}
-                    >
-                      ${event.payout}
-                    </Typography>
-                    <Box
-                      sx={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: "50%",
-                        border: `1.5px solid ${isCompleted ? "#01D676" : "#3d3f54"}`,
-                        bgcolor: isCompleted ? "#01D676" : "transparent",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {isCompleted && (
-                        <CheckIcon sx={{ fontSize: 14, color: "#000" }} />
-                      )}
-                    </Box>
-                  </Box>
+            {offer.events.map((event, index) => (
+              <Box
+                key={event.id}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  p: 1.5,
+                  bgcolor: "#222339",
+                  borderRadius: 2,
+                  border: "1px solid rgba(255,255,255,0.05)",
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    borderColor: "rgba(1, 214, 118, 0.3)",
+                    bgcolor: "#252640",
+                  },
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flex: 1 }}>
+                  <Box
+                    sx={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      bgcolor: "#3d3f54",
+                    }}
+                  />
+                  <Typography sx={{ fontSize: "0.8125rem", color: "#fff", fontWeight: 500 }}>
+                    {event.name}
+                  </Typography>
                 </Box>
-              );
-            })}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                  <Typography 
+                    sx={{ 
+                      fontSize: "0.8125rem", 
+                      color: "#01D676",
+                      fontWeight: 700,
+                    }}
+                  >
+                    ${event.payout}
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: "50%",
+                      border: "1.5px solid #3d3f54",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  />
+                </Box>
+              </Box>
+            ))}
           </Box>
         </Box>
       )}
@@ -730,16 +688,18 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       setLoading(true);
       const primaryOS = deviceOS.length > 0 ? deviceOS[0] : 'android';
       
-      // Fetch from Gemiad, Notik, and Vortex APIs in parallel
-      const [gemiadResponse, notikResponse, vortexResponse] = await Promise.all([
+      // Fetch from Gemiad, Notik, Vortex, and Revtoo APIs in parallel
+      const [gemiadResponse, notikResponse, vortexResponse, revtooResponse] = await Promise.all([
         fetch(`/api/gemiad-offers?user_id=${userId}`),
         fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
-        fetch(`/api/vortex-offers?user_id=${userId}`)
+        fetch(`/api/vortex-offers?user_id=${userId}`),
+        fetch(`/api/revtoo-offers?user_id=${userId}`)
       ]);
       
       let gemiadOffers: NotikOffer[] = [];
       let notikOffers: NotikOffer[] = [];
       let vortexOffers: NotikOffer[] = [];
+      let revtooOffers: NotikOffer[] = [];
       
       // Process Gemiad offers (Priority 1)
       if (gemiadResponse.ok) {
@@ -1217,12 +1177,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       </Box>
 
       {/* Offer Details Modal */}
-      <OfferDetailsModal 
-        offer={selectedOffer} 
-        open={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        userId={userId}
-      />
+      <OfferDetailsModal offer={selectedOffer} open={modalOpen} onClose={() => setModalOpen(false)} />
     </Box>
   );
 }
@@ -1238,32 +1193,25 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   async function fetchSurveys() {
     try {
       setLoading(true);
+      const response = await fetch(`/api/cpx-surveys?user_id=${userId}`);
       
-      // Fetch CPX surveys
-      const cpxResponse = await fetch(`/api/cpx-surveys?user_id=${userId}`).catch(err => {
-        console.error("CPX fetch error:", err);
-        return null;
-      });
-
-      let cpxSurveys: CPXSurvey[] = [];
-
-      // Process CPX surveys
-      if (cpxResponse && cpxResponse.ok) {
-        const cpxData = await cpxResponse.json();
-        if (cpxData.success && cpxData.surveys && Array.isArray(cpxData.surveys)) {
-          cpxSurveys = cpxData.surveys.map((s: any) => ({
-            ...s,
-            type: 'cpx'
-          }));
-          console.log(`CPX surveys loaded: ${cpxSurveys.length}`);
-        }
+      if (!response.ok) {
+        console.error("Failed to fetch CPX surveys:", response.status);
+        setSurveys([]);
+        setLoading(false);
+        return;
       }
 
-      // Limit to 20 surveys for display
-      setSurveys(cpxSurveys.slice(0, 20));
+      const data = await response.json();
       
+      if (data.success && data.surveys && Array.isArray(data.surveys)) {
+        setSurveys(data.surveys.slice(0, 12));
+      } else {
+        console.warn("Invalid CPX surveys response:", data);
+        setSurveys([]);
+      }
     } catch (error) {
-      console.error("Error fetching surveys:", error);
+      console.error("Error fetching CPX surveys:", error);
       setSurveys([]);
     } finally {
       setLoading(false);
@@ -1453,7 +1401,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                     mb: { xs: 0.5, sm: 1 },
                   }}
                 >
-                  CPX Research
+                CPX Survey
                 </Typography>
 
                 <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600, color: "#01D676" }}>
@@ -1474,7 +1422,6 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
   const [iframeLoading, setIframeLoading] = useState(true);
   const [adBlockDetected, setAdBlockDetected] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<DeviceOS[]>(["android", "windows"]);
-
   
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
@@ -1513,7 +1460,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
 
   const myLeadBaseUrl = process.env.NEXT_PUBLIC_MYLEAD_WALL_URL ?? "";
 
-  const handleOpenWall = async (wall: WallType) => {
+  const handleOpenWall = (wall: WallType) => {
     // Notik doesn't support iframe embedding, open in new window
     if (wall === "Notik") {
       const apiKey = process.env.NEXT_PUBLIC_NOTIK_API_KEY || "PYMTzu6owFJ8roFouth5bEYxoJRmg7q9";
@@ -1565,8 +1512,18 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       return `https://gemiwall.com/${placementId}/${userId}`;
     }
     if (activeWall === "TheoremReach") {
-      const apiKey = process.env.NEXT_PUBLIC_THEOREMREACH_API_KEY || "";
-      return `https://theoremreach.com/respondent_entry/direct?api_key=${apiKey}&user_id=${userId}`;
+      const placementId = process.env.NEXT_PUBLIC_THEOREMREACH_PLACEMENT_ID || "your_placement_id_here";
+      // TheoremReach surveywall URL format with user ID
+      return `https://api.theoremreach.com/web/${placementId}/${userId}`;
+    }
+    if (activeWall === "Revtoo") {
+      const apiKey = process.env.NEXT_PUBLIC_REVTOO_API_KEY || "";
+      if (!apiKey) {
+        console.error("Revtoo API key not configured");
+        return "";
+      }
+      // Revtoo offerwall URL format
+      return `https://revtoo.com/offerwall/${apiKey}/${userId}`;
     }
     return "";
   };
@@ -2027,6 +1984,107 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Box>
           </Paper>
 
+          {/* Revtoo card */}
+          <Paper
+            onClick={() => handleOpenWall("Revtoo")}
+            elevation={0}
+            sx={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderRadius: 2,
+              p: 2,
+              cursor: "pointer",
+              background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.3) 100%)",
+              border: "1px solid rgba(34, 197, 94, 0.2)",
+              transition: "all 0.2s ease",
+              minWidth: { xs: "auto", sm: 160 },
+              maxWidth: { xs: "none", sm: 160 },
+              width: { xs: "100%", sm: "auto" },
+              flexShrink: 0,
+              overflow: "hidden",
+              "&:hover": {
+                background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.4) 100%)",
+                "& .wall-logo": {
+                  filter: "blur(8px)",
+                },
+                "& .wall-rating": {
+                  filter: "blur(8px)",
+                },
+                "& .hover-play-button": {
+                  opacity: 1,
+                },
+              },
+            }}
+          >
+            {/* Hover Play Button */}
+            <Box
+              className="hover-play-button"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                zIndex: 1000,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "opacity 0.2s ease",
+              }}
+            >
+              <Box
+                sx={{
+                  backgroundColor: colors.background.secondary,
+                  borderRadius: 10,
+                  padding: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <Box
+                  component="img"
+                  src="https://freecash.com/public/img/play-offer.svg"
+                  alt="play-button"
+                  sx={{ objectFit: "contain", objectPosition: "center" }}
+                />
+              </Box>
+            </Box>
+
+            {/* Logo */}
+            <Box
+              component="img"
+              src="/revtoo.svg"
+              alt="Revtoo"
+              className="wall-logo"
+              sx={{
+                width: 100,
+                height: 100,
+                borderRadius: 1,
+                objectFit: "contain",
+                mb: 2,
+                transition: "filter 0.2s ease",
+              }}
+            />
+
+            {/* Name */}
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+              Revtoo
+            </Typography>
+
+            {/* Star Rating */}
+            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                  ★
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+
           {/* MyLead card */}
           <Paper
             onClick={() => handleOpenWall("MyLead")}
@@ -2277,8 +2335,8 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: 2,
               cursor: "pointer",
-              background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(147, 51, 234, 0.3) 100%)",
-              border: "1px solid rgba(147, 51, 234, 0.2)",
+              background: "linear-gradient(180deg, #1a1d2e 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.3) 100%)",
+              border: "1px solid rgba(16, 185, 129, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2286,7 +2344,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(147, 51, 234, 0.4) 100%)",
+                background: "linear-gradient(180deg, #1a1d2e 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2358,13 +2416,12 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             {/* Star Rating */}
             <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 5 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
                   ★
                 </Box>
               ))}
             </Box>
           </Paper>
-
         </Box>
       </Box>
 
@@ -2471,9 +2528,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               onLoad={() => setIframeLoading(false)}
               title={`${activeWall}`}
               sx={{ 
-                width: "100%", 
-                height: "100%", 
-                border: "none", 
+                width: "100%", height: "100%", border: "none", 
                 bgcolor: colors.background.default,
                 display: adBlockDetected ? "none" : "block" 
               }}

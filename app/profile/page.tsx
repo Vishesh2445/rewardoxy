@@ -70,10 +70,16 @@ export default async function ProfilePage() {
     .from("theoremreach_transactions")
     .select("*", { count: "exact", head: true })
     .eq("user_id", user.id)
-    .eq("is_reversal", false)
-    .gt("reward", 0);
+    .eq("is_reversal", false); // Only count completions, not reversals
 
-  const totalCompletions = (completionCount ?? 0) + (cpxCompletionCount ?? 0) + (notikCompletionCount ?? 0) + (gemiadCompletionCount ?? 0) + (theoremreachCompletionCount ?? 0);
+  // Get Revtoo completion count
+  const { count: revtooCompletionCount } = await supabase
+    .from("revtoo_transactions")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("status", 1); // Only count completions, not reversals
+
+  const totalCompletions = (completionCount ?? 0) + (cpxCompletionCount ?? 0) + (notikCompletionCount ?? 0) + (gemiadCompletionCount ?? 0) + (theoremreachCompletionCount ?? 0) + (revtooCompletionCount ?? 0);
 
   const { count: withdrawalCount } = await supabase
     .from("withdrawals")
@@ -114,7 +120,14 @@ export default async function ProfilePage() {
   // Get this month's TheoremReach earnings
   const { data: monthlyTheoremreach } = await supabase
     .from("theoremreach_transactions")
-    .select("reward")
+    .select("reward, is_reversal")
+    .eq("user_id", user.id)
+    .gte("created_at", startOfMonth);
+
+  // Get this month's Revtoo earnings
+  const { data: monthlyRevtoo } = await supabase
+    .from("revtoo_transactions")
+    .select("reward, status")
     .eq("user_id", user.id)
     .gte("created_at", startOfMonth);
 
@@ -131,11 +144,15 @@ export default async function ProfilePage() {
     const amount = Math.round(Number(g.reward || 0));
     return sum + amount; // GemiAd reward can be negative for reversals
   }, 0) || 0;
-  const monthEarnedFromTheoremreach = monthlyTheoremreach?.reduce((sum, tr) => {
-    const amount = Math.round(Number(tr.reward || 0));
-    return sum + amount; // TheoremReach reward can be negative for reversals
+  const monthEarnedFromTheoremreach = monthlyTheoremreach?.reduce((sum, t) => {
+    const amount = Math.round(Number(t.reward || 0));
+    return sum + (t.is_reversal ? -Math.abs(amount) : amount); // Reversals are negative
   }, 0) || 0;
-  const monthEarned = monthEarnedFromCompletions + monthEarnedFromCpx + monthEarnedFromNotik + monthEarnedFromGemiad + monthEarnedFromTheoremreach;
+  const monthEarnedFromRevtoo = monthlyRevtoo?.reduce((sum, r) => {
+    const amount = Math.round(Number(r.reward || 0));
+    return sum + (r.status === 1 ? amount : -Math.abs(amount)); // Status 2 is reversal
+  }, 0) || 0;
+  const monthEarned = monthEarnedFromCompletions + monthEarnedFromCpx + monthEarnedFromNotik + monthEarnedFromGemiad + monthEarnedFromTheoremreach + monthEarnedFromRevtoo;
 
   const coins = userData?.coins_balance ?? 0;
 

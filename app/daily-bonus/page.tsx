@@ -71,6 +71,13 @@ export default async function DailyBonusPage() {
     .eq("user_id", user.id)
     .gte("created_at", todayStart.toISOString());
 
+  // Get today's Revtoo earnings
+  const { data: todayRevtoo } = await supabase
+    .from("revtoo_transactions")
+    .select("reward, status")
+    .eq("user_id", user.id)
+    .gte("created_at", todayStart.toISOString());
+
   const todayCoinsFromCompletions = todayCompletions?.reduce(
     (sum, c) => sum + (c.coins_awarded || 0),
     0
@@ -96,7 +103,12 @@ export default async function DailyBonusPage() {
     return sum + amount; // TheoremReach reward can be negative for reversals
   }, 0) || 0;
 
-  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad + todayCoinsFromTheoremreach;
+  const todayCoinsFromRevtoo = todayRevtoo?.reduce((sum, r) => {
+    const amount = Math.round(Number(r.reward || 0));
+    return sum + (r.status === 1 ? amount : -Math.abs(amount)); // Status 2 is reversal
+  }, 0) || 0;
+
+  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad + todayCoinsFromTheoremreach + todayCoinsFromRevtoo;
 
   return (
     <AppShell 

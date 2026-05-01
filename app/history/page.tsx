@@ -18,7 +18,7 @@ export default async function HistoryPage() {
     redirect("/auth/login");
   }
 
-  const [userResult, completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult] = await Promise.all([
+  const [userResult, completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, revtooResult] = await Promise.all([
     supabase
       .from("users")
       .select("coins_balance, display_name")
@@ -73,11 +73,21 @@ export default async function HistoryPage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .range(0, PAGE_SIZE - 1),
+
+    // Fetch Revtoo transactions
+    supabase
+      .from("revtoo_transactions")
+      .select("id, trans_id, reward, offer_name, status, created_at", {
+        count: "exact",
+      })
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .range(0, PAGE_SIZE - 1),
   ]);
 
   const coins = userResult.data?.coins_balance ?? 0;
 
-  // Merge completions, CPX transactions, Notik transactions, GemiAd transactions, and TheoremReach transactions
+  // Merge completions, CPX transactions, Notik transactions, GemiAd transactions, TheoremReach transactions, and Revtoo transactions
   const allCompletions = [
     ...(completionsResult.data ?? []),
     ...(cpxResult.data ?? []).map((cpx) => ({
@@ -122,9 +132,17 @@ export default async function HistoryPage() {
         source: 'theoremreach',
       };
     }),
+    ...(revtooResult.data ?? []).map((revtoo) => ({
+      id: revtoo.id,
+      program_id: revtoo.offer_name ? `Revtoo - ${revtoo.offer_name}` : 'Revtoo Offer',
+      payout_decimal: Math.abs(revtoo.reward) / 1000, // Convert coins back to USD for display
+      coins_awarded: revtoo.status === 1 ? Math.round(Number(revtoo.reward)) : -Math.round(Number(revtoo.reward)),
+      created_at: revtoo.created_at,
+      source: 'revtoo',
+    })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0);
+  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0) + (revtooResult.count ?? 0);
 
   return (
     <AppShell 

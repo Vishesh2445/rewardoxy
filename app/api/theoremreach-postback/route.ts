@@ -1,224 +1,227 @@
 /**
  * TheoremReach Surveywall Postback Handler (S2S)
- * 
- * This endpoint receives postback notifications from TheoremReach when users complete surveys.
- * 
- * IMPORTANT: Configure this URL in TheoremReach Dashboard → App Settings → Postback URL
- * 
- * Postback Parameters (from TheoremReach documentation):
- * - reward: The amount of in-app currency that should be rewarded to the user
- * - currency: Amount in US currency being paid for this transaction (floating point, e.g. 3.31)
- * - user_id: Your unique user ID
- * - tx_id: The unique TheoremReach transaction ID for the callback
- * - hash: The SHA-1 hash of the URL for validation
- * - reversal: (optional) true if the callback is for a reversal (negative transaction)
- * - debug: (optional) if debug=true then completely ignore this callback (testing only)
- * - transaction_id: (optional) Your own unique transaction id (web iframe/direct entry only)
- * - screenout: 1 = true, 2 = false. If true, user was screened out and receiving partial reward
- * - profiler: 1 = true, 2 = false. If true, user completed the profiler
- * - offer: true if the reward is for an offer rather than a survey
- * - offer_name: the name of the offer
- * - ip: the ip address of the user
- * - offer_id: the survey or offer ID
- * - placement_id: the placement ID
- * 
+ *
+ * This endpoint receives postback notifications from TheoremReach when users complete surveys
+ * or when transactions are reversed.
+ *
+ * IMPORTANT: Configure this URL in TheoremReach Publisher Dashboard → Integration Settings
+ *
+ * Reward Callback URL:
+ * https://rewardoxy.app/api/theoremreach-postback?reward={reward}&currency={currency}&user_id={user_id}&tx_id={tx_id}&hash={hash}&reversal={reversal}&debug={debug}&screenout={screenout}&profiler={profiler}&offer={offer}&offer_name={offer_name}&ip={ip}&offer_id={offer_id}&placement_id={placement_id}
+ *
+ * Parameter Mapping (TheoremReach macros → query params):
+ * - {reward} → reward (MANDATORY: amount in in-app currency that should be rewarded)
+ * - {currency} → currency (amount in US currency being paid, floating point)
+ * - {user_id} → user_id (MANDATORY: user ID - can be overridden with parameter=xyz)
+ * - {tx_id} → tx_id (MANDATORY: unique TheoremReach transaction ID)
+ * - {hash} → hash (MANDATORY: SHA-1 hash for verification)
+ * - {reversal} → reversal (optional: "true" if callback is for a reversal - negative transaction)
+ * - {debug} → debug (optional: "true" if testing - ignore this callback)
+ * - {screenout} → screenout (optional: 1=true/2=false - user was screened out)
+ * - {profiler} → profiler (optional: 1=true/2=false - user completed profiler)
+ * - {offer} → offer (optional: "true" if reward is for offer rather than survey)
+ * - {offer_name} → offer_name (optional: name of the offer)
+ * - {ip} → ip (optional: user's IP address)
+ * - {offer_id} → offer_id (optional: survey or offer ID)
+ * - {placement_id} → placement_id (optional: placement ID)
+ *
+ * Event Types:
+ * - Normal completion: reward > 0, reversal != true → credit reward
+ * - Screenout: reward > 0, screenout = 1 → partial reward (user was screened out)
+ * - Profiler: profiler = 1 → user completed profiler (bonus if configured)
+ * - Reversal: reversal = true → deduct reward (negative transaction)
+ * - Debug: debug = true → IGNORE this callback (testing only)
+ *
  * Security:
- * - Hash verification: Base64(SHA1-HMAC(full_url, secret_key))
+ * - Hash verification: SHA-1 HMAC signature validation
  * - Duplicate prevention: Check tx_id before processing
- * 
- * Note: Test postbacks from TheoremReach dashboard (with placeholder values like {currency})
- * are processed like production to allow integration testing. Only callbacks with debug=true
- * are ignored per TheoremReach documentation.
- * 
- * CRITICAL: Always return HTTP 200 with JSON response
+ * - Debug mode: Ignore callbacks with debug=true
+ *
+ * CRITICAL: Always return HTTP 200, never 4xx or 5xx (prevents retry storms)
+ * Respond with "Approved" for success, "Rejected" for failure
  */
 
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import crypto from "crypto";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 
 function getSupabase() {
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Missing Supabase env vars');
-  }
-  return createClient(supabaseUrl, supabaseServiceKey, {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error('Missing Supabase env vars');
+  return createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false }
   });
 }
 
-export async function GET(request: NextRequest) {
-  const logs: string[] = [];
-  const log = (msg: string) => { 
-    logs.push(msg); 
-    console.log('[theoremreach-postback]', msg); 
-  };
+function ok(message: string) {
+  return new NextResponse(message, { status: 200 });
+}
+
+/**
+ * Reconstructs the base URL from query parameters for hash verification
+ * TheoremReach hash is created from the full URL without the hash parameter
+ */
+function reconstructBaseUrlForHash(params: Record<string, string>): string {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://rewardoxy.app';
+  const callbackPath = '/api/theoremreach-postback';
+
+  // Remove hash and debug params as they aren't part of the URL for hashing
+  const paramsToInclude = { ...params };
+  delete paramsToInclude.hash;
+
+  const queryString = Object.entries(paramsToInclude)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&');
+
+  return `${baseUrl}${callbackPath}?${queryString}`;
+}
+
+/**
+ * Verifies HMAC SHA-1 signature
+ * TheoremReach signature format:
+ * 1. Create HMAC-SHA1 digest
+ * 2. Base64 encode
+ * 3. Replace + with -, / with _, remove =
+ */
+function verifyTheoremReachHash(baseUrl: string, providedHash: string): boolean {
+  const secret = process.env.THEOREMREACH_SECRET_KEY;
+
+  if (!secret) {
+    console.error('[theoremreach-postback] ERROR: THEOREMREACH_SECRET_KEY env var is not set');
+    return false;
+  }
 
   try {
-    const searchParams = request.nextUrl.searchParams;
-    
-    // Extract parameters from TheoremReach callback
-    // TheoremReach sends both regular params (with placeholders) and tr_* params (with actual values)
-    const reward = searchParams.get("reward") || searchParams.get("tr_reward"); // Converted reward amount
-    const currency = searchParams.get("currency") || searchParams.get("tr_currency"); // USD amount
-    const user_id = searchParams.get("user_id") || searchParams.get("tr_user_id"); // User ID
-    const tx_id = searchParams.get("tx_id") || searchParams.get("tr_tx_id"); // Transaction ID
-    const hash = searchParams.get("hash"); // Security hash
-    const reversal = searchParams.get("reversal") || searchParams.get("tr_reversal") || "0"; // "1" if reversal, "0" if completion
-    const debug = searchParams.get("debug") || searchParams.get("tr_debug"); // "1" or "true" for debug mode
-    const screenout = searchParams.get("screenout") || searchParams.get("tr_screenout") || "0"; // "1" if screenout
-    const profiler = searchParams.get("profiler") || searchParams.get("tr_profiler") || "0"; // "1" if profiler
-    const offer = searchParams.get("offer") || searchParams.get("tr_offer") || "0"; // "1" if offer (not survey)
-    const offer_name = searchParams.get("offer_name") || searchParams.get("tr_offer_name"); // Offer/survey name
-    const ip = searchParams.get("ip") || searchParams.get("tr_ip"); // User IP address
-    const offer_id = searchParams.get("offer_id") || searchParams.get("tr_offer_id"); // Offer/survey ID
-    const placement_id = searchParams.get("placement_id") || searchParams.get("tr_placement_id"); // Placement ID
-    const status = searchParams.get("status"); // Status code
+    // Create HMAC-SHA1
+    const hmac = crypto.createHmac('sha1', secret);
+    hmac.update(baseUrl);
+    const digest = hmac.digest('base64');
 
-    log(`Received: user_id=${user_id}, tx_id=${tx_id}, reward=${reward}, currency=${currency}, reversal=${reversal}, debug=${debug}, status=${status}`);
+    // Replace characters as per TheoremReach spec
+    const encoded = digest
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
 
-    // Skip ONLY if debug=true (actual test mode per TheoremReach docs)
-    // Note: Placeholder values like {debug} are NOT the same as debug=true
-    if (debug === "true") {
-      log("Debug mode (debug=true) - ignoring callback per TheoremReach documentation");
-      return NextResponse.json({ 
-        success: true, 
-        message: "Debug callback ignored" 
-      });
+    return encoded === providedHash;
+  } catch (err) {
+    console.error('[theoremreach-postback] Hash verification error:', err);
+    return false;
+  }
+}
+
+async function handleTheoremReachPostback(request: NextRequest) {
+  const logs: string[] = [];
+  const log = (msg: string) => { logs.push(msg); console.log('[theoremreach-postback]', msg); };
+
+  try {
+    const url = new URL(request.url);
+
+    // ── 0. Log basic request info ────────────────────────────────────────
+    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    log(`Method: ${request.method}, IP: ${clientIp}`);
+
+    // Log all query params
+    const allParams: Record<string, string> = {};
+    url.searchParams.forEach((value, key) => {
+      allParams[key] = value;
+    });
+    log(`Params: ${JSON.stringify(allParams)}`);
+
+    // ── 1. Extract TheoremReach parameters ───────────────────────────────
+    const reward = url.searchParams.get('reward');           // MANDATORY: reward amount
+    const currency = url.searchParams.get('currency');       // USD currency amount
+    const user_id = url.searchParams.get('user_id');         // MANDATORY: user ID
+    const tx_id = url.searchParams.get('tx_id');             // MANDATORY: transaction ID
+    const hash = url.searchParams.get('hash');               // MANDATORY: SHA-1 hash
+    const reversal = url.searchParams.get('reversal');       // optional: true if reversal
+    const debug = url.searchParams.get('debug');             // optional: true if debug
+    const screenout = url.searchParams.get('screenout');     // optional: 1=true, 2=false
+    const profiler = url.searchParams.get('profiler');       // optional: 1=true, 2=false
+    const offer = url.searchParams.get('offer');             // optional: true if offer
+    const offer_name = url.searchParams.get('offer_name');   // optional: offer name
+    const ip = url.searchParams.get('ip');                   // optional: user IP
+    const offer_id = url.searchParams.get('offer_id');       // optional: offer/survey ID
+    const placement_id = url.searchParams.get('placement_id'); // optional: placement ID
+
+    log(`Parsed: user_id=${user_id}, tx_id=${tx_id}, reward=${reward}, reversal=${reversal}, debug=${debug}`);
+
+    // ── 2. Handle debug mode ─────────────────────────────────────────────
+    if (debug === 'true') {
+      log('DEBUG MODE: Ignoring this callback as per TheoremReach spec');
+      return ok('Rejected');
     }
 
-    // Validate required parameters
-    if (!user_id || !tx_id || !reward) {
-      log("Missing required parameters");
-      return NextResponse.json(
-        { success: false, error: "Missing required parameters" },
-        { status: 400 }
-      );
+    // ── 3. Validate required parameters ──────────────────────────────────
+    if (!reward || !user_id || !tx_id || !hash) {
+      log(`Missing required params: reward=${reward}, user_id=${user_id}, tx_id=${tx_id}, hash=${hash}`);
+      return ok('Rejected');
     }
 
-    log("Processing transaction (test postback or production)");
+    // ── 4. Hash Verification (Security — MUST verify) ────────────────────
+    const baseUrlForHash = reconstructBaseUrlForHash(allParams);
+    log(`Base URL for hash: ${baseUrlForHash}`);
 
-    // Verify hash for security (skip if no secret key configured)
-    const secretKey = process.env.THEOREMREACH_SECRET_KEY;
-    if (secretKey && hash) {
-      // TheoremReach hash calculation: base64(sha1-hmac(full_url_without_hash, secret))
-      // Try multiple hash calculation methods to find the correct one
-      
-      const baseUrl = `${request.nextUrl.origin}${request.nextUrl.pathname}`;
-      const paramsWithoutHash = new URLSearchParams(searchParams);
-      paramsWithoutHash.delete("hash");
-      
-      // Method 1: Original parameter order
-      const urlToHash1 = `${baseUrl}?${paramsWithoutHash.toString()}`;
-      
-      // Method 2: Sorted parameters
-      const sortedParams = Array.from(paramsWithoutHash.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([key, value]) => `${key}=${value}`)
-        .join('&');
-      const urlToHash2 = `${baseUrl}?${sortedParams}`;
-      
-      // Method 3: Just the query string without base URL
-      const urlToHash3 = paramsWithoutHash.toString();
-      
-      log(`Testing hash methods...`);
-      log(`Method 1 URL: ${urlToHash1.substring(0, 100)}...`);
-      
-      // Calculate hashes for all methods
-      const hash1 = crypto.createHmac("sha1", secretKey).update(urlToHash1).digest("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-      const hash2 = crypto.createHmac("sha1", secretKey).update(urlToHash2).digest("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-      const hash3 = crypto.createHmac("sha1", secretKey).update(urlToHash3).digest("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-      
-      log(`Received hash: ${hash}`);
-      log(`Method 1 hash: ${hash1}`);
-      log(`Method 2 hash: ${hash2}`);
-      log(`Method 3 hash: ${hash3}`);
-
-      if (hash === hash1 || hash === hash2 || hash === hash3) {
-        log("Hash validation PASSED");
-      } else {
-        log(`Hash verification failed - none of the methods matched`);
-        // Temporarily allow for testing - remove this in production
-        log("WARNING: Allowing request despite hash mismatch for testing");
-      }
-    } else {
-      log("Hash verification skipped (no secret key or hash provided)");
+    if (!verifyTheoremReachHash(baseUrlForHash, hash)) {
+      log(`HASH VERIFICATION FAILED: received="${hash}"`);
+      return ok('Rejected');
     }
+    log('Hash verification PASSED');
 
-    // Convert reward to number
-    // Handle placeholder values from test callbacks by treating them as 0
-    let rewardAmount = parseFloat(reward || "0");
-    let currencyAmount = parseFloat(currency || "0");
-    
-    // If parsing fails (e.g., {currency} placeholder), default to 0
-    if (isNaN(currencyAmount)) {
-      log(`Currency value "${currency}" is not a number, defaulting to 0`);
-      currencyAmount = 0;
-    }
-    
-    if (isNaN(rewardAmount)) {
-      log(`Invalid reward amount: "${reward}"`);
-      return NextResponse.json(
-        { success: false, error: "Invalid reward amount" },
-        { status: 400 }
-      );
-    }
+    // ── 5. Parse amounts ─────────────────────────────────────────────────
+    const rewardAmount = parseFloat(reward || '0');
+    const currencyAmount = parseFloat(currency || '0');
+    const isReversal = reversal === 'true';
+    const isScreenout = screenout === '1';
+    const isProfiler = profiler === '1';
+    const isOffer = offer === 'true';
 
-    // Check if this is a reversal
-    const isReversal = reversal === "1" || status === "2";
-    const isScreenout = screenout === "1" || screenout === "2";
-    const isProfiler = profiler === "1" || profiler === "2";
-    const isOffer = offer === "1";
+    log(`Parsed amounts: reward=${rewardAmount}, currency=${currencyAmount}, isReversal=${isReversal}, isScreenout=${isScreenout}, isProfiler=${isProfiler}`);
 
-    log(`Transaction type: reversal=${isReversal}, screenout=${isScreenout}, profiler=${isProfiler}, offer=${isOffer}`);
-
-    // Initialize Supabase client
+    // ── 6. Initialize Supabase ───────────────────────────────────────────
     const supabase = getSupabase();
 
-    // Check for duplicate transaction
-    const { data: existingTransaction } = await supabase
-      .from("theoremreach_transactions")
-      .select("id, is_reversal")
-      .eq("tx_id", tx_id)
-      .single();
-
-    if (existingTransaction) {
-      // If we already processed this exact transaction type, skip it
-      if (existingTransaction.is_reversal === isReversal) {
-        log(`Duplicate transaction detected: ${tx_id} (reversal=${isReversal})`);
-        return NextResponse.json({
-          success: true,
-          message: "Transaction already processed",
-        });
-      }
-    }
-
-    // Check if user exists
+    // ── 7. Check if user exists ──────────────────────────────────────────
     const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("id, coins_balance, total_earned, referred_by, email_verified")
-      .eq("id", user_id)
+      .from('users')
+      .select('id, coins_balance, total_earned')
+      .eq('id', user_id)
       .single();
 
     if (userError || !userData) {
-      log(`User not found: ${user_id}`);
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
+      log(`User not found: ${userError?.message || 'no data'}`);
+      return ok('Rejected');
     }
+    log(`User found: ${user_id}`);
 
-    log(`User found: ${user_id}, balance before: ${userData.coins_balance}`);
-
-    // Process based on transaction type
+    // ── 8. Route to correct handler based on transaction type ────────────
     if (isReversal) {
       // ═══════════════════════════════════════════════════════════════════
-      // REVERSAL HANDLER
+      // REVERSAL HANDLER (reversal=true)
       // ═══════════════════════════════════════════════════════════════════
       log(`Processing reversal: tx_id=${tx_id}, reward=${rewardAmount}`);
 
+      // Check for duplicate reversal (same tx_id with reversal=true)
+      const { data: existingReversal, error: checkError } = await supabase
+        .from('theoremreach_transactions')
+        .select('id')
+        .eq('tx_id', tx_id)
+        .eq('is_reversal', true)
+        .limit(1);
+
+      if (checkError) {
+        log(`Duplicate reversal check error: ${checkError.message}`);
+      }
+
+      if (existingReversal && existingReversal.length > 0) {
+        log(`DUPLICATE REVERSAL IGNORED: tx_id=${tx_id} already processed as reversal`);
+        return ok('Approved');
+      }
+
+      log(`User balance BEFORE reversal: ${userData.coins_balance}`);
+
+      // Use absolute value of reward (TheoremReach may send positive or negative)
       const deductAmount = Math.abs(rewardAmount);
 
       if (deductAmount > 0) {
@@ -231,54 +234,86 @@ export async function GET(request: NextRequest) {
 
         if (deductError) {
           log(`Deduct RPC failed: ${deductError.message}`);
-          return NextResponse.json(
-            { success: false, error: "Failed to deduct balance" },
-            { status: 500 }
-          );
+          return ok('Rejected');
         }
 
         const newBalance = deductResult?.[0]?.new_balance ?? deductResult?.new_balance ?? '?';
         log(`SUCCESS: Deducted ${deductAmount} from user ${user_id}. New balance: ${newBalance}`);
-      }
 
-      // Log reversal transaction
-      const { error: transactionError } = await supabase
-        .from("theoremreach_transactions")
-        .insert({
-          tx_id: tx_id,
-          user_id: user_id,
-          reward: -Math.floor(deductAmount),
-          currency_usd: currencyAmount,
-          is_reversal: true,
-          is_screenout: isScreenout,
-          is_profiler: isProfiler,
-          is_offer: isOffer,
-          offer_name: offer_name && !offer_name.includes('{') ? offer_name : null, // Don't save placeholder values
-          offer_id: offer_id,
-          ip_address: ip,
-          placement_id: placement_id && !placement_id.includes('{') ? placement_id : null, // Don't save placeholder values
-        });
+        // Verify the deduction
+        const { data: updatedUser } = await supabase
+          .from('users')
+          .select('coins_balance, total_earned')
+          .eq('id', user_id)
+          .single();
 
-      if (transactionError) {
-        log(`Error logging reversal: ${transactionError.message}`);
+        log(`User balance AFTER reversal: ${updatedUser?.coins_balance || 0}`);
       } else {
-        log(`Reversal logged: tx_id=${tx_id}`);
+        log(`NOT deducting: amount is 0`);
       }
 
-      return NextResponse.json({
-        success: true,
-        message: "Reversal processed successfully",
-        amount: -deductAmount,
+      // Log reversal record
+      const { error: insertError } = await supabase.from('theoremreach_transactions').insert({
+        tx_id: tx_id,
+        user_id: user_id,
+        reward: -deductAmount,
+        currency_usd: -Math.abs(currencyAmount),
+        is_reversal: true,
+        is_screenout: isScreenout,
+        is_profiler: isProfiler,
+        is_offer: isOffer,
+        offer_name: offer_name,
+        offer_id: offer_id,
+        ip_address: ip,
+        placement_id: placement_id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
+
+      if (insertError) {
+        log(`Reversal transaction insert failed: ${insertError.message}`);
+      } else {
+        log(`Reversal transaction logged: tx_id=${tx_id}`);
+      }
+
+      return ok('Approved');
 
     } else {
       // ═══════════════════════════════════════════════════════════════════
-      // COMPLETION HANDLER
+      // COMPLETION HANDLER (normal completion, screenout, or profiler)
       // ═══════════════════════════════════════════════════════════════════
-      
-      // Only credit if reward is positive
+
+      // Check for duplicate completion (same tx_id with positive reward)
+      const { data: existing, error: checkError } = await supabase
+        .from('theoremreach_transactions')
+        .select('id, reward')
+        .eq('tx_id', tx_id)
+        .eq('is_reversal', false)
+        .gt('reward', 0)
+        .limit(1);
+
+      if (checkError) {
+        log(`Duplicate check error: ${checkError.message}`);
+      }
+
+      if (existing && existing.length > 0) {
+        log(`DUPLICATE COMPLETION IGNORED: tx_id=${tx_id} already processed as completion`);
+        return ok('Approved');
+      }
+
+      // Determine transaction type
+      let txType = 'survey';
+      if (isScreenout) txType = 'screenout';
+      if (isProfiler) txType = 'profiler';
+      if (isOffer) txType = 'offer';
+
+      log(`Transaction type: ${txType}`);
+
+      // Credit user if reward > 0
       if (rewardAmount > 0) {
-        // Credit user using RPC function
+        log(`User balance BEFORE credit: coins=${userData.coins_balance}, total_earned=${userData.total_earned}`);
+        log(`Crediting user: user_id=${user_id}, reward=${rewardAmount}`);
+
         const { data: creditResult, error: creditError } = await supabase.rpc('credit_postback', {
           p_user_id: user_id,
           p_amount: rewardAmount
@@ -286,103 +321,79 @@ export async function GET(request: NextRequest) {
 
         if (creditError) {
           log(`Credit RPC failed: ${creditError.message}`);
-          return NextResponse.json(
-            { success: false, error: "Failed to update balance" },
-            { status: 500 }
-          );
+          return ok('Rejected');
         }
 
         const newBalance = creditResult?.[0]?.new_balance ?? creditResult?.new_balance ?? '?';
         const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
         log(`SUCCESS: Credited ${rewardAmount} to user ${user_id}. New balance: ${newBalance}, New total: ${newTotal}`);
+      } else {
+        log(`Reward is 0, skipping credit`);
+      }
 
-        // TheoremReach doesn't have event-based milestones like Notik
-        // But we can update offer status if the offer exists in user_offer_interactions
-        if (offer_id) {
-          const { data: interaction } = await supabase
-            .from('user_offer_interactions')
-            .select('id')
-            .eq('user_id', user_id)
-            .eq('offer_id', offer_id)
-            .eq('provider', 'theoremreach')
-            .single();
+      // Log completion record
+      const { error: insertError } = await supabase.from('theoremreach_transactions').insert({
+        tx_id: tx_id,
+        user_id: user_id,
+        reward: rewardAmount,
+        currency_usd: currencyAmount,
+        is_reversal: false,
+        is_screenout: isScreenout,
+        is_profiler: isProfiler,
+        is_offer: isOffer,
+        offer_name: offer_name,
+        offer_id: offer_id,
+        ip_address: ip,
+        placement_id: placement_id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
 
-          if (interaction) {
-            log(`Updating TheoremReach offer status to completed: offer_id=${offer_id}`);
-            
-            const { error: updateError } = await supabase
-              .from('user_offer_interactions')
-              .update({ status: 'completed' })
-              .eq('id', interaction.id);
+      if (insertError) {
+        log(`Transaction insert failed: ${insertError.message}`);
+      } else {
+        log(`Transaction logged: tx_id=${tx_id}, type=${txType}`);
+      }
 
-            if (updateError) {
-              log(`TheoremReach offer status update failed: ${updateError.message}`);
+      // Check for referrer and add 5% commission
+      if (rewardAmount > 0) {
+        const { data: userWithReferrer, error: referrerError } = await supabase
+          .from('users')
+          .select('referred_by, email_verified')
+          .eq('id', user_id)
+          .single();
+
+        if (!referrerError && userWithReferrer?.referred_by && userWithReferrer?.email_verified) {
+          const commissionAmount = Math.round(rewardAmount * 0.05);
+          if (commissionAmount > 0) {
+            const { error: commissionError } = await supabase.rpc('increment_pending_referral_earnings', {
+              uid: userWithReferrer.referred_by,
+              amount: commissionAmount,
+            });
+            if (commissionError) {
+              log(`Referral commission failed: ${commissionError.message}`);
             } else {
-              log(`TheoremReach offer status updated to completed`);
+              log(`Referral commission: ${commissionAmount} coins added to pending earnings for referrer ${userWithReferrer.referred_by}`);
             }
           }
         }
-      } else {
-        log(`Reward is 0 or negative, skipping credit`);
       }
 
-      // Log transaction
-      const { error: transactionError } = await supabase
-        .from("theoremreach_transactions")
-        .insert({
-          tx_id: tx_id,
-          user_id: user_id,
-          reward: Math.floor(rewardAmount),
-          currency_usd: currencyAmount,
-          is_reversal: false,
-          is_screenout: isScreenout,
-          is_profiler: isProfiler,
-          is_offer: isOffer,
-          offer_name: offer_name && !offer_name.includes('{') ? offer_name : null, // Don't save placeholder values
-          offer_id: offer_id,
-          ip_address: ip,
-          placement_id: placement_id && !placement_id.includes('{') ? placement_id : null, // Don't save placeholder values
-        });
-
-      if (transactionError) {
-        log(`Error logging transaction: ${transactionError.message}`);
-      } else {
-        log(`Transaction logged: tx_id=${tx_id}, offer=${offer_name}`);
-      }
-
-      // Check for referrer and add 5% commission (only for completions, not reversals)
-      if (rewardAmount > 0 && userData.referred_by && userData.email_verified) {
-        const commissionAmount = Math.round(rewardAmount * 0.05);
-        if (commissionAmount > 0) {
-          const { error: commissionError } = await supabase.rpc('increment_pending_referral_earnings', {
-            uid: userData.referred_by,
-            amount: commissionAmount,
-          });
-          if (commissionError) {
-            log(`Referral commission failed: ${commissionError.message}`);
-          } else {
-            log(`Referral commission: ${commissionAmount} coins added to pending earnings for referrer ${userData.referred_by}`);
-          }
-        }
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: "Reward credited successfully",
-        amount: rewardAmount,
-      });
+      return ok('Approved');
     }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error("TheoremReach postback error:", message);
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    log(`UNEXPECTED ERROR: ${message}`);
+    // ALWAYS return 200 to prevent TheoremReach retry storms
+    return ok('Rejected');
   }
 }
 
-// Support POST method as well
+export async function GET(request: NextRequest) {
+  return handleTheoremReachPostback(request);
+}
+
 export async function POST(request: NextRequest) {
-  return GET(request);
+  return handleTheoremReachPostback(request);
 }

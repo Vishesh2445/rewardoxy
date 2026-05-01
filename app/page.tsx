@@ -771,6 +771,7 @@ export default function Home() {
                 { src: "/taskwall.svg", alt: "Taskwall" },
                 { src: "/notik.webp", alt: "Notik" },
                 { src: "https://cdn.gemiad.com/logos/Asset_2.png", alt: "Gemiad" },
+                { src: "/revtoo.svg", alt: "Revtoo" },
               ].map((logo, idx) => (
                 <Box
                   key={`logo-1-${idx}`}
@@ -814,6 +815,7 @@ export default function Home() {
                 { src: "/taskwall.svg", alt: "Taskwall" },
                 { src: "/notik.webp", alt: "Notik" },
                 { src: "https://cdn.gemiad.com/logos/Asset_2.png", alt: "Gemiad" },
+                { src: "/revtoo.svg", alt: "Revtoo" },
               ].map((logo, idx) => (
                 <Box
                   key={`logo-2-${idx}`}

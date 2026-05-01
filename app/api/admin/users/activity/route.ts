@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ completions: [], withdrawals: [] });
   }
 
-  const [completionsRes, cpxRes, notikRes, gemiadRes, theoremreachRes, withdrawalsRes] = await Promise.all([
+  const [completionsRes, cpxRes, notikRes, gemiadRes, theoremreachRes, revtooRes, withdrawalsRes] = await Promise.all([
     adminSupabase
       .from("completions")
       .select("id, program_id, coins_awarded, payout_decimal, created_at, source")
@@ -52,6 +52,12 @@ export async function GET(request: NextRequest) {
     adminSupabase
       .from("theoremreach_transactions")
       .select("id, tx_id, reward, offer_name, is_reversal, is_screenout, is_profiler, is_offer, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    adminSupabase
+      .from("revtoo_transactions")
+      .select("id, trans_id, reward, offer_name, offer_type, status, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(20),
@@ -123,6 +129,16 @@ export async function GET(request: NextRequest) {
     };
   });
 
+  // Transform Revtoo transactions
+  const revtooCompletions = (revtooRes.data ?? []).map(r => ({
+    id: `revtoo-${r.id}`,
+    offer_name: r.offer_name ? `Revtoo - ${r.offer_name}` : 'Revtoo Offer',
+    coins: r.status === 1 ? Math.round(Number(r.reward)) : -Math.round(Number(r.reward)),
+    status: r.status === 1 ? 'completed' : 'reversed',
+    completed_at: r.created_at,
+    source: 'revtoo',
+  }));
+
   // Merge all completions and sort by date
   const allCompletions = [
     ...completions,
@@ -130,6 +146,7 @@ export async function GET(request: NextRequest) {
     ...notikCompletions,
     ...gemiadCompletions,
     ...theoremreachCompletions,
+    ...revtooCompletions,
   ].sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
     .slice(0, 20); // Limit to 20 most recent
 
