@@ -734,15 +734,25 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         }
       }
       
-      // Combine offers with priority: Gemiad > Notik > Vortex
+      // Process Revtoo offers (Priority 4)
+      if (revtooResponse.ok) {
+        const revtooData = await revtooResponse.json();
+        if (revtooData.success && revtooData.offers && Array.isArray(revtooData.offers)) {
+          revtooOffers = revtooData.offers;
+          console.log(`Revtoo offers loaded: ${revtooOffers.length}`);
+        }
+      }
+      
+      // Combine offers with priority: Gemiad > Notik > Vortex > Revtoo
       // Mix them in a round-robin fashion for better distribution
       const combinedOffers: NotikOffer[] = [];
-      const maxProviderLength = Math.max(gemiadOffers.length, notikOffers.length, vortexOffers.length);
+      const maxProviderLength = Math.max(gemiadOffers.length, notikOffers.length, vortexOffers.length, revtooOffers.length);
       
       for (let i = 0; i < maxProviderLength; i++) {
         if (i < gemiadOffers.length) combinedOffers.push(gemiadOffers[i]);
         if (i < notikOffers.length) combinedOffers.push(notikOffers[i]);
         if (i < vortexOffers.length) combinedOffers.push(vortexOffers[i]);
+        if (i < revtooOffers.length) combinedOffers.push(revtooOffers[i]);
       }
       
       console.log(`Total combined offers: ${combinedOffers.length}`);
