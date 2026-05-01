@@ -55,13 +55,18 @@ export async function GET(request: NextRequest) {
     // Get client IP
     const clientIp = getClientIp(request);
 
-    // Build Revtoo API URL
-    // Format: https://revtoo.com/offerwall/[API_KEY]/[USER_ID]
-    const apiUrl = `https://revtoo.com/api/offers/${REVTOO_API_KEY}/${user_id}`;
+    // Build Revtoo API URL with query parameters
+    // Format: https://revtoo.com/api/offers/?api_key=KEY&user_id=USER_ID&countries=COUNTRY&limit=100
+    const apiUrl = new URL('https://revtoo.com/api/offers/');
+    apiUrl.searchParams.append('api_key', REVTOO_API_KEY);
+    apiUrl.searchParams.append('user_id', user_id);
+    apiUrl.searchParams.append('countries', countryCode);
+    apiUrl.searchParams.append('limit', '100');
+    apiUrl.searchParams.append('page', '1');
 
-    console.log(`[Revtoo] Fetching offers for user ${user_id}, country: ${countryCode}`);
+    console.log(`[Revtoo] Fetching offers for user ${user_id}, country: ${countryCode}, URL: ${apiUrl.toString()}`);
 
-    const response = await fetch(apiUrl, {
+    const response = await fetch(apiUrl.toString(), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

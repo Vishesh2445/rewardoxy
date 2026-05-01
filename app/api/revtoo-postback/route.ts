@@ -155,10 +155,10 @@ async function handleRevtooPostback(request: NextRequest) {
         return ok('ok');
       }
 
-      // Credit user if reward > 0 and not a test
-      if (rewardAmount > 0 && !isTest) {
+      // Credit user if reward > 0
+      if (rewardAmount > 0) {
         log(`User balance BEFORE credit: coins=${userData.coins_balance}, total_earned=${userData.total_earned}`);
-        log(`Crediting user: subId=${subId}, reward=${rewardAmount}`);
+        log(`Crediting user: subId=${subId}, reward=${rewardAmount}${isTest ? ' (TEST)' : ''}`);
 
         const { data: creditResult, error: creditError } = await supabase.rpc('credit_postback', {
           p_user_id: subId,
@@ -195,8 +195,6 @@ async function handleRevtooPostback(request: NextRequest) {
             }
           }
         }
-      } else if (isTest) {
-        log(`TEST POSTBACK - Skipping credit`);
       } else {
         log(`Reward is 0, skipping credit`);
       }
@@ -250,8 +248,8 @@ async function handleRevtooPostback(request: NextRequest) {
       // Deduct the reward amount (Revtoo sends positive values for reversals)
       const deductAmount = Math.abs(rewardAmount);
 
-      if (deductAmount > 0 && !isTest) {
-        log(`Deducting ${deductAmount} coins from user ${subId}`);
+      if (deductAmount > 0) {
+        log(`Deducting ${deductAmount} coins from user ${subId}${isTest ? ' (TEST)' : ''}`);
 
         const { data: deductResult, error: deductError } = await supabase.rpc('deduct_user_points', {
           p_userid: subId,
@@ -274,8 +272,6 @@ async function handleRevtooPostback(request: NextRequest) {
           .single();
 
         log(`User balance AFTER reversal: ${updatedUser?.coins_balance || 0}`);
-      } else if (isTest) {
-        log(`TEST POSTBACK - Skipping deduction`);
       } else {
         log(`NOT deducting: amount is 0`);
       }
