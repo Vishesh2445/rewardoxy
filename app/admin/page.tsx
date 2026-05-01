@@ -10,7 +10,7 @@ export default async function AdminDashboardPage() {
   const [usersResult, coinsResult, pendingResult, completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, bannedResult] =
     await Promise.all([
       adminSupabase.from("users").select("id", { count: "exact", head: true }),
-      adminSupabase.from("users").select("coins_balance"),
+      adminSupabase.from("users").select("total_earned"),
       adminSupabase
         .from("withdrawals")
         .select("id", { count: "exact", head: true })
@@ -43,7 +43,7 @@ export default async function AdminDashboardPage() {
 
   const totalUsers = usersResult.count ?? 0;
   const totalCoins = (coinsResult.data ?? []).reduce(
-    (sum, u: { coins_balance: number }) => sum + (u.coins_balance ?? 0),
+    (sum, u: { total_earned: number }) => sum + (u.total_earned ?? 0),
     0
   );
   const pendingWithdrawals = pendingResult.count ?? 0;

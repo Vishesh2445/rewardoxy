@@ -9,6 +9,15 @@ function convertToUSD(amount: number | string | undefined): number {
   return Math.round((num / 1000) * 100) / 100;
 }
 
+// Parse Revtoo amount (already in USD, no conversion needed)
+function parseRevtooAmount(amount: number | string | undefined): number {
+  if (!amount) return 0;
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(num)) return 0;
+  // Round to 2 decimal places
+  return Math.round(num * 100) / 100;
+}
+
 // Extracts client IP from various headers
 function getClientIp(request: NextRequest): string {
   const cfConnectingIp = request.headers.get('cf-connecting-ip');
@@ -126,11 +135,47 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(`[Revtoo] Found ${allOffers.length} offers`);
+    
+    // Log first offer structure for debugging
+    if (allOffers.length > 0) {
+      console.log(`[Revtoo] First offer structure:`, JSON.stringify(allOffers[0], null, 2));
+      console.log(`[Revtoo] First offer keys:`, Object.keys(allOffers[0]));
+      // Check for payout-related fields
+      const offer = allOffers[0];
+      console.log(`[Revtoo] Payout fields: payout=${offer.payout}, reward=${offer.reward}, value=${offer.value}, reward_value=${offer.reward_value}, amount=${offer.amount}`);
+      // Check for image-related fields
+      console.log(`[Revtoo] Image fields: image_url=${offer.image_url}, image=${offer.image}, icon=${offer.icon}, thumbnail=${offer.thumbnail}, logo=${offer.logo}, image_high=${offer.image_high}`);
+    }
 
     // Transform Revtoo offers to match our format
     const processedOffers = allOffers
       .filter((offer: any) => offer && (offer.offer_id || offer.id) && (offer.name || offer.title))
       .map((offer: any) => {
+        // Try multiple payout field names - Revtoo might use different field names
+        const payoutValue = offer.payout 
+          || offer.reward 
+          || offer.reward_value 
+          || offer.reward_amount 
+          || offer.amount 
+          || offer.value
+          || offer.cpa_payout
+          || offer.cpi_payout
+          || offer.payout_value
+          || 0;
+        
+        // Try multiple image field names
+        const imageUrl = offer.image_url 
+          || offer.image 
+          || offer.icon 
+          || offer.thumbnail
+          || offer.logo
+          || offer.image_high
+          || offer.image_low
+          || '';
+        
+        console.log(`[Revtoo] Offer "${offer.name || offer.title}" - raw payout attempt: payout=${offer.payout}, reward=${offer.reward}, value=${offer.value}, final=${payoutValue}`);
+        console.log(`[Revtoo] Offer "${offer.name || offer.title}" - image_url attempt: found=${imageUrl ? 'yes' : 'no'}, value=${imageUrl}`);
+        
         // Normalize the offer structure
         const normalizedOffer = {
           offer_id: offer.offer_id || offer.id,
@@ -139,17 +184,17 @@ export async function GET(request: NextRequest) {
           description1: offer.description || offer.description1 || '',
           description2: offer.description2 || '',
           description3: offer.description3 || '',
-          image_url: offer.image_url || offer.image || offer.icon || '',
-          payout: convertToUSD(offer.payout || offer.reward || 0),
-          click_url: offer.click_url || offer.url || `https://revtoo.com/offerwall/${REVTOO_API_KEY}/${user_id}`,
+          image_url: imageUrl,
+          payout: parseRevtooAmount(payoutValue),
+          click_url: offer.url || offer.click_url || `https://revtoo.com/offerwall/${REVTOO_API_KEY}/${user_id}`,
           categories: offer.categories || offer.category || [],
           provider: 'Revtoo',
-          device: offer.device || offer.devices || [],
+          device: offer.os || offer.device || offer.devices || [],
           trackingType: offer.tracking_type || offer.trackingType || offer.type || '',
           events: offer.events?.map((event: any) => ({
             id: event.id || event.event_id,
-            name: event.name || event.title,
-            payout: convertToUSD(event.reward || event.payout),
+            name: event.name || event.title || event.event_title,
+            payout: parseRevtooAmount(event.payout || 0),
           })) || [],
         };
 
@@ -168,6 +213,12 @@ export async function GET(request: NextRequest) {
       });
 
     console.log(`[Revtoo] Processed ${processedOffers.length} offers`);
+    
+    // Log first few processed offers to debug payout values
+    if (processedOffers.length > 0) {
+      console.log(`[Revtoo] First processed offer payout: ${processedOffers[0].payout}`);
+      console.log(`[Revtoo] Sample payouts:`, processedOffers.slice(0, 3).map(o => ({ name: o.name, payout: o.payout })));
+    }
 
     return NextResponse.json({
       success: true,

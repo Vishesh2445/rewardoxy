@@ -801,16 +801,29 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       
       console.log(`Sorted gaming offers: ${sortedOffers.length}`);
       
+      // Pin a specific offer to the top (if configured)
+      const pinnedOfferId = process.env.NEXT_PUBLIC_PINNED_OFFER_ID;
+      let finalOffers = sortedOffers;
+      
+      if (pinnedOfferId) {
+        const pinnedOfferIndex = finalOffers.findIndex(o => String(o.id) === pinnedOfferId || String(o.offer_id) === pinnedOfferId);
+        if (pinnedOfferIndex > 0) {
+          const pinnedOffer = finalOffers.splice(pinnedOfferIndex, 1)[0];
+          finalOffers.unshift(pinnedOffer);
+          console.log(`Pinned offer ${pinnedOfferId} to top`);
+        }
+      }
+      
       // Store all offers
-      setAllOffers(sortedOffers);
+      setAllOffers(finalOffers);
       
       // Display first 12 offers
-      const initialBatch = sortedOffers.slice(0, 12);
+      const initialBatch = finalOffers.slice(0, 12);
       setDisplayedOffers(initialBatch);
       currentIndex.current = initialBatch.length;
       
       // Check if there are more offers
-      setHasMore(initialBatch.length < sortedOffers.length);
+      setHasMore(initialBatch.length < finalOffers.length);
     } catch (error) {
       console.error("Error fetching offers:", error);
     } finally {
@@ -1081,7 +1094,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         ) : (
           // Show actual offers
           <>
-            {displayedOffers.map((offer) => (
+            {displayedOffers.map((offer, index) => (
           <Box
             key={offer.offer_id}
             sx={{
@@ -1101,6 +1114,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
                 p: { xs: 0.75, sm: 1.5 },
                 borderRadius: { xs: 1.5, sm: 2.5 },
                 transition: "all 0.2s",
+                border: index === 0 ? "2px solid #01D676" : "1px solid rgba(255, 255, 255, 0.05)",
                 "&:hover": {
                   bgcolor: "#2a2b45",
                 },
