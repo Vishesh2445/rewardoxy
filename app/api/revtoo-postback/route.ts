@@ -255,7 +255,7 @@ async function handleRevtooPostback(request: NextRequest) {
 
         const { data: deductResult, error: deductError } = await supabase.rpc('deduct_user_points', {
           p_userid: subId,
-          p_amount: Math.floor(deductAmount)
+          p_amount: deductAmount
         });
 
         if (deductError) {
