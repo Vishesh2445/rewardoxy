@@ -129,18 +129,18 @@ export async function GET(request: NextRequest) {
 
     // Transform Revtoo offers to match our format
     const processedOffers = allOffers
-      .filter((offer: any) => offer && (offer.offer_id || offer.id) && offer.name)
+      .filter((offer: any) => offer && (offer.offer_id || offer.id) && (offer.name || offer.title))
       .map((offer: any) => {
         // Normalize the offer structure
         const normalizedOffer = {
           offer_id: offer.offer_id || offer.id,
           id: offer.id || offer.offer_id,
-          name: offer.name || offer.title,
+          name: offer.title || offer.name,
           description1: offer.description || offer.description1 || '',
           description2: offer.description2 || '',
           description3: offer.description3 || '',
           image_url: offer.image_url || offer.image || offer.icon || '',
-          payout: convertToUSD(offer.reward || offer.payout || 0),
+          payout: convertToUSD(offer.payout || offer.reward || 0),
           click_url: offer.click_url || offer.url || `https://revtoo.com/offerwall/${REVTOO_API_KEY}/${user_id}`,
           categories: offer.categories || offer.category || [],
           provider: 'Revtoo',
