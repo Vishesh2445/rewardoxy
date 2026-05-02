@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Box, Dialog, DialogTitle, DialogContent, IconButton, Paper, CircularProgress } from "@mui/material";
+import { Box, Dialog, DialogTitle, DialogContent, IconButton, Paper, CircularProgress, Button } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
@@ -1444,6 +1444,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
   const [open, setOpen] = useState(false);
   const [activeWall, setActiveWall] = useState<WallType | null>(null);
   const [iframeLoading, setIframeLoading] = useState(true);
+  const [iframeError, setIframeError] = useState(false);
   const [adBlockDetected, setAdBlockDetected] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<DeviceOS[]>(["android", "windows"]);
   
@@ -1497,6 +1498,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
 
     setActiveWall(wall);
     setIframeLoading(true);
+    setIframeError(false);
     setOpen(true);
   };
 
@@ -1536,9 +1538,18 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       return `https://gemiwall.com/${placementId}/${userId}`;
     }
     if (activeWall === "TheoremReach") {
-      const placementId = process.env.NEXT_PUBLIC_THEOREMREACH_PLACEMENT_ID || "your_placement_id_here";
-      // TheoremReach surveywall URL format with user ID
-      return `https://api.theoremreach.com/web/${placementId}/${userId}`;
+      const apiKey = process.env.NEXT_PUBLIC_THEOREMREACH_API_KEY || "";
+      const placementId = process.env.NEXT_PUBLIC_THEOREMREACH_PLACEMENT_ID || "";
+      // TheoremReach direct entry URL format (per official documentation)
+      // https://theoremreach.com/respondent_entry/direct?api_key=X&user_id=X&transaction_id=X&placement_id=X
+      const transactionId = `${userId}-${Date.now()}`;
+      const params = new URLSearchParams({
+        api_key: apiKey,
+        user_id: userId,
+        transaction_id: transactionId,
+        ...(placementId && { placement_id: placementId }),
+      });
+      return `https://theoremreach.com/respondent_entry/direct?${params.toString()}`;
     }
     if (activeWall === "Revtoo") {
       const apiKey = process.env.NEXT_PUBLIC_REVTOO_API_KEY || "";
@@ -2514,7 +2525,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
         <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden", position: "relative", bgcolor: colors.background.default }}>
           
           {/* Loading Animation */}
-          {iframeLoading && !adBlockDetected && (
+          {iframeLoading && !adBlockDetected && !iframeError && (
             <Box
               sx={{
                 position: "absolute", inset: 0,
@@ -2545,16 +2556,63 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Box>
           )}
 
+          {/* Iframe Error Message */}
+          {iframeError && (
+            <Box
+              sx={{
+                position: "absolute", inset: 0,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                textAlign: "center", p: 3, zIndex: 3, bgcolor: colors.background.default,
+                border: `1px solid ${colors.glass.border}`, borderRadius: 2, m: 2
+              }}
+            >
+              <Typography sx={{ color: colors.text.secondary, mb: 1.5, fontSize: "1rem" }}>
+                Failed to load {activeWall}
+              </Typography>
+              <Typography sx={{ color: colors.text.secondary, opacity: 0.8, fontSize: "0.875rem", mb: 2 }}>
+                The offer wall could not be loaded. This may be due to connection issues or an invalid configuration.
+              </Typography>
+              <Button 
+                onClick={() => {
+                  setIframeError(false);
+                  setIframeLoading(true);
+                }}
+                sx={{
+                  bgcolor: colors.primary,
+                  color: "#000",
+                  fontWeight: 600,
+                  px: 2,
+                  py: 1,
+                  borderRadius: 1,
+                  "&:hover": {
+                    bgcolor: "rgba(1, 214, 118, 0.8)"
+                  }
+                }}
+              >
+                Try Again
+              </Button>
+            </Box>
+          )}
+
           {activeWall && (
             <Box
               component="iframe"
               src={iframeSrc}
-              onLoad={() => setIframeLoading(false)}
+              onLoad={() => {
+                setIframeLoading(false);
+                setIframeError(false);
+              }}
+              onError={() => {
+                setIframeLoading(false);
+                setIframeError(true);
+              }}
               title={`${activeWall}`}
+              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation allow-top-navigation-by-user-activation"
+              allow="clipboard-write"
               sx={{ 
                 width: "100%", height: "100%", border: "none", 
                 bgcolor: colors.background.default,
-                display: adBlockDetected ? "none" : "block" 
+                display: (adBlockDetected || iframeError) ? "none" : "block" 
               }}
             />
           )}

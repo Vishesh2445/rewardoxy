@@ -151,17 +151,29 @@ export async function GET(request: NextRequest) {
     const processedOffers = allOffers
       .filter((offer: any) => offer && (offer.offer_id || offer.id) && (offer.name || offer.title))
       .map((offer: any) => {
-        // Try multiple payout field names - Revtoo might use different field names
-        const payoutValue = offer.payout 
-          || offer.reward 
-          || offer.reward_value 
-          || offer.reward_amount 
-          || offer.amount 
-          || offer.value
-          || offer.cpa_payout
-          || offer.cpi_payout
-          || offer.payout_value
-          || 0;
+        // Revtoo returns 'reward' field as the payout amount (already in USD)
+        // First check if payout is a variable asterisk
+        let payoutValue = 0;
+        
+        if (offer.reward === '*' || offer.payout === '*') {
+          // Variable reward - use reward_value from API response as estimate
+          payoutValue = data.reward_value || 0;
+        } else if (offer.reward && offer.reward !== '*') {
+          // Use reward field (primary payout from Revtoo API)
+          payoutValue = offer.reward;
+        } else if (offer.payout && offer.payout !== '*') {
+          // Fallback to payout field
+          payoutValue = offer.payout;
+        } else {
+          // Try other field names
+          payoutValue = offer.reward_amount 
+            || offer.amount 
+            || offer.value
+            || offer.cpa_payout
+            || offer.cpi_payout
+            || offer.payout_value
+            || 0;
+        }
         
         // Try multiple image field names
         const imageUrl = offer.image_url 
@@ -173,8 +185,8 @@ export async function GET(request: NextRequest) {
           || offer.image_low
           || '';
         
-        console.log(`[Revtoo] Offer "${offer.name || offer.title}" - raw payout attempt: payout=${offer.payout}, reward=${offer.reward}, value=${offer.value}, final=${payoutValue}`);
-        console.log(`[Revtoo] Offer "${offer.name || offer.title}" - image_url attempt: found=${imageUrl ? 'yes' : 'no'}, value=${imageUrl}`);
+        console.log(`[Revtoo] Offer "${offer.name || offer.title}" - payout: ${payoutValue}, reward: ${offer.reward}, reward_value: ${data.reward_value}`);
+        console.log(`[Revtoo] Offer "${offer.name || offer.title}" - image: ${imageUrl ? 'yes' : 'no'}`);
         
         // Normalize the offer structure
         const normalizedOffer = {
@@ -194,7 +206,7 @@ export async function GET(request: NextRequest) {
           events: offer.events?.map((event: any) => ({
             id: event.id || event.event_id,
             name: event.name || event.title || event.event_title,
-            payout: parseRevtooAmount(event.payout || 0),
+            payout: parseRevtooAmount(event.payout || event.reward || 0),
           })) || [],
         };
 
