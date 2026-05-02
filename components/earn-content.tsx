@@ -22,6 +22,7 @@ type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "G
 type DeviceOS = "android" | "ios" | "windows";
 
 interface NotikOffer {
+  id?: string; // Optional id field
   offer_id: string;
   name: string;
   description1?: string;
