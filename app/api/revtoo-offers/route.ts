@@ -9,13 +9,14 @@ function convertToUSD(amount: number | string | undefined): number {
   return Math.round((num / 1000) * 100) / 100;
 }
 
-// Parse Revtoo amount (already in USD, no conversion needed)
+// Parse Revtoo amount - Revtoo returns amounts in coins, need to convert to USD
+// 1000 coins = 1 USD (same as other providers)
 function parseRevtooAmount(amount: number | string | undefined): number {
   if (!amount) return 0;
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
   if (isNaN(num)) return 0;
-  // Round to 2 decimal places
-  return Math.round(num * 100) / 100;
+  // Convert coins to USD: divide by 1000 and round to 2 decimal places
+  return Math.round((num / 1000) * 100) / 100;
 }
 
 // Extracts client IP from various headers
