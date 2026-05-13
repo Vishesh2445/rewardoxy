@@ -20,7 +20,7 @@ async function sendPasswordResetEmail(email: string, resetToken: string) {
     <path d="M20 8L23.48 16.35L32 17.45L25.5 23.55L27.68 32L20 27.6L12.32 32L14.5 23.55L8 17.45L16.52 16.35L20 8Z" fill="white"/>
     <defs>
       <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-        <stop stop-color="#01D676"/><stop offset="1" stop-color="#007e45"/>
+        <stop stop-color="#10B981"/><stop offset="1" stop-color="#059669"/>
       </linearGradient>
     </defs>
   </svg>`;
@@ -39,7 +39,7 @@ async function sendPasswordResetEmail(email: string, resetToken: string) {
         <td align="center">
           ${logoSvg}
           <h1 style="color: #ffffff; margin: 16px 0 20px 0; font-size: 24px; font-weight: 700;">
-            <span style="color: #01D676;">Reward</span>oxy
+            <span style="color: #10B981;">Reward</span>oxy
           </h1>
         </td>
       </tr>
@@ -52,7 +52,7 @@ async function sendPasswordResetEmail(email: string, resetToken: string) {
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
               <td align="center">
-                <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #01D676 0%, #00B35D 100%); color: #000000; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 16px;">
+                <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #000000; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 700; font-size: 16px;">
                   Reset Password
                 </a>
               </td>

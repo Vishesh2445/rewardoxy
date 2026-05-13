@@ -119,7 +119,7 @@ export default function RootLayout({
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <NextTopLoader color="#01D676" showSpinner={false} />
+            <NextTopLoader color="#10B981" showSpinner={false} />
             {children}
             <ToastContainer
               autoClose={3000}

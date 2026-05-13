@@ -83,9 +83,9 @@ export default function AdminShell({ children }: AdminShellProps) {
         href="/profile"
         sx={{
           "&:hover": {
-            bgcolor: "rgba(1, 214, 118, 0.1) !important",
-            color: "#01D676 !important",
-            "& svg": { color: "#01D676" },
+            bgcolor: "rgba(16, 185, 129, 0.1) !important",
+            color: "#10B981 !important",
+            "& svg": { color: "#10B981" },
           },
         }}
       >

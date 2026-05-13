@@ -174,7 +174,7 @@ export default function MyOffersClient({ userId }: MyOffersClientProps) {
                 position: "absolute",
                 top: { xs: 4, sm: 8 },
                 right: { xs: 4, sm: 8 },
-                bgcolor: offer.status === 'completed' ? "rgba(1, 214, 118, 0.9)" : "rgba(30, 30, 46, 0.9)",
+                bgcolor: offer.status === 'completed' ? "rgba(16, 185, 129, 0.9)" : "rgba(30, 30, 46, 0.9)",
                 px: { xs: 0.5, sm: 1 },
                 py: { xs: 0.25, sm: 0.5 },
                 borderRadius: 10,
@@ -231,7 +231,7 @@ export default function MyOffersClient({ userId }: MyOffersClientProps) {
                 <Typography sx={{ fontSize: "0.65rem", color: colors.text.secondary }}>
                   Progress
                 </Typography>
-                <Typography sx={{ fontSize: "0.65rem", fontWeight: 600, color: "#01D676" }}>
+                <Typography sx={{ fontSize: "0.65rem", fontWeight: 600, color: "#10B981" }}>
                   {offer.milestone_progress.completed_count}/{offer.milestone_progress.total_count}
                 </Typography>
               </Box>
@@ -248,7 +248,7 @@ export default function MyOffersClient({ userId }: MyOffersClientProps) {
                   sx={{
                     width: `${progressPercent}%`,
                     height: "100%",
-                    bgcolor: "#01D676",
+                    bgcolor: "#10B981",
                     transition: "width 0.3s ease",
                   }}
                 />
@@ -622,8 +622,8 @@ function OfferDetailsModal({
               sx={{
                 display: "inline-flex",
                 alignItems: "center",
-                bgcolor: "rgba(1, 214, 118, 0.1)",
-                color: "#01D676",
+                bgcolor: "rgba(16, 185, 129, 0.1)",
+                color: "#10B981",
                 px: 1.5,
                 py: 0.5,
                 borderRadius: 1,
@@ -670,15 +670,15 @@ function OfferDetailsModal({
                   sx={{ 
                     fontSize: { xs: "1.75rem", sm: "2rem" },
                     fontWeight: 700,
-                    color: "#01D676",
+                    color: "#10B981",
                   }}
                 >
                   ${offer.payout}
                 </Typography>
                 <Box
                   sx={{
-                    bgcolor: "rgba(1, 214, 118, 0.1)",
-                    color: "#01D676",
+                    bgcolor: "rgba(16, 185, 129, 0.1)",
+                    color: "#10B981",
                     px: 1.5,
                     py: 0.25,
                     borderRadius: 1,
@@ -696,7 +696,7 @@ function OfferDetailsModal({
               onClick={handlePlayClick}
               sx={{
                 width: "100%",
-                bgcolor: "#01D676",
+                bgcolor: "#10B981",
                 color: "#000",
                 py: 1.5,
                 px: 2,
@@ -711,7 +711,7 @@ function OfferDetailsModal({
                 gap: 1,
                 transition: "all 0.2s ease-in-out",
                 "&:hover": {
-                  bgcolor: "#00c068",
+                  bgcolor: "#059669",
                   transform: "translateY(-2px)",
                 },
               }}
@@ -740,7 +740,7 @@ function OfferDetailsModal({
               borderBottom: "1px solid rgba(255,255,255,0.1)",
             }}
           >
-            <svg viewBox="0 0 18 15" style={{ width: 16, height: 14, color: "#01D676" }}>
+            <svg viewBox="0 0 18 15" style={{ width: 16, height: 14, color: "#10B981" }}>
               <path d="M15.8546 0.664551H2.10464C1.77312 0.664551 1.45518 0.796247 1.22076 1.03067C0.986341 1.26509 0.854645 1.58303 0.854645 1.91455V13.1646C0.854645 13.4961 0.986341 13.814 1.22076 14.0484C1.45518 14.2829 1.77312 14.4146 2.10464 14.4146H15.8546C16.1862 14.4146 16.5041 14.2829 16.7385 14.0484C16.9729 13.814 17.1046 13.4961 17.1046 13.1646V1.91455C17.1046 1.58303 16.9729 1.26509 16.7385 1.03067C16.5041 0.796247 16.1862 0.664551 15.8546 0.664551ZM14.6046 12.5396H3.35464C3.18888 12.5396 3.02991 12.4737 2.9127 12.3565C2.79549 12.2393 2.72964 12.0803 2.72964 11.9146V3.16455C2.72964 2.99879 2.79549 2.83982 2.9127 2.72261C3.02991 2.6054 3.18888 2.53955 3.35464 2.53955C3.52041 2.53955 3.67938 2.6054 3.79659 2.72261C3.9138 2.83982 3.97964 2.99879 3.97964 3.16455V9.15596L6.66246 6.47236C6.7205 6.41425 6.78943 6.36815 6.86531 6.3367C6.94118 6.30525 7.02251 6.28906 7.10464 6.28906C7.18678 6.28906 7.26811 6.30525 7.34398 6.3367C7.41986 6.36815 7.48879 6.41425 7.54683 6.47236L8.97964 7.90596L12.4711 4.41455H10.2296C10.0639 4.41455 9.90491 4.3487 9.7877 4.23149C9.67049 4.11428 9.60464 3.95531 9.60464 3.78955C9.60464 3.62379 9.67049 3.46482 9.7877 3.34761C9.90491 3.2304 10.0639 3.16455 10.2296 3.16455H13.9796C14.1454 3.16455 14.3044 3.2304 14.4216 3.34761C14.5388 3.46482 14.6046 3.62379 14.6046 3.78955V7.53955C14.6046 7.70531 14.5388 7.86428 14.4216 7.98149C14.3044 8.0987 14.1454 8.16455 13.9796 8.16455C13.8139 8.16455 13.6549 8.0987 13.5377 7.98149C13.4205 7.86428 13.3546 7.70531 13.3546 7.53955V5.29814L9.42183 9.23174C9.36379 9.28985 9.29486 9.33595 9.21898 9.3674C9.14311 9.39885 9.06178 9.41504 8.97964 9.41504C8.89751 9.41504 8.81618 9.39885 8.74031 9.3674C8.66443 9.33595 8.5955 9.28985 8.53746 9.23174L7.10464 7.79814L3.97964 10.9231V11.2896H14.6046C14.7704 11.2896 14.9294 11.3554 15.0466 11.4726C15.1638 11.5898 15.2296 11.7488 15.2296 11.9146C15.2296 12.0803 15.1638 12.2393 15.0466 12.3565C14.9294 12.4737 14.7704 12.5396 14.6046 12.5396Z" fill="currentColor"/>
             </svg>
             <Typography sx={{ fontSize: "0.875rem", fontWeight: 700, color: "#fff" }}>
@@ -760,13 +760,13 @@ function OfferDetailsModal({
                     alignItems: "center",
                     justifyContent: "space-between",
                     p: 1.5,
-                    bgcolor: isCompleted ? "rgba(1, 214, 118, 0.05)" : "#222339",
+                    bgcolor: isCompleted ? "rgba(16, 185, 129, 0.05)" : "#222339",
                     borderRadius: 2,
-                    border: `1px solid ${isCompleted ? "rgba(1, 214, 118, 0.2)" : "rgba(255,255,255,0.05)"}`,
+                    border: `1px solid ${isCompleted ? "rgba(16, 185, 129, 0.2)" : "rgba(255,255,255,0.05)"}`,
                     transition: "all 0.2s",
                     "&:hover": {
-                      borderColor: isCompleted ? "rgba(1, 214, 118, 0.4)" : "rgba(1, 214, 118, 0.3)",
-                      bgcolor: isCompleted ? "rgba(1, 214, 118, 0.08)" : "#252640",
+                      borderColor: isCompleted ? "rgba(16, 185, 129, 0.4)" : "rgba(16, 185, 129, 0.3)",
+                      bgcolor: isCompleted ? "rgba(16, 185, 129, 0.08)" : "#252640",
                     },
                   }}
                 >
@@ -776,12 +776,12 @@ function OfferDetailsModal({
                         width: 6,
                         height: 6,
                         borderRadius: "50%",
-                        bgcolor: isCompleted ? "#01D676" : "#3d3f54",
+                        bgcolor: isCompleted ? "#10B981" : "#3d3f54",
                       }}
                     />
                     <Typography sx={{ 
                       fontSize: "0.8125rem", 
-                      color: isCompleted ? "#01D676" : "#fff", 
+                      color: isCompleted ? "#10B981" : "#fff", 
                       fontWeight: 500,
                       textDecoration: isCompleted ? "line-through" : "none",
                       opacity: isCompleted ? 0.8 : 1
@@ -793,7 +793,7 @@ function OfferDetailsModal({
                     <Typography 
                       sx={{ 
                         fontSize: "0.8125rem", 
-                        color: "#01D676",
+                        color: "#10B981",
                         fontWeight: 700,
                       }}
                     >
@@ -804,8 +804,8 @@ function OfferDetailsModal({
                         width: 20,
                         height: 20,
                         borderRadius: "50%",
-                        border: `1.5px solid ${isCompleted ? "#01D676" : "#3d3f54"}`,
-                        bgcolor: isCompleted ? "#01D676" : "transparent",
+                        border: `1.5px solid ${isCompleted ? "#10B981" : "#3d3f54"}`,
+                        bgcolor: isCompleted ? "#10B981" : "transparent",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -864,7 +864,7 @@ function OfferDetailsModal({
       </IconButton>
 
       <Box sx={{ p: 4, textAlign: "center" }}>
-        <Smartphone size={48} color="#01D676" style={{ marginBottom: 16 }} />
+        <Smartphone size={48} color="#10B981" style={{ marginBottom: 16 }} />
         
         <Typography 
           sx={{ 
@@ -925,7 +925,7 @@ function OfferDetailsModal({
             border: "1px solid rgba(255,255,255,0.05)",
             wordBreak: "break-all",
             fontSize: "0.75rem",
-            color: "#01D676",
+            color: "#10B981",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -934,7 +934,7 @@ function OfferDetailsModal({
             transition: "all 0.2s",
             "&:hover": {
               bgcolor: "#252640",
-              borderColor: "rgba(1, 214, 118, 0.2)",
+              borderColor: "rgba(16, 185, 129, 0.2)",
             },
           }}
           onClick={handleCopyLink}
@@ -948,7 +948,7 @@ function OfferDetailsModal({
               alignItems: "center",
               gap: 0.5,
               flexShrink: 0,
-              color: copySuccess ? "#01D676" : colors.text.secondary,
+              color: copySuccess ? "#10B981" : colors.text.secondary,
             }}
           >
             {copySuccess ? (

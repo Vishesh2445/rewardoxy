@@ -83,7 +83,7 @@ function OfferDetailsModal({
       scroll="body"
       PaperProps={{
         sx: {
-          bgcolor: "#161A22",
+          bgcolor: "#0F1219",
           borderRadius: 3,
           maxWidth: "650px",
           maxHeight: "90vh",
@@ -163,8 +163,8 @@ function OfferDetailsModal({
             </Typography>
             <Box
               sx={{
-                bgcolor: "rgba(1, 214, 118, 0.1)",
-                color: "#01D676",
+                bgcolor: "rgba(16, 185, 129, 0.1)",
+                color: "#10B981",
                 px: 1.5,
                 py: 0.5,
                 borderRadius: 1,
@@ -223,7 +223,7 @@ function OfferDetailsModal({
                         gap: 0.5,
                         px: 1,
                         py: 0.5,
-                        bgcolor: "#1C2029",
+                        bgcolor: "#151B26",
                         borderRadius: 1,
                         border: "1px solid rgba(255,255,255,0.05)",
                         color: colors.text.secondary,
@@ -286,15 +286,15 @@ function OfferDetailsModal({
                   sx={{ 
                     fontSize: { xs: "1.75rem", sm: "2rem" },
                     fontWeight: 700,
-                    color: "#01D676",
+                    color: "#10B981",
                   }}
                 >
                   {offer.payout === -1 ? "∞" : `$${offer.payout}`}
                 </Typography>
                 <Box
                   sx={{
-                    bgcolor: "rgba(1, 214, 118, 0.1)",
-                    color: "#01D676",
+                    bgcolor: "rgba(16, 185, 129, 0.1)",
+                    color: "#10B981",
                     px: 1.5,
                     py: 0.25,
                     borderRadius: 1,
@@ -331,7 +331,7 @@ function OfferDetailsModal({
               onClick={handlePlayClick}
               sx={{
                 width: "100%",
-                bgcolor: "#01D676",
+                bgcolor: "#10B981",
                 color: "#000",
                 py: 1.5,
                 px: 2,
@@ -346,7 +346,7 @@ function OfferDetailsModal({
                 gap: 1,
                 transition: "all 0.2s ease-in-out",
                 "&:hover": {
-                  bgcolor: "#00c068",
+                  bgcolor: "#059669",
                   transform: "translateY(-2px)",
                 },
               }}
@@ -368,7 +368,7 @@ function OfferDetailsModal({
         <Box sx={{ px: { xs: 2, sm: 2.5 }, pb: 2, flexShrink: 0 }}>
           <Box 
             sx={{ 
-              bgcolor: "#1C2029",
+              bgcolor: "#151B26",
               p: 2,
               borderRadius: 2,
               border: "1px solid rgba(255,255,255,0.05)",
@@ -427,7 +427,7 @@ function OfferDetailsModal({
               borderBottom: "1px solid rgba(255,255,255,0.1)",
             }}
           >
-            <svg viewBox="0 0 18 15" style={{ width: 16, height: 14, color: "#01D676" }}>
+            <svg viewBox="0 0 18 15" style={{ width: 16, height: 14, color: "#10B981" }}>
               <path d="M15.8546 0.664551H2.10464C1.77312 0.664551 1.45518 0.796247 1.22076 1.03067C0.986341 1.26509 0.854645 1.58303 0.854645 1.91455V13.1646C0.854645 13.4961 0.986341 13.814 1.22076 14.0484C1.45518 14.2829 1.77312 14.4146 2.10464 14.4146H15.8546C16.1862 14.4146 16.5041 14.2829 16.7385 14.0484C16.9729 13.814 17.1046 13.4961 17.1046 13.1646V1.91455C17.1046 1.58303 16.9729 1.26509 16.7385 1.03067C16.5041 0.796247 16.1862 0.664551 15.8546 0.664551ZM14.6046 12.5396H3.35464C3.18888 12.5396 3.02991 12.4737 2.9127 12.3565C2.79549 12.2393 2.72964 12.0803 2.72964 11.9146V3.16455C2.72964 2.99879 2.79549 2.83982 2.9127 2.72261C3.02991 2.6054 3.18888 2.53955 3.35464 2.53955C3.52041 2.53955 3.67938 2.6054 3.79659 2.72261C3.9138 2.83982 3.97964 2.99879 3.97964 3.16455V9.15596L6.66246 6.47236C6.7205 6.41425 6.78943 6.36815 6.86531 6.3367C6.94118 6.30525 7.02251 6.28906 7.10464 6.28906C7.18678 6.28906 7.26811 6.30525 7.34398 6.3367C7.41986 6.36815 7.48879 6.41425 7.54683 6.47236L8.97964 7.90596L12.4711 4.41455H10.2296C10.0639 4.41455 9.90491 4.3487 9.7877 4.23149C9.67049 4.11428 9.60464 3.95531 9.60464 3.78955C9.60464 3.62379 9.67049 3.46482 9.7877 3.34761C9.90491 3.2304 10.0639 3.16455 10.2296 3.16455H13.9796C14.1454 3.16455 14.3044 3.2304 14.4216 3.34761C14.5388 3.46482 14.6046 3.62379 14.6046 3.78955V7.53955C14.6046 7.70531 14.5388 7.86428 14.4216 7.98149C14.3044 8.0987 14.1454 8.16455 13.9796 8.16455C13.8139 8.16455 13.6549 8.0987 13.5377 7.98149C13.4205 7.86428 13.3546 7.70531 13.3546 7.53955V5.29814L9.42183 9.23174C9.36379 9.28985 9.29486 9.33595 9.21898 9.3674C9.14311 9.39885 9.06178 9.41504 8.97964 9.41504C8.89751 9.41504 8.81618 9.39885 8.74031 9.3674C8.66443 9.33595 8.5955 9.28985 8.53746 9.23174L7.10464 7.79814L3.97964 10.9231V11.2896H14.6046C14.7704 11.2896 14.9294 11.3554 15.0466 11.4726C15.1638 11.5898 15.2296 11.7488 15.2296 11.9146C15.2296 12.0803 15.1638 12.2393 15.0466 12.3565C14.9294 12.4737 14.7704 12.5396 14.6046 12.5396Z" fill="currentColor"/>
             </svg>
             <Typography sx={{ fontSize: "0.875rem", fontWeight: 700, color: "#fff" }}>
@@ -445,13 +445,13 @@ function OfferDetailsModal({
                   alignItems: "center",
                   justifyContent: "space-between",
                   p: 1.5,
-                  bgcolor: "#1C2029",
+                  bgcolor: "#151B26",
                   borderRadius: 2,
                   border: "1px solid rgba(255,255,255,0.05)",
                   transition: "all 0.2s",
                   "&:hover": {
-                    borderColor: "rgba(1, 214, 118, 0.3)",
-                    bgcolor: "#1C2029",
+                    borderColor: "rgba(16, 185, 129, 0.3)",
+                    bgcolor: "#151B26",
                   },
                 }}
               >
@@ -461,7 +461,7 @@ function OfferDetailsModal({
                       width: 6,
                       height: 6,
                       borderRadius: "50%",
-                      bgcolor: "rgba(1, 214, 118, 0.08)",
+                      bgcolor: "rgba(16, 185, 129, 0.08)",
                     }}
                   />
                   <Typography sx={{ fontSize: "0.8125rem", color: "#fff", fontWeight: 500 }}>
@@ -472,7 +472,7 @@ function OfferDetailsModal({
                   <Typography 
                     sx={{ 
                       fontSize: "0.8125rem", 
-                      color: "#01D676",
+                      color: "#10B981",
                       fontWeight: 700,
                     }}
                   >
@@ -483,7 +483,7 @@ function OfferDetailsModal({
                       width: 20,
                       height: 20,
                       borderRadius: "50%",
-                      border: "1.5px solid rgba(1, 214, 118, 0.08)",
+                      border: "1.5px solid rgba(16, 185, 129, 0.08)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -506,7 +506,7 @@ function OfferDetailsModal({
       fullWidth
       PaperProps={{
         sx: {
-          bgcolor: "#161A22",
+          bgcolor: "#0F1219",
           borderRadius: 3,
           boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
         },
@@ -538,7 +538,7 @@ function OfferDetailsModal({
       </IconButton>
 
       <Box sx={{ p: 4, textAlign: "center" }}>
-        <Smartphone size={48} color="#01D676" style={{ marginBottom: 16 }} />
+        <Smartphone size={48} color="#10B981" style={{ marginBottom: 16 }} />
         
         <Typography 
           sx={{ 
@@ -593,13 +593,13 @@ function OfferDetailsModal({
 
         <Box
           sx={{
-            bgcolor: "#1C2029",
+            bgcolor: "#151B26",
             p: 2,
             borderRadius: 2,
             border: "1px solid rgba(255,255,255,0.05)",
             wordBreak: "break-all",
             fontSize: "0.75rem",
-            color: "#01D676",
+            color: "#10B981",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -607,8 +607,8 @@ function OfferDetailsModal({
             cursor: "pointer",
             transition: "all 0.2s",
             "&:hover": {
-              bgcolor: "#1C2029",
-              borderColor: "rgba(1, 214, 118, 0.2)",
+              bgcolor: "#151B26",
+              borderColor: "rgba(16, 185, 129, 0.2)",
             },
           }}
           onClick={handleCopyLink}
@@ -622,7 +622,7 @@ function OfferDetailsModal({
               alignItems: "center",
               gap: 0.5,
               flexShrink: 0,
-              color: copySuccess ? "#01D676" : colors.text.secondary,
+              color: copySuccess ? "#10B981" : colors.text.secondary,
             }}
           >
             {copySuccess ? (
@@ -699,24 +699,24 @@ function PlatformSelector({
                 px: { xs: 1.25, sm: 1.5 },
                 py: { xs: 0.625, sm: 0.75 },
                 borderRadius: { xs: 1.5, sm: 2 },
-                bgcolor: isSelected ? "rgba(1, 214, 118, 0.1)" : "#0B0E15",
-                border: `1px solid ${isSelected ? "rgba(1, 214, 118, 0.3)" : "rgba(255, 255, 255, 0.05)"}`,
+                bgcolor: isSelected ? "rgba(16, 185, 129, 0.1)" : "#0A0D14",
+                border: `1px solid ${isSelected ? "rgba(16, 185, 129, 0.3)" : "rgba(255, 255, 255, 0.05)"}`,
                 cursor: "pointer",
                 transition: "all 0.2s",
                 "&:hover": {
-                  borderColor: isSelected ? "rgba(1, 214, 118, 0.5)" : "rgba(255, 255, 255, 0.1)",
-                  bgcolor: isSelected ? "rgba(1, 214, 118, 0.15)" : "#161A22",
+                  borderColor: isSelected ? "rgba(16, 185, 129, 0.5)" : "rgba(255, 255, 255, 0.1)",
+                  bgcolor: isSelected ? "rgba(16, 185, 129, 0.15)" : "#0F1219",
                 },
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", color: isSelected ? "#01D676" : colors.text.secondary }}>
+              <Box sx={{ display: "flex", alignItems: "center", color: isSelected ? "#10B981" : colors.text.secondary }}>
                 <Icon />
               </Box>
-              <Typography sx={{ fontSize: { xs: "0.8125rem", sm: "0.875rem" }, fontWeight: 500, color: isSelected ? "#01D676" : colors.text.primary }}>
+              <Typography sx={{ fontSize: { xs: "0.8125rem", sm: "0.875rem" }, fontWeight: 500, color: isSelected ? "#10B981" : colors.text.primary }}>
                 {platform.label}
               </Typography>
               {isSelected && (
-                <CheckIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: "#01D676" }} />
+                <CheckIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: "#10B981" }} />
               )}
             </Box>
           );
@@ -899,7 +899,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
   }
 
   return (
-    <Box sx={{ bgcolor: "#0B0E15", minHeight: "100vh", width: "100%", pb: 4 }}>
+    <Box sx={{ bgcolor: "#0A0D14", minHeight: "100vh", width: "100%", pb: 4 }}>
       {/* Platform Selector */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, pt: { xs: 2, sm: 3 }, pb: 2 }}>
         <PlatformSelector selectedPlatforms={selectedPlatforms} onToggle={handlePlatformToggle} />
@@ -908,8 +908,18 @@ export default function AllOffersClient({ userId }: { userId: string }) {
       {/* All Offers Grid */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
         {loading && displayedOffers.length === 0 ? (
-          <Box sx={{ py: 8, display: "flex", justifyContent: "center" }}>
-            <CircularProgress size={48} sx={{ color: "#01D676" }} />
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(3, 1fr)", sm: "repeat(4, 1fr)", md: "repeat(6, 1fr)", lg: "repeat(7, 1fr)", xl: "repeat(8, 1fr)" }, gap: { xs: 0.5, sm: 0.75, md: 0.75 }, columnGap: 0 }}>
+            {Array.from({ length: 24 }).map((_, i) => (
+              <Box key={i} sx={{ p: { xs: 0.75, sm: 1 } }}>
+                <Box sx={{ bgcolor: "#0F1219", border: "1px solid rgba(16,185,129,0.06)", p: { xs: 0.75, sm: 1 }, borderRadius: "10px" }}>
+                  <Box sx={{ width: "100%", aspectRatio: "1", borderRadius: "8px", bgcolor: "#151B26", mb: 0.75, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05}s`, "@keyframes pulse": { "0%,100%": { opacity: 0.5 }, "50%": { opacity: 1 } }, position: "relative", overflow: "hidden", "&::after": { content: '""', position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 0%, rgba(16,185,129,0.03) 50%, transparent 100%)", animation: "shimmer 1.5s ease-in-out infinite", animationDelay: `${i * 0.05}s` } }} />
+                  <Box sx={{ height: 10, bgcolor: "#151B26", borderRadius: "4px", mb: 0.5, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.1}s` }} />
+                  <Box sx={{ height: 10, bgcolor: "#151B26", borderRadius: "4px", width: "65%", mb: 0.5, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.2}s` }} />
+                  <Box sx={{ height: 8, bgcolor: "#151B26", borderRadius: "4px", width: "40%", mb: 0.5, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.3}s` }} />
+                  <Box sx={{ height: 11, bgcolor: "#151B26", borderRadius: "4px", width: "50%", animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.4}s` }} />
+                </Box>
+              </Box>
+            ))}
           </Box>
         ) : displayedOffers.length === 0 ? (
           <Box sx={{ py: 8, textAlign: "center" }}>
@@ -923,23 +933,20 @@ export default function AllOffersClient({ userId }: { userId: string }) {
               sx={{
                 display: "grid",
                 gridTemplateColumns: {
-                  xs: "repeat(3, 1fr)",
-                  sm: "repeat(4, 1fr)",
-                  md: "repeat(6, 1fr)",
-                  lg: "repeat(7, 1fr)",
-                  xl: "repeat(8, 1fr)",
+                  xs: "repeat(4, 1fr)",
+                  sm: "repeat(5, 1fr)",
+                  md: "repeat(7, 1fr)",
+                  lg: "repeat(9, 1fr)",
+                  xl: "repeat(10, 1fr)",
                 },
-                gap: { xs: 0.75, sm: 1, md: 1 },
-                columnGap: { xs: 0.5, sm: 0.75, md: 0.75 },
+                gap: { xs: 0.5, sm: 0.75, md: 0.75 },
+                columnGap: 0,
               }}
             >
               {displayedOffers.map((offer, index) => (
                 <Box
                   key={`${offer.offer_id}-${index}`}
                   sx={{
-                    minWidth: { xs: 100, sm: 140 },
-                    maxWidth: { xs: 100, sm: 140 },
-                    flexShrink: 0,
                     cursor: "pointer",
                   }}
                   onClick={() => {
@@ -949,12 +956,13 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                 >
                   <Box
                     sx={{
-                      bgcolor: "#1C2029",
+                      bgcolor: "#151B26",
                       p: { xs: 0.75, sm: 1.5 },
                       borderRadius: { xs: 1.5, sm: 2.5 },
+                      border: "1px solid rgba(255, 255, 255, 0.05)",
                       transition: "all 0.2s",
                       "&:hover": {
-                        bgcolor: "rgba(1, 214, 118, 0.08)",
+                        bgcolor: "rgba(16, 185, 129, 0.08)",
                       },
                     }}
                   >
@@ -965,7 +973,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                           aspectRatio: "1",
                           borderRadius: { xs: 1, sm: 1.5 },
                           overflow: "hidden",
-                          bgcolor: "#161A22",
+                          bgcolor: "#0F1219",
                           backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
                           backgroundSize: "cover",
                           backgroundPosition: "center",
@@ -997,6 +1005,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                           fontSize: { xs: "0.75rem", sm: "0.875rem" },
                           fontWeight: 500,
                           lineHeight: 1.3,
+                          color: colors.text.primary,
                           display: "-webkit-box",
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: "vertical",
@@ -1041,7 +1050,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                 }}
               >
                 {loadingMore && (
-                  <CircularProgress size={32} sx={{ color: "#01D676" }} />
+                  <CircularProgress size={32} sx={{ color: "#10B981" }} />
                 )}
               </Box>
             )}

@@ -55,13 +55,13 @@ const colors = {
   bgCard: "#1d1e30",
   bgInput: "#252539",
   bgButton: "#2F3043",
-  green: "#01D676",
-  greenDark: "#007e45",
+  green: "#10B981",
+  greenDark: "#059669",
   textPrimary: "#ffffff",
   textSecondary: "#a9a9ca",
   divider: "#2a2b43",
-  greenTint: "#00e9411a",
-  gradient: "linear-gradient(180deg, #01d676 0, #007e45 100%)",
+  greenTint: "rgba(16,185,129,0.1)",
+  gradient: "linear-gradient(180deg, #10B981 0, #059669 100%)",
 };
 
 const sxGradientBtn = {
@@ -81,7 +81,7 @@ const sxCard = {
   borderRadius: "16px",
   transition: "border-color 0.2s, box-shadow 0.2s",
   "&:hover": {
-    borderColor: "rgba(1,214,118,0.3)",
+    borderColor: "rgba(16,185,129,0.3)",
   },
 } as const;
 
@@ -95,7 +95,7 @@ const sxBadge = {
   px: 1.5,
   py: 0.5,
   borderRadius: "100px",
-  border: `1px solid rgba(1,214,118,0.2)`,
+  border: `1px solid rgba(16,185,129,0.2)`,
   letterSpacing: "0.05em",
 } as const;
 
@@ -314,7 +314,7 @@ export default function Home() {
               height: 600,
               width: 900,
               borderRadius: "50%",
-              background: "rgba(1,214,118,0.05)",
+              background: "rgba(16,185,129,0.05)",
               filter: "blur(150px)",
             }}
           />
@@ -415,8 +415,8 @@ export default function Home() {
                       width: 64,
                       height: 64,
                       borderRadius: "16px",
-                      background: "linear-gradient(135deg, #01D676 0%, #007e45 100%)",
-                      boxShadow: "0 8px 32px rgba(1,214,118,0.25)",
+                      background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+                      boxShadow: "0 8px 32px rgba(16,185,129,0.25)",
                     }}
                   >
                     <Sparkles size={32} color="#fff" />
@@ -788,8 +788,8 @@ export default function Home() {
                     transition: "all 0.3s ease",
                     cursor: "pointer",
                     "&:hover": {
-                      borderColor: "rgba(1,214,118,0.5)",
-                      bgcolor: "rgba(1,214,118,0.05)",
+                      borderColor: "rgba(16,185,129,0.5)",
+                      bgcolor: "rgba(16,185,129,0.05)",
                       transform: "translateY(-4px)",
                     },
                   }}
@@ -832,8 +832,8 @@ export default function Home() {
                     transition: "all 0.3s ease",
                     cursor: "pointer",
                     "&:hover": {
-                      borderColor: "rgba(1,214,118,0.5)",
-                      bgcolor: "rgba(1,214,118,0.05)",
+                      borderColor: "rgba(16,185,129,0.5)",
+                      bgcolor: "rgba(16,185,129,0.05)",
                       transform: "translateY(-4px)",
                     },
                   }}
@@ -1063,7 +1063,7 @@ export default function Home() {
                       height: 48,
                       borderRadius: "12px",
                       bgcolor: colors.greenTint,
-                      border: `1px solid rgba(1,214,118,0.2)`,
+                      border: `1px solid rgba(16,185,129,0.2)`,
                     }}
                   >
                     <Bitcoin size={20} color={colors.green} />
@@ -1155,8 +1155,8 @@ export default function Home() {
                 width: 64,
                 height: 64,
                 borderRadius: "16px",
-                background: "linear-gradient(135deg, #01D676 0%, #007e45 100%)",
-                boxShadow: "0 8px 32px rgba(1,214,118,0.25)",
+                background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+                boxShadow: "0 8px 32px rgba(16,185,129,0.25)",
               }}
             >
               <Sparkles size={32} color="#fff" />
@@ -1187,7 +1187,7 @@ export default function Home() {
                 height: 56,
                 px: 5,
                 fontSize: "1rem",
-                boxShadow: "0 8px 32px rgba(1,214,118,0.25)",
+                boxShadow: "0 8px 32px rgba(16,185,129,0.25)",
                 gap: 1,
               }}
             >
@@ -1379,7 +1379,7 @@ function StepCard({
             fontSize: "0.75rem",
             fontWeight: 700,
             color: colors.textPrimary,
-            boxShadow: "0 4px 12px rgba(1,214,118,0.3)",
+            boxShadow: "0 4px 12px rgba(16,185,129,0.3)",
           }}
         >
           {step}
@@ -1397,7 +1397,7 @@ function StepCard({
           height: 56,
           borderRadius: "16px",
           bgcolor: colors.greenTint,
-          border: `1px solid rgba(1,214,118,0.2)`,
+          border: `1px solid rgba(16,185,129,0.2)`,
         }}
       >
         {icon}
@@ -1444,7 +1444,7 @@ function EarnCard({
           height: 64,
           borderRadius: "16px",
           bgcolor: colors.greenTint,
-          border: `1px solid rgba(1,214,118,0.2)`,
+          border: `1px solid rgba(16,185,129,0.2)`,
           color: colors.green,
         }}
       >
@@ -1464,7 +1464,7 @@ function EarnCard({
           gap: 0.75,
           borderRadius: "100px",
           bgcolor: colors.greenTint,
-          border: `1px solid rgba(1,214,118,0.2)`,
+          border: `1px solid rgba(16,185,129,0.2)`,
           px: 1.5,
           py: 0.75,
           fontSize: "0.875rem",
@@ -1532,8 +1532,8 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         transition: "border-color 0.3s, box-shadow 0.3s",
         "&:before": { display: "none" },
         "&.Mui-expanded": {
-          borderColor: "rgba(1,214,118,0.3)",
-          boxShadow: "0 8px 32px rgba(1,214,118,0.05)",
+          borderColor: "rgba(16,185,129,0.3)",
+          boxShadow: "0 8px 32px rgba(16,185,129,0.05)",
         },
       }}
     >

@@ -19,7 +19,7 @@ const STAT_CARD_STYLE = {
   bgcolor: colors.primary,
   p: 3,
   transition: "all 0.2s",
-  "&:hover": { borderColor: "rgba(1,214,118,0.4)" },
+  "&:hover": { borderColor: "rgba(16,185,129,0.4)" },
 } as const;
 
 export default function AdminDashboardClient({
@@ -30,11 +30,11 @@ export default function AdminDashboardClient({
   bannedUsers,
 }: AdminDashboardClientProps) {
   const stats = [
-    { icon: <Users size={22} />, label: "Total Users", value: totalUsers.toLocaleString(), color: "#01D676" },
-    { icon: <Coins size={22} />, label: "Coins in Circulation", value: totalCoins.toLocaleString(), color: "#01D676" },
-    { icon: <Wallet size={22} />, label: "Pending Withdrawals", value: String(pendingWithdrawals), color: pendingWithdrawals > 0 ? "#facc15" : "#01D676" },
-    { icon: <CheckCircle size={22} />, label: "Total Completions", value: totalCompletions.toLocaleString(), color: "#01D676" },
-    { icon: <ShieldOff size={22} />, label: "Banned Users", value: String(bannedUsers), color: bannedUsers > 0 ? "#f87171" : "#01D676" },
+    { icon: <Users size={22} />, label: "Total Users", value: totalUsers.toLocaleString(), color: "#10B981" },
+    { icon: <Coins size={22} />, label: "Coins in Circulation", value: totalCoins.toLocaleString(), color: "#10B981" },
+    { icon: <Wallet size={22} />, label: "Pending Withdrawals", value: String(pendingWithdrawals), color: pendingWithdrawals > 0 ? "#facc15" : "#10B981" },
+    { icon: <CheckCircle size={22} />, label: "Total Completions", value: totalCompletions.toLocaleString(), color: "#10B981" },
+    { icon: <ShieldOff size={22} />, label: "Banned Users", value: String(bannedUsers), color: bannedUsers > 0 ? "#f87171" : "#10B981" },
   ];
 
   return (

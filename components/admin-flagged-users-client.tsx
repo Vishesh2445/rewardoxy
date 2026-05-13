@@ -248,7 +248,7 @@ export default function AdminFlaggedUsersClient() {
                         </Button>
                         <Button size="small" onClick={() => handleResolve(u.id)} disabled={actionLoading === `resolve-${u.id}`}
                           startIcon={<Undo2 size={14} />}
-                          sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: "#01D676", bgcolor: "rgba(1,214,118,0.1)", borderRadius: 2, "&:hover": { bgcolor: "rgba(1,214,118,0.2)" } }}>
+                          sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: "#10B981", bgcolor: "rgba(16,185,129,0.1)", borderRadius: 2, "&:hover": { bgcolor: "rgba(16,185,129,0.2)" } }}>
                           {actionLoading === `resolve-${u.id}` ? <CircularProgress size={14} color="inherit" /> : "Resolve & Reset"}
                         </Button>
                         <Button size="small" onClick={() => handleSuspend(u.id)} disabled={actionLoading === `suspend-${u.id}` || u.fraud_status === "suspended"}
@@ -308,8 +308,8 @@ export default function AdminFlaggedUsersClient() {
                         label={log.event_type.replace("_", " ")} 
                         sx={{ 
                           fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase",
-                          bgcolor: log.event_type.includes("admin") ? "rgba(1,214,118,0.15)" : "rgba(245,158,11,0.15)",
-                          color: log.event_type.includes("admin") ? "#01D676" : "#f59e0b",
+                          bgcolor: log.event_type.includes("admin") ? "rgba(16,185,129,0.15)" : "rgba(245,158,11,0.15)",
+                          color: log.event_type.includes("admin") ? "#10B981" : "#f59e0b",
                         }} 
                       />
                       <Chip size="small" 
@@ -362,7 +362,7 @@ export default function AdminFlaggedUsersClient() {
 
       <Snackbar open={toast.open} autoHideDuration={4000} onClose={handleCloseToast} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
         <Alert onClose={handleCloseToast} severity={toast.severity}
-          sx={{ bgcolor: toast.severity === "success" ? "rgba(1,214,118,0.1)" : "rgba(239,68,68,0.1)", border: `1px solid ${toast.severity === "success" ? "rgba(1,214,118,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.severity === "success" ? "#01D676" : "#f87171", "& .MuiAlert-icon": { color: toast.severity === "success" ? "#01D676" : "#f87171" } }}>
+          sx={{ bgcolor: toast.severity === "success" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)", border: `1px solid ${toast.severity === "success" ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.severity === "success" ? "#10B981" : "#f87171", "& .MuiAlert-icon": { color: toast.severity === "success" ? "#10B981" : "#f87171" } }}>
           {toast.message}
         </Alert>
       </Snackbar>

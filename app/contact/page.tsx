@@ -19,13 +19,13 @@ import Typography from "@/components/ui/Typography";
 const colors = {
   bgPage: "#141523",
   bgCard: "#1d1e30",
-  green: "#01D676",
-  greenDark: "#007e45",
+  green: "#10B981",
+  greenDark: "#059669",
   textPrimary: "#ffffff",
   textSecondary: "#a9a9ca",
   divider: "#2a2b43",
   greenTint: "#00e9411a",
-  gradient: "linear-gradient(180deg, #01d676 0, #007e45 100%)",
+  gradient: "linear-gradient(180deg, #10B981 0, #059669 100%)",
 };
 
 export default function ContactPage() {
@@ -114,7 +114,7 @@ export default function ContactPage() {
                 height: 48,
                 borderRadius: 3,
                 bgcolor: colors.greenTint,
-                border: "1px solid rgba(1,214,118,0.2)",
+                border: "1px solid rgba(16,185,129,0.2)",
               }}
             >
               <Mail size={22} color={colors.green} />
@@ -151,7 +151,7 @@ export default function ContactPage() {
                 height: 48,
                 borderRadius: 3,
                 bgcolor: colors.greenTint,
-                border: "1px solid rgba(1,214,118,0.2)",
+                border: "1px solid rgba(16,185,129,0.2)",
               }}
             >
               <HelpCircle size={22} color={colors.green} />

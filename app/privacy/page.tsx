@@ -5,7 +5,7 @@ import Typography from "@/components/ui/Typography";
 const colors = {
   bgPage: "#141523",
   bgCard: "#1d1e30",
-  green: "#01D676",
+  green: "#10B981",
   textPrimary: "#ffffff",
   textSecondary: "#a9a9ca",
   divider: "#2a2b43",

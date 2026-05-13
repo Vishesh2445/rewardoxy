@@ -22,8 +22,8 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(1, 214, 118, 0.15); }
-  50% { box-shadow: 0 0 40px rgba(1, 214, 118, 0.3); }
+  0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.15); }
+  50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.3); }
 }
 
 @keyframes float {
@@ -36,24 +36,29 @@ body {
   100% { background-position: 200% 0; }
 }
 
+@keyframes coin-pulse {
+  0%, 100% { text-shadow: 0 0 8px rgba(245, 158, 11, 0.3); }
+  50% { text-shadow: 0 0 16px rgba(245, 158, 11, 0.6); }
+}
+
 /* Glassmorphic card */
 .glass-card {
-  background: rgba(15, 18, 25, 0.8);
+  background: rgba(15, 18, 25, 0.85);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(1, 214, 118, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.08);
   border-radius: 12px;
   transition: all 0.3s ease;
 }
 
 .glass-card:hover {
-  background: rgba(21, 27, 38, 0.9);
-  border-color: rgba(1, 214, 118, 0.2);
-  box-shadow: 0 8px 32px rgba(1, 214, 118, 0.08);
+  background: rgba(21, 27, 38, 0.95);
+  border-color: rgba(16, 185, 129, 0.2);
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.08);
 }
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #01D676 0%, #06B6D4 100%);
+  background: linear-gradient(135deg, #10B981 0%, #06B6D4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -61,5 +66,20 @@ body {
 
 /* Green glow */
 .text-glow-green {
-  text-shadow: 0 0 12px rgba(1, 214, 118, 0.4);
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Hero gradient background */
+.hero-gradient {
+  background: radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 70%);
+}
+
+/* Coin glow */
+.coin-glow {
+  animation: coin-pulse 2s ease-in-out infinite;
+}
+
+/* Streak fire glow */
+.streak-glow {
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
 }

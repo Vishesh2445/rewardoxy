@@ -31,7 +31,7 @@ const Logo = ({ href = "/" }: { href?: string }) => {
           sx={{
             fontSize: "1.25rem",
             fontWeight: 700,
-            color: "#01D676",
+            color: "#10B981",
             lineHeight: 1,
           }}
         >

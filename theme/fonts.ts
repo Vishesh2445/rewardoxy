@@ -1,7 +1,7 @@
-import { Poppins } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 
-const fonts = Poppins({
-  weight: ["400", "500", "600", "700"],
+const fonts = Plus_Jakarta_Sans({
+  weight: ["400", "500", "600", "700", "800"],
   subsets: ["latin"],
   display: "swap",
 });

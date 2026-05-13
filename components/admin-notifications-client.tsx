@@ -87,7 +87,7 @@ export default function AdminNotificationsClient({
     <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Bell size={24} color="#01D676" />
+          <Bell size={24} color="#10B981" />
           Notifications
         </Typography>
         <Typography variant="body2" color="textSecondary">
@@ -115,9 +115,9 @@ export default function AdminNotificationsClient({
               checked={isBroadcast}
               onChange={(e) => setIsBroadcast(e.target.checked)}
               sx={{
-                "& .MuiSwitch-switchBase.Mui-checked": { color: "#01D676" },
+                "& .MuiSwitch-switchBase.Mui-checked": { color: "#10B981" },
                 "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                  backgroundColor: "#01D676",
+                  backgroundColor: "#10B981",
                 },
               }}
             />

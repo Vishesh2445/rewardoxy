@@ -79,7 +79,7 @@ interface AdminUsersClientProps {
 const PAGE_SIZE = 20;
 
 const FRAUD_STATUS_COLORS: Record<string, { bg: string; color: string; border: string }> = {
-  clean: { bg: "rgba(1,214,118,0.12)", color: "#01D676", border: "rgba(1,214,118,0.25)" },
+  clean: { bg: "rgba(16,185,129,0.12)", color: "#10B981", border: "rgba(16,185,129,0.25)" },
   cashout_blocked: { bg: "rgba(245,158,11,0.12)", color: "#f59e0b", border: "rgba(245,158,11,0.25)" },
   suspended: { bg: "rgba(239,68,68,0.12)", color: "#f87171", border: "rgba(239,68,68,0.25)" },
 };
@@ -162,7 +162,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
   function formatDate(d: string) { return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }); }
 
   const statusColor = (s: string) => {
-    if (s === "paid" || s === "approved" || s === "credited") return "#01D676";
+    if (s === "paid" || s === "approved" || s === "credited") return "#10B981";
     if (s === "pending") return "#facc15";
     if (s === "failed" || s === "rejected") return "#f87171";
     return colors.text.secondary;
@@ -174,13 +174,13 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
     return (
       <Box sx={{ p: 2, bgcolor: colors.background.ternary, borderRadius: 2 }}>
         {isLoading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}><CircularProgress size={20} sx={{ color: "#01D676" }} /></Box>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}><CircularProgress size={20} sx={{ color: "#10B981" }} /></Box>
         ) : !data ? (
           <Typography variant="body2" color="textSecondary">Failed to load activity</Typography>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Box>
-              <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", color: "#01D676", mb: 1 }}>Completions ({data.completions.length})</Typography>
+              <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", color: "#10B981", mb: 1 }}>Completions ({data.completions.length})</Typography>
               {data.completions.length === 0 ? (
                 <Typography variant="body2" color="textSecondary" sx={{ fontSize: "0.8rem" }}>No completions</Typography>
               ) : (
@@ -189,7 +189,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
                     <Box key={c.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", bgcolor: colors.primary, borderRadius: 2, px: 1.5, py: 0.75, fontSize: "0.8rem" }}>
                       <Typography sx={{ fontSize: "0.8rem", fontWeight: 500, flex: 1 }} truncate>{c.offer_name}</Typography>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexShrink: 0 }}>
-                        <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: "#01D676" }}>+{c.coins}</Typography>
+                        <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: "#10B981" }}>+{c.coins}</Typography>
                         <Box sx={{ fontSize: "0.65rem", fontWeight: 600, color: statusColor(c.status), textTransform: "capitalize" }}>{c.status}</Box>
                         <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary }}>{formatDate(c.completed_at)}</Typography>
                       </Box>
@@ -231,7 +231,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
       <Box sx={{ mb: 3, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
         <Box>
           <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Users size={24} color="#01D676" />
+            <Users size={24} color="#10B981" />
             User Management
           </Typography>
           <Typography variant="body2" color="textSecondary">{total} total users</Typography>
@@ -298,7 +298,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
                   <Box sx={{ borderRadius: 50, px: 1, py: 0.25, fontSize: "10px", fontWeight: 600, bgcolor: fs.bg, color: fs.color, border: `1px solid ${fs.border}` }}>
                     {u.fraud_status || "clean"}
                   </Box>
-                  <Box sx={{ borderRadius: 50, px: 1, py: 0.25, fontSize: "10px", fontWeight: 600, bgcolor: u.is_banned ? "rgba(239,68,68,0.15)" : "rgba(1,214,118,0.15)", color: u.is_banned ? "#f87171" : "#01D676" }}>
+                  <Box sx={{ borderRadius: 50, px: 1, py: 0.25, fontSize: "10px", fontWeight: 600, bgcolor: u.is_banned ? "rgba(239,68,68,0.15)" : "rgba(16,185,129,0.15)", color: u.is_banned ? "#f87171" : "#10B981" }}>
                     {u.is_banned ? "Banned" : "Active"}
                   </Box>
                 </Box>
@@ -323,7 +323,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
               <Box sx={{ display: "flex", gap: 1, mb: 1 }}>
                 <Button size="small" onClick={() => handleBan(u.id, !u.is_banned)} disabled={banLoading === u.id || u.role === "admin"}
                   startIcon={u.is_banned ? <ShieldCheck size={14} /> : <ShieldOff size={14} />}
-                  sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: u.is_banned ? "#01D676" : "#f87171", bgcolor: u.is_banned ? "rgba(1,214,118,0.1)" : "rgba(239,68,68,0.1)", borderRadius: 2, "&:hover": { bgcolor: u.is_banned ? "rgba(1,214,118,0.2)" : "rgba(239,68,68,0.2)" } }}>
+                  sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: u.is_banned ? "#10B981" : "#f87171", bgcolor: u.is_banned ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)", borderRadius: 2, "&:hover": { bgcolor: u.is_banned ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)" } }}>
                   {banLoading === u.id ? <CircularProgress size={14} color="inherit" /> : u.is_banned ? "Unban" : "Ban"}
                 </Button>
                 <Button size="small" onClick={() => toggleActivity(u.id)} startIcon={<Activity size={14} />} endIcon={expandedUser === u.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -358,13 +358,13 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
                   <TableRow key={u.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
                     <TableCell sx={{ borderColor: colors.divider, fontFamily: "monospace", fontSize: "0.7rem", color: colors.text.secondary }}>
                       <Tooltip title="Click to copy full UID" arrow>
-                        <Box onClick={() => copyUid(u.id)} sx={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 0.5, "&:hover": { color: "#01D676" } }}>
+                        <Box onClick={() => copyUid(u.id)} sx={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 0.5, "&:hover": { color: "#10B981" } }}>
                           {u.id.slice(0, 8)}...<Copy size={10} />
                         </Box>
                       </Tooltip>
                     </TableCell>
                     <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontSize: "0.85rem" }}>{u.email}</TableCell>
-                    <TableCell sx={{ borderColor: colors.divider, color: "#01D676", fontWeight: 600 }}>{u.coins_balance.toLocaleString()}</TableCell>
+                    <TableCell sx={{ borderColor: colors.divider, color: "#10B981", fontWeight: 600 }}>{u.coins_balance.toLocaleString()}</TableCell>
                     <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary }}>{u.total_earned.toLocaleString()}</TableCell>
                     <TableCell sx={{ borderColor: colors.divider, fontSize: "0.85rem", whiteSpace: "nowrap" }}>
                       {countryFlag(u.signup_country)} {u.signup_country || "—"}
@@ -387,7 +387,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
                       )}
                     </TableCell>
                     <TableCell sx={{ borderColor: colors.divider }}>
-                      <Box sx={{ display: "inline-block", borderRadius: 50, px: 1.25, py: 0.25, fontSize: "0.7rem", fontWeight: 600, bgcolor: u.is_banned ? "rgba(239,68,68,0.15)" : "rgba(1,214,118,0.15)", color: u.is_banned ? "#f87171" : "#01D676" }}>
+                      <Box sx={{ display: "inline-block", borderRadius: 50, px: 1.25, py: 0.25, fontSize: "0.7rem", fontWeight: 600, bgcolor: u.is_banned ? "rgba(239,68,68,0.15)" : "rgba(16,185,129,0.15)", color: u.is_banned ? "#f87171" : "#10B981" }}>
                         {u.is_banned ? "Banned" : "Active"}
                       </Box>
                     </TableCell>
@@ -398,7 +398,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
                       <Box sx={{ display: "flex", gap: 0.5 }}>
                         <Button size="small" onClick={() => handleBan(u.id, !u.is_banned)} disabled={banLoading === u.id || u.role === "admin"}
                           startIcon={u.is_banned ? <ShieldCheck size={14} /> : <ShieldOff size={14} />}
-                          sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: u.is_banned ? "#01D676" : "#f87171", bgcolor: u.is_banned ? "rgba(1,214,118,0.1)" : "rgba(239,68,68,0.1)", borderRadius: 2, "&:hover": { bgcolor: u.is_banned ? "rgba(1,214,118,0.2)" : "rgba(239,68,68,0.2)" } }}>
+                          sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: u.is_banned ? "#10B981" : "#f87171", bgcolor: u.is_banned ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)", borderRadius: 2, "&:hover": { bgcolor: u.is_banned ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)" } }}>
                           {banLoading === u.id ? <CircularProgress size={14} color="inherit" /> : u.is_banned ? "Unban" : "Ban"}
                         </Button>
                         <IconButton size="small" onClick={() => toggleActivity(u.id)}
@@ -437,7 +437,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
 
       <Snackbar open={toast.open} autoHideDuration={4000} onClose={handleCloseToast} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
         <Alert onClose={handleCloseToast} severity={toast.severity}
-          sx={{ bgcolor: toast.severity === "success" ? "rgba(1,214,118,0.1)" : "rgba(239,68,68,0.1)", border: `1px solid ${toast.severity === "success" ? "rgba(1,214,118,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.severity === "success" ? "#01D676" : "#f87171", "& .MuiAlert-icon": { color: toast.severity === "success" ? "#01D676" : "#f87171" } }}>
+          sx={{ bgcolor: toast.severity === "success" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)", border: `1px solid ${toast.severity === "success" ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.severity === "success" ? "#10B981" : "#f87171", "& .MuiAlert-icon": { color: toast.severity === "success" ? "#10B981" : "#f87171" } }}>
           {toast.message}
         </Alert>
       </Snackbar>

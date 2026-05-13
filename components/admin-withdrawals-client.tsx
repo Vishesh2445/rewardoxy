@@ -49,7 +49,7 @@ const PAGE_SIZE = 20;
 const STATUS_COLORS: Record<string, { color: string; bg: string }> = {
   pending: { color: "#facc15", bg: "rgba(250,204,21,0.15)" },
   processing: { color: "#60a5fa", bg: "rgba(96,165,250,0.15)" },
-  paid: { color: "#01D676", bg: "rgba(1,214,118,0.15)" },
+  paid: { color: "#10B981", bg: "rgba(16,185,129,0.15)" },
   failed: { color: "#f87171", bg: "rgba(239,68,68,0.15)" },
 };
 
@@ -144,7 +144,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
     <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Wallet size={24} color="#01D676" />
+          <Wallet size={24} color="#10B981" />
           Withdrawal Management
         </Typography>
         <Typography variant="body2" color="textSecondary">{total} total withdrawals</Typography>
@@ -211,7 +211,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
                 <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
                   <Button size="small" onClick={() => { setApproveDialog(w.id); setTxHash(""); }} disabled={actionLoading === w.id}
                     startIcon={<CheckCircle size={14} />}
-                    sx={{ textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#01D676", bgcolor: "rgba(1,214,118,0.1)", borderRadius: 2, flex: 1 }}>
+                    sx={{ textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#10B981", bgcolor: "rgba(16,185,129,0.1)", borderRadius: 2, flex: 1 }}>
                     Approve
                   </Button>
                   <Button size="small" onClick={() => handleReject(w.id)} disabled={actionLoading === w.id}
@@ -248,7 +248,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
                     <Tooltip title="Click to copy full UID" arrow>
                       <Box
                         onClick={() => copyText(w.user_id, "User ID")}
-                        sx={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 0.5, fontSize: "0.65rem", fontFamily: "monospace", color: colors.text.secondary, "&:hover": { color: "#01D676" } }}
+                        sx={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 0.5, fontSize: "0.65rem", fontFamily: "monospace", color: colors.text.secondary, "&:hover": { color: "#10B981" } }}
                       >
                         {w.user_id.slice(0, 8)}...
                         <Copy size={9} />
@@ -259,13 +259,13 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
                     {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                   </TableCell>
                   <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontWeight: 600 }}>{w.coins.toLocaleString()}</TableCell>
-                  <TableCell sx={{ borderColor: colors.divider, color: "#01D676", fontWeight: 600 }}>${w.amount_usd.toFixed(2)}</TableCell>
+                  <TableCell sx={{ borderColor: colors.divider, color: "#10B981", fontWeight: 600 }}>${w.amount_usd.toFixed(2)}</TableCell>
 
                   <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.75rem", maxWidth: 160 }}>
                     <Tooltip title="Copy full address" arrow>
                       <Box
                         onClick={() => copyText(w.crypto_address, "Address")}
-                        sx={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 0.5, fontFamily: "monospace", "&:hover": { color: "#01D676" } }}
+                        sx={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 0.5, fontFamily: "monospace", "&:hover": { color: "#10B981" } }}
                       >
                         {w.crypto_address.slice(0, 10)}...{w.crypto_address.slice(-6)}
                         <Copy size={11} />
@@ -284,7 +284,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
                     {w.status === "pending" && (
                       <Box sx={{ display: "flex", gap: 0.5 }}>
                         <Button size="small" onClick={() => { setApproveDialog(w.id); setTxHash(""); }} disabled={actionLoading === w.id}
-                          sx={{ minWidth: 0, textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#01D676", bgcolor: "rgba(1,214,118,0.1)", borderRadius: 2, px: 1.5 }}>
+                          sx={{ minWidth: 0, textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#10B981", bgcolor: "rgba(16,185,129,0.1)", borderRadius: 2, px: 1.5 }}>
                           {actionLoading === w.id ? <CircularProgress size={14} color="inherit" /> : "Approve"}
                         </Button>
                         <Button size="small" onClick={() => handleReject(w.id)} disabled={actionLoading === w.id}
@@ -369,10 +369,10 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
           onClose={handleCloseToast}
           severity={toast.severity}
           sx={{
-            bgcolor: toast.severity === "success" ? "rgba(1,214,118,0.1)" : "rgba(239,68,68,0.1)",
-            border: `1px solid ${toast.severity === "success" ? "rgba(1,214,118,0.3)" : "rgba(239,68,68,0.3)"}`,
-            color: toast.severity === "success" ? "#01D676" : "#f87171",
-            "& .MuiAlert-icon": { color: toast.severity === "success" ? "#01D676" : "#f87171" },
+            bgcolor: toast.severity === "success" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)",
+            border: `1px solid ${toast.severity === "success" ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}`,
+            color: toast.severity === "success" ? "#10B981" : "#f87171",
+            "& .MuiAlert-icon": { color: toast.severity === "success" ? "#10B981" : "#f87171" },
           }}
         >
           {toast.message}

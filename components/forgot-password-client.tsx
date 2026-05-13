@@ -143,12 +143,12 @@ export default function ForgotPasswordClient() {
                 width: 64,
                 height: 64,
                 borderRadius: "50%",
-                bgcolor: "rgba(1,214,118,0.1)",
-                border: "1px solid rgba(1,214,118,0.3)",
+                bgcolor: "rgba(16,185,129,0.1)",
+                border: "1px solid rgba(16,185,129,0.3)",
                 mb: 2,
               }}
             >
-              <Check size={32} color="#01D676" />
+              <Check size={32} color="#10B981" />
             </Box>
             <Typography variant="body1" isBold sx={{ mb: 1 }}>
               Email Sent!

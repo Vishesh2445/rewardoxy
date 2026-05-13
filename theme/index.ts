@@ -19,6 +19,7 @@ const theme = createTheme({
   typography: {
     fontFamily: fonts.style.fontFamily,
   },
+  shape: { borderRadius: 12 },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
@@ -43,7 +44,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 10,
-          background: background.primary,
+          background: background.ternary,
           border: `1px solid ${glass.border}`,
           color: text.primary,
           transition: "all 0.2s ease",
@@ -54,7 +55,7 @@ const theme = createTheme({
           "&.Mui-focused": {
             borderColor: primary,
             background: background.secondary,
-            boxShadow: `0 0 20px rgba(1, 214, 118, 0.15)`,
+            boxShadow: `0 0 0 2px rgba(16, 185, 129, 0.15)`,
           },
         },
       },
@@ -67,7 +68,7 @@ const theme = createTheme({
           borderRadius: 10,
           textTransform: "none",
           fontWeight: 700,
-          fontSize: "0.95rem",
+          fontSize: "0.875rem",
           transition: "all 0.2s ease",
         },
         containedPrimary: {
@@ -75,9 +76,9 @@ const theme = createTheme({
           color: "#000",
           fontWeight: 700,
           "&:hover": {
-            background: "linear-gradient(135deg, #00B864 0%, #059BB8 100%)",
+            background: "linear-gradient(135deg, #059669 0%, #0891B2 100%)",
             transform: "translateY(-1px)",
-            boxShadow: "0 8px 24px rgba(1, 214, 118, 0.25)",
+            boxShadow: "0 8px 24px rgba(16, 185, 129, 0.25)",
           },
         },
         outlined: {
@@ -98,7 +99,7 @@ const theme = createTheme({
           backgroundColor: "transparent",
           color: text.secondary,
           transition: "all 0.2s ease",
-          "&:hover": { color: primary, backgroundColor: "rgba(1, 214, 118, 0.08)" },
+          "&:hover": { color: primary, backgroundColor: "rgba(16, 185, 129, 0.08)" },
         },
       },
     },
@@ -109,13 +110,13 @@ const theme = createTheme({
           borderRadius: 8,
           color: text.secondary,
           transition: "all 0.2s ease",
-          "&:hover": { color: primary, backgroundColor: "rgba(1, 214, 118, 0.06)" },
-          "&.Mui-selected": { backgroundColor: "rgba(1, 214, 118, 0.1)", color: primary },
+          "&:hover": { color: primary, backgroundColor: "rgba(16, 185, 129, 0.06)" },
+          "&.Mui-selected": { backgroundColor: "rgba(16, 185, 129, 0.1)", color: primary },
         },
       },
     },
     MuiListItemText: {
-      styleOverrides: { primary: { fontSize: "0.9rem", fontWeight: 600 } },
+      styleOverrides: { primary: { fontSize: "0.875rem", fontWeight: 600 } },
     },
     MuiListItemIcon: {
       styleOverrides: { root: { minWidth: "auto", marginRight: 8 } },
@@ -126,9 +127,10 @@ const theme = createTheme({
     MuiBottomNavigation: {
       styleOverrides: {
         root: {
-          height: 75,
+          height: 72,
           color: text.secondary,
-          backgroundColor: background.default,
+          backgroundColor: "rgba(8, 11, 18, 0.95)",
+          backdropFilter: "blur(20px)",
           borderTop: `1px solid ${glass.border}`,
         },
       },
@@ -136,7 +138,7 @@ const theme = createTheme({
     MuiBottomNavigationAction: {
       styleOverrides: {
         root: { transition: "all 0.2s ease", "&.Mui-selected": { color: primary } },
-        label: { fontSize: "0.685rem", marginTop: 6, "&.Mui-selected": { fontSize: "0.635rem" } },
+        label: { fontSize: "0.65rem", marginTop: 4, fontWeight: 600, "&.Mui-selected": { fontSize: "0.65rem" } },
       },
     },
     MuiDrawer: {
@@ -146,7 +148,7 @@ const theme = createTheme({
     },
     MuiAppBar: {
       styleOverrides: {
-        root: { backgroundColor: "rgba(8, 11, 18, 0.85)", backdropFilter: glass.backdrop, borderBottom: `1px solid ${glass.border}` },
+        root: { backgroundColor: "rgba(8, 11, 18, 0.9)", backdropFilter: glass.backdrop, borderBottom: `1px solid ${glass.border}` },
       },
     },
   },

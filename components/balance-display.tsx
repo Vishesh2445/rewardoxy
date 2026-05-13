@@ -68,8 +68,8 @@ export default function BalanceDisplay({ userId, initialBalance = 0 }: BalanceDi
         display: "flex",
         alignItems: "center",
         gap: 0.25,
-        bgcolor: "rgba(1, 214, 118, 0.1)",
-        border: "1px solid rgba(1, 214, 118, 0.2)",
+        bgcolor: "rgba(16, 185, 129, 0.1)",
+        border: "1px solid rgba(16, 185, 129, 0.2)",
         borderRadius: 2,
         px: { xs: 1.5, sm: 2 },
         py: 0.75,
@@ -80,7 +80,7 @@ export default function BalanceDisplay({ userId, initialBalance = 0 }: BalanceDi
         sx={{ 
           fontSize: { xs: "0.875rem", sm: "1rem" }, 
           fontWeight: 700, 
-          color: "#01D676" 
+          color: "#10B981" 
         }}
       >
         $

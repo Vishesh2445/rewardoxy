@@ -91,7 +91,7 @@ export default function AdminSettingsClient() {
 
   return (
     <Box sx={{ maxWidth: 1400, mx: "auto", p: { xs: 2, sm: 3, md: 4 }, pb: { xs: 12, lg: 4 } }}>
-      <Typography variant="h4" isBold sx={{ mb: 3, color: "#01D676" }}>
+      <Typography variant="h4" isBold sx={{ mb: 3, color: "#10B981" }}>
         Application Settings
       </Typography>
 
@@ -115,8 +115,8 @@ export default function AdminSettingsClient() {
                 justifyContent: "space-between",
                 transition: "all 0.2s",
                 "&:hover": {
-                  borderColor: "rgba(1,214,118,0.3)",
-                  bgcolor: "rgba(1,214,118,0.02)",
+                  borderColor: "rgba(16,185,129,0.3)",
+                  bgcolor: "rgba(16,185,129,0.02)",
                 },
               }}
             >
@@ -150,10 +150,10 @@ export default function AdminSettingsClient() {
                     disabled={saving === setting.setting_key}
                     sx={{
                       "& .MuiSwitch-switchBase.Mui-checked": {
-                        color: "#01D676",
+                        color: "#10B981",
                       },
                       "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                        backgroundColor: "#01D676",
+                        backgroundColor: "#10B981",
                       },
                     }}
                   />
@@ -161,7 +161,7 @@ export default function AdminSettingsClient() {
                 label={isEnabled ? "Enabled" : "Disabled"}
                 sx={{
                   ml: 2,
-                  color: isEnabled ? "#01D676" : colors.text.secondary,
+                  color: isEnabled ? "#10B981" : colors.text.secondary,
                   fontWeight: 600,
                 }}
               />
@@ -175,13 +175,13 @@ export default function AdminSettingsClient() {
       <Paper
         elevation={0}
         sx={{
-          bgcolor: "rgba(1,214,118,0.05)",
-          border: `1px solid rgba(1,214,118,0.2)`,
+          bgcolor: "rgba(16,185,129,0.05)",
+          border: `1px solid rgba(16,185,129,0.2)`,
           borderRadius: 2,
           p: 3,
         }}
       >
-        <Typography isBold sx={{ color: "#01D676", mb: 1 }}>
+        <Typography isBold sx={{ color: "#10B981", mb: 1 }}>
           ℹ️ Information
         </Typography>
         <Typography sx={{ fontSize: "0.875rem", color: colors.text.secondary, lineHeight: 1.7 }}>

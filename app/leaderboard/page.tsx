@@ -106,7 +106,7 @@ function RankBadge({ rank }: { rank: number }) {
         height: 32,
         fontSize: "0.875rem",
         fontWeight: 600,
-        color: rank <= 10 ? "#01D676" : colors.text.secondary,
+        color: rank <= 10 ? "#10B981" : colors.text.secondary,
       }}
     >
       {rank}
@@ -227,8 +227,8 @@ export default async function LeaderboardPage() {
                         elevation={0}
                         sx={{
                           borderRadius: 4,
-                          border: `1px solid ${isMe ? "rgba(1,214,118,0.5)" : st.border}`,
-                          background: isMe ? "linear-gradient(135deg, rgba(1,214,118,0.1) 0%, rgba(0,126,69,0.06) 100%)" : st.cardBg,
+                          border: `1px solid ${isMe ? "rgba(16,185,129,0.5)" : st.border}`,
+                          background: isMe ? "linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(0,126,69,0.06) 100%)" : st.cardBg,
                           p: 3,
                           textAlign: "center",
                           boxShadow: row.rank === 1 ? st.glow : "none",
@@ -249,13 +249,13 @@ export default async function LeaderboardPage() {
                               top: 10,
                               right: 10,
                               borderRadius: 50,
-                              bgcolor: "rgba(1,214,118,0.15)",
-                              border: "1px solid rgba(1,214,118,0.3)",
+                              bgcolor: "rgba(16,185,129,0.15)",
+                              border: "1px solid rgba(16,185,129,0.3)",
                               px: 1,
                               py: 0.15,
                               fontSize: "9px",
                               fontWeight: 700,
-                              color: "#01D676",
+                              color: "#10B981",
                             }}
                           >
                             YOU
@@ -271,7 +271,7 @@ export default async function LeaderboardPage() {
                             width: row.rank === 1 ? 60 : 48,
                             height: row.rank === 1 ? 60 : 48,
                             borderRadius: "50%",
-                            background: isMe ? "linear-gradient(135deg,#01D676,#007e45)" : st.avatarBg,
+                            background: isMe ? "linear-gradient(135deg,#10B981,#059669)" : st.avatarBg,
                             fontWeight: 800,
                             fontSize: row.rank === 1 ? "1.2rem" : "1rem",
                             color: "#fff",
@@ -285,7 +285,7 @@ export default async function LeaderboardPage() {
                           sx={{
                             fontWeight: 700,
                             fontSize: row.rank === 1 ? "0.95rem" : "0.85rem",
-                            color: isMe ? "#01D676" : "#fff",
+                            color: isMe ? "#10B981" : "#fff",
                             mb: 0.75,
                             maxWidth: 120,
                             overflow: "hidden",
@@ -307,7 +307,7 @@ export default async function LeaderboardPage() {
                             py: 0.35,
                             fontSize: "0.8rem",
                             fontWeight: 800,
-                            color: isMe ? "#01D676" : st.namePillColor,
+                            color: isMe ? "#10B981" : st.namePillColor,
                           }}
                         >
                           <Coins size={13} />
@@ -327,8 +327,8 @@ export default async function LeaderboardPage() {
                 sx={{
                   mb: 3,
                   borderRadius: 3,
-                  border: "1px solid rgba(1,214,118,0.35)",
-                  bgcolor: "rgba(1,214,118,0.06)",
+                  border: "1px solid rgba(16,185,129,0.35)",
+                  bgcolor: "rgba(16,185,129,0.06)",
                   px: 3,
                   py: 2,
                   display: "flex",
@@ -339,15 +339,15 @@ export default async function LeaderboardPage() {
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 2, bgcolor: "rgba(1,214,118,0.15)", border: "1px solid rgba(1,214,118,0.25)", fontWeight: 800, fontSize: "0.9rem", color: "#01D676" }}>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 2, bgcolor: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.25)", fontWeight: 800, fontSize: "0.9rem", color: "#10B981" }}>
                     #{myRank.rank}
                   </Box>
                   <Box>
-                    <Typography sx={{ fontWeight: 700, color: "#01D676", fontSize: "0.9rem" }}>Your Current Rank</Typography>
+                    <Typography sx={{ fontWeight: 700, color: "#10B981", fontSize: "0.9rem" }}>Your Current Rank</Typography>
                     <Typography sx={{ fontSize: "0.72rem", color: colors.text.secondary }}>{myRank.display_name}</Typography>
                   </Box>
                 </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, borderRadius: 50, bgcolor: "rgba(1,214,118,0.1)", border: "1px solid rgba(1,214,118,0.2)", px: 1.75, py: 0.5, fontSize: "0.875rem", fontWeight: 700, color: "#01D676" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, borderRadius: 50, bgcolor: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", px: 1.75, py: 0.5, fontSize: "0.875rem", fontWeight: 700, color: "#10B981" }}>
                   <Coins size={14} />
                   {myRank.monthly_earnings.toLocaleString()} coins this month
                 </Box>
@@ -372,16 +372,16 @@ export default async function LeaderboardPage() {
                           px: 2,
                           py: 1.5,
                           transition: "all 0.2s",
-                          border: `1px solid ${isMe ? "rgba(1,214,118,0.4)" : colors.divider}`,
-                          bgcolor: isMe ? "rgba(1,214,118,0.05)" : colors.background.secondary,
+                          border: `1px solid ${isMe ? "rgba(16,185,129,0.4)" : colors.divider}`,
+                          bgcolor: isMe ? "rgba(16,185,129,0.05)" : colors.background.secondary,
                           ...(isMe
-                            ? { boxShadow: "0 4px 20px rgba(1,214,118,0.05)" }
+                            ? { boxShadow: "0 4px 20px rgba(16,185,129,0.05)" }
                             : { "&:hover": { bgcolor: colors.background.ternary } }),
                         }}
                       >
                         <RankBadge rank={row.rank} />
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: isMe ? "#01D676" : "#fff" }} truncate>
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: isMe ? "#10B981" : "#fff" }} truncate>
                             {row.display_name}
                             {isMe && (
                               <Box
@@ -390,13 +390,13 @@ export default async function LeaderboardPage() {
                                   ml: 1,
                                   borderRadius: 50,
                                   bgcolor: colors.background.ternary,
-                                  border: "1px solid rgba(1,214,118,0.2)",
+                                  border: "1px solid rgba(16,185,129,0.2)",
                                   px: 0.75,
                                   py: 0.15,
                                   fontSize: "9px",
                                   fontWeight: 700,
                                   textTransform: "uppercase",
-                                  color: "#01D676",
+                                  color: "#10B981",
                                 }}
                               >
                                 You
@@ -410,13 +410,13 @@ export default async function LeaderboardPage() {
                             alignItems: "center",
                             gap: 0.5,
                             borderRadius: 50,
-                            bgcolor: "rgba(1,214,118,0.08)",
-                            border: "1px solid rgba(1,214,118,0.15)",
+                            bgcolor: "rgba(16,185,129,0.08)",
+                            border: "1px solid rgba(16,185,129,0.15)",
                             px: 1.25,
                             py: 0.35,
                             fontSize: "0.8rem",
                             fontWeight: 700,
-                            color: "#01D676",
+                            color: "#10B981",
                           }}
                         >
                           <Coins size={12} />
@@ -461,7 +461,7 @@ export default async function LeaderboardPage() {
                             key={row.user_id}
                             sx={{
                               bgcolor: isMe
-                                ? "rgba(1,214,118,0.05)"
+                                ? "rgba(16,185,129,0.05)"
                                 : i % 2 === 0
                                 ? "rgba(29,30,48,0.4)"
                                 : "rgba(29,30,48,0.25)",
@@ -473,7 +473,7 @@ export default async function LeaderboardPage() {
                                 <RankBadge rank={row.rank} />
                               </Box>
                             </TableCell>
-                            <TableCell sx={{ fontWeight: 600, color: isMe ? "#01D676" : "#fff", borderColor: colors.divider }}>
+                            <TableCell sx={{ fontWeight: 600, color: isMe ? "#10B981" : "#fff", borderColor: colors.divider }}>
                               {row.display_name}
                               {isMe && (
                                 <Box
@@ -481,14 +481,14 @@ export default async function LeaderboardPage() {
                                   sx={{
                                     ml: 1,
                                     borderRadius: 50,
-                                    bgcolor: "rgba(1,214,118,0.1)",
-                                    border: "1px solid rgba(1,214,118,0.2)",
+                                    bgcolor: "rgba(16,185,129,0.1)",
+                                    border: "1px solid rgba(16,185,129,0.2)",
                                     px: 0.75,
                                     py: 0.15,
                                     fontSize: "9px",
                                     fontWeight: 700,
                                     textTransform: "uppercase",
-                                    color: "#01D676",
+                                    color: "#10B981",
                                   }}
                                 >
                                   You
@@ -503,13 +503,13 @@ export default async function LeaderboardPage() {
                                   alignItems: "center",
                                   gap: 0.5,
                                   borderRadius: 50,
-                                  bgcolor: "rgba(1,214,118,0.08)",
-                                  border: "1px solid rgba(1,214,118,0.15)",
+                                  bgcolor: "rgba(16,185,129,0.08)",
+                                  border: "1px solid rgba(16,185,129,0.15)",
                                   px: 1.25,
                                   py: 0.35,
                                   fontSize: "0.82rem",
                                   fontWeight: 700,
-                                  color: "#01D676",
+                                  color: "#10B981",
                                 }}
                               >
                                 {row.monthly_earnings.toLocaleString()}

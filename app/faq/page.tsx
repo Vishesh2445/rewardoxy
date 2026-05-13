@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 const colors = {
   bgPage: "#141523",
   bgCard: "#1d1e30",
-  green: "#01D676",
+  green: "#10B981",
   textPrimary: "#ffffff",
   textSecondary: "#a9a9ca",
   divider: "#2a2b43",
@@ -160,7 +160,7 @@ export default function FAQPage() {
               href="/contact"
               style={{
                 display: "inline-block",
-                background: "linear-gradient(180deg, #01d676 0%, #007e45 100%)",
+                background: "linear-gradient(180deg, #10B981 0%, #059669 100%)",
                 color: "#fff",
                 fontWeight: 700,
                 padding: "12px 28px",
@@ -174,8 +174,8 @@ export default function FAQPage() {
               href="/auth/signup"
               style={{
                 display: "inline-block",
-                border: "1px solid #01d676",
-                color: "#01d676",
+                border: "1px solid #10B981",
+                color: "#10B981",
                 fontWeight: 700,
                 padding: "12px 28px",
                 borderRadius: 12,

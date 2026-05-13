@@ -329,7 +329,7 @@ export default function DailyBonusClient({
                   sx={{
                     background: !isUnlocked 
                       ? "linear-gradient(180deg,#4a5568,#2d3748)" 
-                      : "linear-gradient(180deg,#00D084,#007e45)",
+                      : "linear-gradient(180deg,#00D084,#059669)",
                     borderRadius: 3,
                     px: 4,
                     py: 1.5,
