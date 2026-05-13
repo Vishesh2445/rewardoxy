@@ -7,7 +7,7 @@
  * IMPORTANT: Configure this URL in TheoremReach Publisher Dashboard → Integration Settings
  *
  * Reward Callback URL:
- * https://rewardoxy.app/api/theoremreach-postback?reward={reward}&currency={currency}&user_id={user_id}&tx_id={tx_id}&hash={hash}&reversal={reversal}&debug={debug}&screenout={screenout}&profiler={profiler}&offer={offer}&offer_name={offer_name}&ip={ip}&offer_id={offer_id}&placement_id={placement_id}
+ * https://www.rewardoxy.app/api/theoremreach-postback?reward={reward}&currency={currency}&user_id={user_id}&tx_id={tx_id}&hash={hash}&reversal={reversal}&debug={debug}&screenout={screenout}&profiler={profiler}&offer={offer}&offer_name={offer_name}&ip={ip}&offer_id={offer_id}&placement_id={placement_id}
  *
  * Parameter Mapping (TheoremReach macros → query params):
  * - {reward} → reward (MANDATORY: amount in in-app currency that should be rewarded)
@@ -63,7 +63,7 @@ function ok(message: string) {
  * TheoremReach hash is created from the full URL without the hash parameter
  */
 function reconstructBaseUrlForHash(params: Record<string, string>): string {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://rewardoxy.app';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.rewardoxy.app';
   const callbackPath = '/api/theoremreach-postback';
 
   // Remove hash and debug params as they aren't part of the URL for hashing

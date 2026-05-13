@@ -8,8 +8,10 @@ import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
+  title: "Earn Rewards — Complete Tasks & Surveys",
+  description: "Browse hundreds of offers, surveys, and tasks to earn coins on Rewardoxy. Cash out as crypto anytime.",
   alternates: {
-    canonical: "https://rewardoxy.app/earn",
+    canonical: "/earn",
   },
 };
 

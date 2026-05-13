@@ -8,8 +8,9 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "All Offers - Rewardoxy",
+  robots: { index: false, follow: true },
   alternates: {
-    canonical: "https://rewardoxy.app/offers/all",
+    canonical: "/offers/all",
   },
 };
 

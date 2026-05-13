@@ -66,3 +66,6 @@ logs/
 # Temp
 tmp/
 temp/
+
+# Kiro settings (contains secrets)
+.kiro/settings/

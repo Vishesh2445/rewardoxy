@@ -5,8 +5,10 @@ import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
+  title: "Sign Up — Create Your Free Account",
+  robots: { index: false, follow: true },
   alternates: {
-    canonical: "https://rewardoxy.app/auth/signup",
+    canonical: "/auth/signup",
   },
 };
 

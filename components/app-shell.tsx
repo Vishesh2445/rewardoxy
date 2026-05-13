@@ -79,12 +79,15 @@ const footerInfoList: { title: string; links: { text: string; url: string; isEma
     links: [
       { text: "Earn", url: "/earn" },
       { text: "Cash Out", url: "/cashout" },
-      { text: "Profile", url: "/profile" },
+      { text: "Surveys", url: "/surveys" },
+      { text: "Rewards", url: "/rewards" },
     ],
   },
   {
     title: "About",
     links: [
+      { text: "About Us", url: "/about" },
+      { text: "FAQ", url: "/faq" },
       { text: "Terms of Service", url: "/terms" },
       { text: "Privacy Policy", url: "/privacy" },
     ],
@@ -92,8 +95,7 @@ const footerInfoList: { title: string; links: { text: string; url: string; isEma
   {
     title: "Support",
     links: [
-      { text: "How It Works", url: "/#how-it-works" },
-      { text: "FAQ", url: "/#faq" },
+      { text: "How It Works", url: "/about" },
       { text: "Contact", url: "/contact" },
     ],
   },
@@ -138,14 +140,15 @@ export default function AppShell({ children, coins, userName = "User", userAvata
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", bgcolor: "#0a0b0f" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", bgcolor: "#080B12" }}>
       {/* Top Navigation Bar */}
       <AppBar
         position="fixed"
         elevation={0}
         sx={{
-          bgcolor: "#12131c",
-          borderBottom: `1px solid rgba(255, 255, 255, 0.05)`,
+          bgcolor: "rgba(8, 11, 18, 0.9)",
+          backdropFilter: "blur(20px)",
+          borderBottom: `1px solid rgba(1, 214, 118, 0.08)`,
           zIndex: 1300,
         }}
       >
@@ -219,7 +222,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
                       fontWeight: isActive ? 600 : 500,
                       fontSize: "0.9375rem",
                       "&:hover": {
-                        bgcolor: isActive ? "rgba(1, 214, 118, 0.15)" : "rgba(255, 255, 255, 0.05)",
+                        bgcolor: isActive ? "rgba(1, 214, 118, 0.15)" : "rgba(1, 214, 118, 0.05)",
                         color: isActive ? "#01D676" : colors.text.primary,
                       },
                     }}
@@ -243,8 +246,8 @@ export default function AppShell({ children, coins, userName = "User", userAvata
                 onClick={handleMenuOpen}
                 sx={{
                   p: 0.5,
-                  bgcolor: open ? "rgba(255, 255, 255, 0.05)" : "transparent",
-                  "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)" },
+                  bgcolor: open ? "rgba(1, 214, 118, 0.06)" : "transparent",
+                  "&:hover": { bgcolor: "rgba(1, 214, 118, 0.06)" },
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -269,8 +272,8 @@ export default function AppShell({ children, coins, userName = "User", userAvata
                 slotProps={{
                   paper: {
                     sx: {
-                      bgcolor: "#1a1b2e",
-                      border: `1px solid rgba(255, 255, 255, 0.1)`,
+                      bgcolor: "#0F1219",
+                      border: `1px solid rgba(1, 214, 118, 0.1)`,
                       borderRadius: 2,
                       mt: 1,
                       minWidth: 200,
@@ -292,7 +295,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
                       gap: 1.5,
                       color: colors.text.primary,
                       "&:hover": {
-                        bgcolor: "rgba(255, 255, 255, 0.05)",
+                        bgcolor: "rgba(1, 214, 118, 0.06)",
                       },
                     }}
                   >
@@ -300,7 +303,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
                     <Typography sx={{ fontSize: "0.9375rem" }}>{label}</Typography>
                   </MenuItem>
                 ))}
-                <Box sx={{ borderTop: `1px solid rgba(255, 255, 255, 0.05)`, mt: 1 }} />
+                <Box sx={{ borderTop: `1px solid rgba(1, 214, 118, 0.06)`, mt: 1 }} />
                 <MenuItem
                   onClick={() => {
                     handleMenuClose();
@@ -334,8 +337,8 @@ export default function AppShell({ children, coins, userName = "User", userAvata
           display: { xs: "block", md: "none" },
           "& .MuiDrawer-paper": {
             width: 280,
-            bgcolor: "#12131c",
-            borderRight: `1px solid rgba(255, 255, 255, 0.05)`,
+            bgcolor: "#0C0F17",
+            borderRight: `1px solid rgba(1, 214, 118, 0.08)`,
           },
         }}
       >
@@ -347,7 +350,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
               alignItems: "center",
               justifyContent: "space-between",
               p: 2,
-              borderBottom: `1px solid rgba(255, 255, 255, 0.05)`,
+              borderBottom: `1px solid rgba(1, 214, 118, 0.06)`,
             }}
           >
             <Icons.Logo href="/profile" />
@@ -357,7 +360,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
           </Box>
 
           {/* User Info */}
-          <Box sx={{ p: 2, borderBottom: `1px solid rgba(255, 255, 255, 0.05)` }}>
+          <Box sx={{ p: 2, borderBottom: `1px solid rgba(1, 214, 118, 0.06)` }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
               <Avatar
                 src={userAvatar}
@@ -392,7 +395,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
                       color: isActive ? "#01D676" : colors.text.primary,
                       bgcolor: isActive ? "rgba(1, 214, 118, 0.1)" : "transparent",
                       "&:hover": {
-                        bgcolor: isActive ? "rgba(1, 214, 118, 0.15)" : "rgba(255, 255, 255, 0.05)",
+                        bgcolor: isActive ? "rgba(1, 214, 118, 0.15)" : "rgba(1, 214, 118, 0.05)",
                       },
                       "&.Mui-selected": {
                         bgcolor: "rgba(1, 214, 118, 0.1)",
@@ -413,7 +416,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
           </List>
 
           {/* Logout Button */}
-          <Box sx={{ p: 2, borderTop: `1px solid rgba(255, 255, 255, 0.05)` }}>
+          <Box sx={{ p: 2, borderTop: `1px solid rgba(1, 214, 118, 0.06)` }}>
             <ListItemButton
               onClick={() => {
                 setMobileOpen(false);
@@ -443,7 +446,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
           flexGrow: 1,
           pt: { xs: 7, sm: 8 },
           pb: { xs: 10, md: 0 }, // Add padding bottom for mobile bottom navbar
-          bgcolor: "#0a0b0f",
+          bgcolor: "#080B12",
           minHeight: "100vh",
         }}
       >
@@ -457,8 +460,8 @@ export default function AppShell({ children, coins, userName = "User", userAvata
       <Box
         component="footer"
         sx={{
-          bgcolor: "#12131c",
-          borderTop: `1px solid rgba(255, 255, 255, 0.05)`,
+          bgcolor: "#0C0F17",
+          borderTop: `1px solid rgba(1, 214, 118, 0.08)`,
           mt: 4,
         }}
       >

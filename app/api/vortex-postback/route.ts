@@ -7,7 +7,7 @@
  * IMPORTANT: Configure this URL in VortexWall Dashboard → Placement → Callback Settings
  * 
  * Correct Postback URL Format:
- * https://rewardoxy.app/api/vortex-postback?identity_id={IDENTITY_ID}&campaign_id={CAMPAIGN_ID}&campaign_name={CAMPAIGN_NAME}&event_id={EVENT_ID}&event_name={EVENT_NAME}&payout={PAYOUT}&points={POINTS}&txid={TXID}&result={RESULT}&ipaddr={IPADDR}&sub1={SUB1}&sub2={SUB2}
+ * https://www.rewardoxy.app/api/vortex-postback?identity_id={IDENTITY_ID}&campaign_id={CAMPAIGN_ID}&campaign_name={CAMPAIGN_NAME}&event_id={EVENT_ID}&event_name={EVENT_NAME}&payout={PAYOUT}&points={POINTS}&txid={TXID}&result={RESULT}&ipaddr={IPADDR}&sub1={SUB1}&sub2={SUB2}
  * 
  * Parameter Mapping:
  * - {IDENTITY_ID} → identity_id (MANDATORY: user ID)

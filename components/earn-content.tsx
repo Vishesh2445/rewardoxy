@@ -103,7 +103,7 @@ function OfferDetailsModal({
       scroll="body"
       PaperProps={{
         sx: {
-          bgcolor: "#1a1b2e",
+          bgcolor: "#161A22",
           borderRadius: 3,
           maxWidth: "650px",
           maxHeight: "90vh",
@@ -200,7 +200,7 @@ function OfferDetailsModal({
               borderRadius: 2,
               overflow: "hidden",
               flexShrink: 0,
-              bgcolor: "#222339",
+              bgcolor: "#1C2029",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -230,7 +230,7 @@ function OfferDetailsModal({
                     color: "#01D676",
                   }}
                 >
-                  ${offer.payout}
+                  {offer.payout === -1 ? "∞" : `$${offer.payout}`}
                 </Typography>
                 <Box
                   sx={{
@@ -250,7 +250,7 @@ function OfferDetailsModal({
 
             {/* Popularity Score */}
             <Box sx={{ mb: 2 }}>
-              <Typography sx={{ fontSize: "0.75rem", color: "#a9a9ca", mb: 0.5 }}>
+              <Typography sx={{ fontSize: "0.75rem", color: "#A9ABB4", mb: 0.5 }}>
                 Popularity Score
               </Typography>
               <Box sx={{ display: "flex", gap: 0.5 }}>
@@ -298,7 +298,7 @@ function OfferDetailsModal({
                   fill="currentColor"
                 />
               </svg>
-              Play and Earn ${offer.payout}
+              Play and Earn {offer.payout === -1 ? "∞" : `$${offer.payout}`}
             </Box>
           </Box>
         </Box>
@@ -309,7 +309,7 @@ function OfferDetailsModal({
         <Box sx={{ px: { xs: 2, sm: 2.5 }, pb: 2, flexShrink: 0 }}>
           <Box 
             sx={{ 
-              bgcolor: "#222339",
+              bgcolor: "#1C2029",
               p: 2,
               borderRadius: 2,
               border: "1px solid rgba(255,255,255,0.05)",
@@ -332,7 +332,7 @@ function OfferDetailsModal({
                 sx={{ 
                   fontSize: "0.75rem", 
                   lineHeight: 1.5,
-                  color: "#a9a9ca",
+                  color: "#A9ABB4",
                   mb: offer.description3 ? 1 : 0,
                 }}
               >
@@ -344,7 +344,7 @@ function OfferDetailsModal({
                 sx={{ 
                   fontSize: "0.75rem", 
                   lineHeight: 1.5,
-                  color: "#a9a9ca",
+                  color: "#A9ABB4",
                 }}
               >
                 {offer.description3}
@@ -380,19 +380,19 @@ function OfferDetailsModal({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {offer.events.map((event, index) => (
               <Box
-                key={event.id}
+                key={event.id || index}
                 sx={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                   p: 1.5,
-                  bgcolor: "#222339",
+                  bgcolor: "#1C2029",
                   borderRadius: 2,
                   border: "1px solid rgba(255,255,255,0.05)",
                   transition: "all 0.2s",
                   "&:hover": {
                     borderColor: "rgba(1, 214, 118, 0.3)",
-                    bgcolor: "#252640",
+                    bgcolor: "#1C2029",
                   },
                 }}
               >
@@ -402,7 +402,7 @@ function OfferDetailsModal({
                       width: 6,
                       height: 6,
                       borderRadius: "50%",
-                      bgcolor: "#3d3f54",
+                      bgcolor: "rgba(1, 214, 118, 0.08)",
                     }}
                   />
                   <Typography sx={{ fontSize: "0.8125rem", color: "#fff", fontWeight: 500 }}>
@@ -424,7 +424,7 @@ function OfferDetailsModal({
                       width: 20,
                       height: 20,
                       borderRadius: "50%",
-                      border: "1.5px solid #3d3f54",
+                      border: "1.5px solid rgba(1, 214, 118, 0.08)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -447,7 +447,7 @@ function OfferDetailsModal({
       fullWidth
       PaperProps={{
         sx: {
-          bgcolor: "#1a1b2e",
+          bgcolor: "#161A22",
           borderRadius: 3,
           boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
         },
@@ -534,7 +534,7 @@ function OfferDetailsModal({
 
         <Box
           sx={{
-            bgcolor: "#222339",
+            bgcolor: "#1C2029",
             p: 2,
             borderRadius: 2,
             border: "1px solid rgba(255,255,255,0.05)",
@@ -548,7 +548,7 @@ function OfferDetailsModal({
             cursor: "pointer",
             transition: "all 0.2s",
             "&:hover": {
-              bgcolor: "#252640",
+              bgcolor: "#1C2029",
               borderColor: "rgba(1, 214, 118, 0.2)",
             },
           }}
@@ -642,13 +642,13 @@ function PlatformSelector({
                 px: { xs: 1, sm: 2 },
                 py: { xs: 0.5, sm: 1 },
                 borderRadius: { xs: 1.5, sm: 2 },
-                bgcolor: isSelected ? "rgba(1, 214, 118, 0.1)" : "#12131c",
+                bgcolor: isSelected ? "rgba(1, 214, 118, 0.1)" : "#0B0E15",
                 border: `1px solid ${isSelected ? "rgba(1, 214, 118, 0.3)" : "rgba(255, 255, 255, 0.05)"}`,
                 cursor: "pointer",
                 transition: "all 0.2s",
                 "&:hover": {
                   borderColor: isSelected ? "rgba(1, 214, 118, 0.5)" : "rgba(255, 255, 255, 0.1)",
-                  bgcolor: isSelected ? "rgba(1, 214, 118, 0.15)" : "#1a1b2e",
+                  bgcolor: isSelected ? "rgba(1, 214, 118, 0.15)" : "#161A22",
                 },
               }}
             >
@@ -890,12 +890,12 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
   // Skeleton loader with shimmer animation
   const SkeletonOffer = () => (
     <Box sx={{ minWidth: 140, maxWidth: 140, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: "#222339", p: 1.5, borderRadius: 2.5 }}>
+      <Box sx={{ bgcolor: "#1C2029", p: 1.5, borderRadius: 2.5 }}>
         <Box sx={{ 
           width: "100%", 
           aspectRatio: "1", 
           borderRadius: 1.5, 
-          bgcolor: "#1a1b2e",
+          bgcolor: "#161A22",
           mb: 1.5,
           position: "relative",
           overflow: "hidden",
@@ -917,7 +917,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         <Box sx={{ height: 40, mb: 0.5 }}>
           <Box sx={{ 
             height: 14, 
-            bgcolor: "#1a1b2e", 
+            bgcolor: "#161A22", 
             borderRadius: 1, 
             mb: 0.5,
             position: "relative",
@@ -935,7 +935,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
           }} />
           <Box sx={{ 
             height: 14, 
-            bgcolor: "#1a1b2e", 
+            bgcolor: "#161A22", 
             borderRadius: 1, 
             width: "70%",
             position: "relative",
@@ -954,7 +954,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         </Box>
         <Box sx={{ 
           height: 10, 
-          bgcolor: "#1a1b2e", 
+          bgcolor: "#161A22", 
           borderRadius: 1, 
           width: "40%", 
           mb: 1,
@@ -973,7 +973,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         }} />
         <Box sx={{ 
           height: 14, 
-          bgcolor: "#1a1b2e", 
+          bgcolor: "#161A22", 
           borderRadius: 1, 
           width: "50%",
           position: "relative",
@@ -996,7 +996,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
   return (
     <Box 
       sx={{ 
-        bgcolor: "#12131c", 
+        bgcolor: "#0B0E15", 
         borderRadius: 3, 
         overflow: "hidden",
         border: "1px solid rgba(255, 255, 255, 0.05)"
@@ -1044,11 +1044,11 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
               sx={{
                 width: 32,
                 height: 32,
-                bgcolor: "#242537",
+                bgcolor: "#1C2029",
                 borderRadius: 1.5,
                 color: "#01D676",
                 opacity: 0.4,
-                "&:hover": { bgcolor: "#2a2b45", opacity: 1 },
+                "&:hover": { bgcolor: "rgba(1, 214, 118, 0.08)", opacity: 1 },
               }}
             >
               <ChevronLeft size={16} />
@@ -1058,10 +1058,10 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
               sx={{
                 width: 32,
                 height: 32,
-                bgcolor: "#242537",
+                bgcolor: "#1C2029",
                 borderRadius: 1.5,
                 color: "#01D676",
-                "&:hover": { bgcolor: "#2a2b45" },
+                "&:hover": { bgcolor: "rgba(1, 214, 118, 0.08)" },
               }}
             >
               <ChevronRight size={16} />
@@ -1111,13 +1111,13 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
           >
             <Box
               sx={{
-                bgcolor: "#222339",
+                bgcolor: "#1C2029",
                 p: { xs: 0.75, sm: 1.5 },
                 borderRadius: { xs: 1.5, sm: 2.5 },
                 transition: "all 0.2s",
                 border: index === 0 ? "2px solid #01D676" : "1px solid rgba(255, 255, 255, 0.05)",
                 "&:hover": {
-                  bgcolor: "#2a2b45",
+                  bgcolor: "rgba(1, 214, 118, 0.08)",
                 },
               }}
             >
@@ -1128,7 +1128,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
                     aspectRatio: "1",
                     borderRadius: { xs: 1, sm: 1.5 },
                     overflow: "hidden",
-                    bgcolor: "#1a1b2e",
+                    bgcolor: "#161A22",
                     backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
@@ -1185,7 +1185,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
               </Typography>
 
               <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600 }}>
-                ${offer.payout}
+                {offer.payout === -1 ? "∞" : `$${offer.payout}`}
               </Typography>
             </Box>
           </Box>
@@ -1257,12 +1257,12 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   // Skeleton loader
   const SkeletonSurvey = () => (
     <Box sx={{ minWidth: 140, maxWidth: 140, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: "#222339", p: 1.5, borderRadius: 2.5 }}>
+      <Box sx={{ bgcolor: "#1C2029", p: 1.5, borderRadius: 2.5 }}>
         <Box sx={{ 
           width: "100%", 
           aspectRatio: "1", 
           borderRadius: 1.5, 
-          bgcolor: "#1a1b2e",
+          bgcolor: "#161A22",
           mb: 1.5,
           position: "relative",
           overflow: "hidden",
@@ -1282,11 +1282,11 @@ function CPXSurveysSection({ userId }: { userId: string }) {
           },
         }} />
         <Box sx={{ height: 40, mb: 0.5 }}>
-          <Box sx={{ height: 14, bgcolor: "#1a1b2e", borderRadius: 1, mb: 0.5 }} />
-          <Box sx={{ height: 14, bgcolor: "#1a1b2e", borderRadius: 1, width: "70%" }} />
+          <Box sx={{ height: 14, bgcolor: "#161A22", borderRadius: 1, mb: 0.5 }} />
+          <Box sx={{ height: 14, bgcolor: "#161A22", borderRadius: 1, width: "70%" }} />
         </Box>
-        <Box sx={{ height: 10, bgcolor: "#1a1b2e", borderRadius: 1, width: "40%", mb: 1 }} />
-        <Box sx={{ height: 14, bgcolor: "#1a1b2e", borderRadius: 1, width: "50%" }} />
+        <Box sx={{ height: 10, bgcolor: "#161A22", borderRadius: 1, width: "40%", mb: 1 }} />
+        <Box sx={{ height: 14, bgcolor: "#161A22", borderRadius: 1, width: "50%" }} />
       </Box>
     </Box>
   );
@@ -1294,7 +1294,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   return (
     <Box 
       sx={{ 
-        bgcolor: "#12131c", 
+        bgcolor: "#0B0E15", 
         borderRadius: 3, 
         overflow: "hidden",
         border: "1px solid rgba(255, 255, 255, 0.05)"
@@ -1317,11 +1317,11 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             sx={{
               width: 32,
               height: 32,
-              bgcolor: "#242537",
+              bgcolor: "#1C2029",
               borderRadius: 1.5,
               color: "#01D676",
               opacity: 0.4,
-              "&:hover": { bgcolor: "#2a2b45", opacity: 1 },
+              "&:hover": { bgcolor: "rgba(1, 214, 118, 0.08)", opacity: 1 },
             }}
           >
             <ChevronLeft size={16} />
@@ -1331,10 +1331,10 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             sx={{
               width: 32,
               height: 32,
-              bgcolor: "#242537",
+              bgcolor: "#1C2029",
               borderRadius: 1.5,
               color: "#01D676",
-              "&:hover": { bgcolor: "#2a2b45" },
+              "&:hover": { bgcolor: "rgba(1, 214, 118, 0.08)" },
             }}
           >
             <ChevronRight size={16} />
@@ -1384,11 +1384,11 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             >
               <Box
                 sx={{
-                  bgcolor: "#222339",
+                  bgcolor: "#1C2029",
                   p: { xs: 0.75, sm: 1.5 },
                   borderRadius: { xs: 1.5, sm: 2.5 },
                   transition: "all 0.2s",
-                  "&:hover": { bgcolor: "#2a2b45" },
+                  "&:hover": { bgcolor: "rgba(1, 214, 118, 0.08)" },
                 }}
               >
                 <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
@@ -1567,7 +1567,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
   const iframeSrc = getIframeSrc();
 
   return (
-    <Box sx={{ bgcolor: "#0a0b0f", minHeight: "100vh", width: "100%", pb: 4 }}>
+    <Box sx={{ bgcolor: "#0B0E15", minHeight: "100vh", width: "100%", pb: 4 }}>
       {/* Platform Selector */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, pt: { xs: 2, sm: 3 }, pb: 2 }}>
         <PlatformSelector selectedPlatforms={selectedPlatforms} onToggle={handlePlatformToggle} />
@@ -1629,7 +1629,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2, 
               p: 2, 
               cursor: "pointer",
-              background: "linear-gradient(180deg, #1a1d2e 0%, #3d2f1f 40%, rgba(217, 119, 6, 0.3) 100%)",
+              background: "linear-gradient(180deg, #161A22 0%, #3d2f1f 40%, rgba(217, 119, 6, 0.3) 100%)",
               border: "1px solid rgba(217, 119, 6, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
@@ -1638,7 +1638,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": { 
-                background: "linear-gradient(180deg, #1a1d2e 0%, #3d2f1f 40%, rgba(217, 119, 6, 0.4) 100%)",
+                background: "linear-gradient(180deg, #161A22 0%, #3d2f1f 40%, rgba(217, 119, 6, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1730,7 +1730,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: 2,
               cursor: "pointer",
-              background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.3) 100%)",
+              background: "linear-gradient(180deg, #161A22 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.3) 100%)",
               border: "1px solid rgba(34, 197, 94, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
@@ -1739,7 +1739,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.4) 100%)",
+                background: "linear-gradient(180deg, #161A22 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1831,7 +1831,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: 2,
               cursor: "pointer",
-              background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(124, 58, 237, 0.3) 100%)",
+              background: "linear-gradient(180deg, #161A22 0%, #2d1f3d 40%, rgba(124, 58, 237, 0.3) 100%)",
               border: "1px solid rgba(124, 58, 237, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
@@ -1840,7 +1840,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #1a1d2e 0%, #2d1f3d 40%, rgba(124, 58, 237, 0.4) 100%)",
+                background: "linear-gradient(180deg, #161A22 0%, #2d1f3d 40%, rgba(124, 58, 237, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2033,7 +2033,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: 2,
               cursor: "pointer",
-              background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.3) 100%)",
+              background: "linear-gradient(180deg, #161A22 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.3) 100%)",
               border: "1px solid rgba(34, 197, 94, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
@@ -2042,7 +2042,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.4) 100%)",
+                background: "linear-gradient(180deg, #161A22 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2134,7 +2134,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2, 
               p: 2, 
               cursor: "pointer",
-              background: "linear-gradient(180deg, #1a1d2e 0%, #2d3748 40%, rgba(59, 130, 246, 0.3) 100%)",
+              background: "linear-gradient(180deg, #161A22 0%, #2d3748 40%, rgba(59, 130, 246, 0.3) 100%)",
               border: "1px solid rgba(59, 130, 246, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
@@ -2143,7 +2143,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": { 
-                background: "linear-gradient(180deg, #1a1d2e 0%, #2d3748 40%, rgba(59, 130, 246, 0.4) 100%)",
+                background: "linear-gradient(180deg, #161A22 0%, #2d3748 40%, rgba(59, 130, 246, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2270,7 +2270,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: 2,
               cursor: "pointer",
-              background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d3d 40%, rgba(20, 184, 166, 0.3) 100%)",
+              background: "linear-gradient(180deg, #161A22 0%, #1f3d3d 40%, rgba(20, 184, 166, 0.3) 100%)",
               border: "1px solid rgba(20, 184, 166, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
@@ -2279,7 +2279,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #1a1d2e 0%, #1f3d3d 40%, rgba(20, 184, 166, 0.4) 100%)",
+                background: "linear-gradient(180deg, #161A22 0%, #1f3d3d 40%, rgba(20, 184, 166, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2371,7 +2371,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: 2,
               cursor: "pointer",
-              background: "linear-gradient(180deg, #1a1d2e 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.3) 100%)",
+              background: "linear-gradient(180deg, #161A22 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.3) 100%)",
               border: "1px solid rgba(16, 185, 129, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
@@ -2380,7 +2380,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #1a1d2e 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.4) 100%)",
+                background: "linear-gradient(180deg, #161A22 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.4) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },

@@ -5,8 +5,9 @@ import colors from "@/theme/colors";
 
 export const metadata = {
   title: "Terms of Service - Rewardoxy",
+  description: "Read the Rewardoxy Terms of Service. By using our platform you agree to these terms governing account usage, earning, and withdrawals.",
   alternates: {
-    canonical: "https://rewardoxy.app/terms",
+    canonical: "/terms",
   },
 };
 

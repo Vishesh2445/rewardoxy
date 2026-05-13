@@ -6,7 +6,7 @@
  * IMPORTANT: Configure this URL in Revtoo Dashboard → Placement Settings → Postback URL
  * 
  * Correct Postback URL Format (GET):
- * https://rewardoxy.app/api/revtoo-postback?subId={subId}&transId={transId}&reward={reward}&status={status}&userIp={userIp}&offer_name={offer_name}&debug={debug}&signature={signature}
+ * https://www.rewardoxy.app/api/revtoo-postback?subId={subId}&transId={transId}&reward={reward}&status={status}&userIp={userIp}&offer_name={offer_name}&debug={debug}&signature={signature}
  * 
  * Parameter Mapping (Revtoo macros → query params):
  * - {subId} → subId (MANDATORY: your user's unique identifier)

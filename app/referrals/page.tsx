@@ -7,8 +7,10 @@ import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
+  title: "Referral Program — Earn from Friends",
+  description: "Invite friends to Rewardoxy and earn a percentage of their earnings as a bonus. Share your unique referral code and grow your passive income.",
   alternates: {
-    canonical: "https://rewardoxy.app/referrals",
+    canonical: "/referrals",
   },
 };
 

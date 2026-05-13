@@ -9,9 +9,12 @@ import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Rewardoxy — Get Paid to Complete Surveys & Tasks",
+  title: {
+    default: "Rewardoxy — Get Paid to Complete Surveys & Tasks",
+    template: "%s | Rewardoxy",
+  },
   description:
-    "Earn real rewards by completing surveys, tasks, and offers. Join Rewardoxy and start earning today.",
+    "Earn real rewards by completing surveys, tasks, and offers. Join Rewardoxy and start earning today. Cash out as crypto instantly.",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -21,9 +24,9 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
-  metadataBase: new URL("https://rewardoxy.app"),
+  metadataBase: new URL("https://www.rewardoxy.app"),
   alternates: {
-    canonical: "https://rewardoxy.app",
+    canonical: "/",
   },
   robots: {
     index: true,
@@ -40,7 +43,7 @@ export const metadata: Metadata = {
     title: "Rewardoxy — Get Paid to Complete Surveys & Tasks",
     description:
       "Earn real rewards by completing surveys, tasks, and offers. Join Rewardoxy and start earning today.",
-    url: "https://rewardoxy.app",
+    url: "https://www.rewardoxy.app",
     siteName: "Rewardoxy",
     images: [{ url: "/logo.png", width: 512, height: 512, alt: "Rewardoxy Logo" }],
     type: "website",
@@ -62,6 +65,34 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Rewardoxy",
+  url: "https://www.rewardoxy.app",
+  logo: "https://www.rewardoxy.app/logo.png",
+  sameAs: ["https://t.me/rewardoxy"],
+  contactPoint: {
+    "@type": "ContactPoint",
+    email: "support@rewardoxy.app",
+    contactType: "customer support",
+  },
+};
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Rewardoxy",
+  url: "https://www.rewardoxy.app",
+  description:
+    "Earn real rewards by completing surveys, tasks, and offers. Cash out as crypto instantly.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://www.rewardoxy.app/?q={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -70,6 +101,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
         <script
           src="https://challenges.cloudflare.com/turnstile/v0/api.js"
           async

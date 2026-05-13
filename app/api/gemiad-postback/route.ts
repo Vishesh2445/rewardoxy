@@ -7,7 +7,7 @@
  * IMPORTANT: Configure this URL in GemiAd Dashboard → Placement Settings → Postback URL
  * 
  * Correct Postback URL Format:
- * https://rewardoxy.app/api/gemiad-postback?userId={USER_ID}&offerId={OFFER_ID}&offerName={OFFER_NAME}&eventId={EVENT_ID}&eventName={EVENT_NAME}&payout={PAYOUT}&reward={REWARD}&txid={TXID}&status={STATUS}&ip={IPADDR}&sub1={SUB1}&sub2={SUB2}&hash={HASH}
+ * https://www.rewardoxy.app/api/gemiad-postback?userId={USER_ID}&offerId={OFFER_ID}&offerName={OFFER_NAME}&eventId={EVENT_ID}&eventName={EVENT_NAME}&payout={PAYOUT}&reward={REWARD}&txid={TXID}&status={STATUS}&ip={IPADDR}&sub1={SUB1}&sub2={SUB2}&hash={HASH}
  * 
  * Parameter Mapping (GemiAd macros → query params):
  * - {USER_ID} → userId (MANDATORY: your user's unique identifier)

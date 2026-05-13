@@ -7,7 +7,7 @@
  * IMPORTANT: Configure this URL in CPX Research Dashboard → Apps → Edit → Postback Settings
  * 
  * Correct Postback URL Format:
- * https://rewardoxy.app/api/cpx-postback?userid={user_id}&transid={trans_id}&amountlocal={amount_local}&amountusd={amount_usd}&status={status}&hash={secure_hash}&type={type}&subid1={subid_1}&subid2={subid_2}&offerid={offer_ID}&ipclick={ip_click}
+ * https://www.rewardoxy.app/api/cpx-postback?userid={user_id}&transid={trans_id}&amountlocal={amount_local}&amountusd={amount_usd}&status={status}&hash={secure_hash}&type={type}&subid1={subid_1}&subid2={subid_2}&offerid={offer_ID}&ipclick={ip_click}
  * 
  * Parameter Mapping (CPX placeholder → query param):
  * - {user_id} → userid (MANDATORY)

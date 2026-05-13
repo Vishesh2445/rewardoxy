@@ -6,7 +6,7 @@
  * IMPORTANT: Configure this URL in Taskwall Dashboard → App Settings → Postback URL
  *
  * Postback URL Format:
- * https://rewardoxy.app/api/taskwall-postback
+ * https://www.rewardoxy.app/api/taskwall-postback
  *
  * Parameters sent by Taskwall:
  * - app_name: Returns the app name

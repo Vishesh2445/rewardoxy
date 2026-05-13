@@ -177,7 +177,7 @@ export default function Home() {
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'https://rewardoxy.app/auth/callback'
+        redirectTo: 'https://www.rewardoxy.app/auth/callback'
       }
     });
     if (oauthError) {
@@ -212,15 +212,15 @@ export default function Home() {
 
           <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 4 }}>
             {[
-              { label: "How It Works", href: "#how-it-works" },
-              { label: "Earn", href: "#earn" },
-              { label: "Features", href: "#features" },
-              { label: "FAQ", href: "#faq" },
+              { label: "About", href: "/about" },
+              { label: "Surveys", href: "/surveys" },
+              { label: "Rewards", href: "/rewards" },
+              { label: "FAQ", href: "/faq" },
               { label: "Contact", href: "/contact" },
             ].map((item) => (
               <Box
                 key={item.href}
-                component="a"
+                component={Link}
                 href={item.href}
                 sx={{
                   fontSize: "0.875rem",

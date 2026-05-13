@@ -147,7 +147,7 @@ export default function SignupClient() {
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `https://rewardoxy.app/auth/callback${ref ? `?ref=${ref}` : ""}`
+        redirectTo: `https://www.rewardoxy.app/auth/callback${ref ? `?ref=${ref}` : ""}`
       }
     });
 

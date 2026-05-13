@@ -6,7 +6,7 @@
  * IMPORTANT: Configure this URL in Notik Dashboard → App Settings → Postback URL
  * 
  * Postback URL Format:
- * https://rewardoxy.app/api/notik-postback
+ * https://www.rewardoxy.app/api/notik-postback
  * 
  * Parameters sent by Notik:
  * - pub_id: Your Publisher ID

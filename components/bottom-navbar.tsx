@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Box, Paper } from "@mui/material";
-import { Gift, Wallet, CalendarCheck, ShoppingBag, Target } from "lucide-react";
+import { Gift, Wallet, ShoppingBag, Target } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 
@@ -19,7 +19,7 @@ export default function BottomNavbar() {
 
   return (
     <Paper
-      elevation={8}
+      elevation={0}
       sx={{
         position: "fixed",
         bottom: 0,
@@ -27,10 +27,11 @@ export default function BottomNavbar() {
         right: 0,
         display: { xs: "block", md: "none" },
         zIndex: 1200,
-        bgcolor: "#12131c",
-        borderTop: `1px solid rgba(255, 255, 255, 0.05)`,
+        bgcolor: "rgba(8, 11, 18, 0.95)",
+        backdropFilter: "blur(20px)",
+        borderTop: `1px solid rgba(1, 214, 118, 0.08)`,
         borderRadius: 0,
-        pb: "env(safe-area-inset-bottom, 0px)", // Safe area for iOS devices
+        pb: "env(safe-area-inset-bottom, 0px)",
       }}
     >
       <Box
@@ -61,12 +62,7 @@ export default function BottomNavbar() {
                 color: isActive ? "#01D676" : colors.text.secondary,
                 transition: "all 0.2s ease",
                 borderRadius: 2,
-                "&:hover": {
-                  bgcolor: "rgba(255, 255, 255, 0.03)",
-                },
-                "&:active": {
-                  transform: "scale(0.95)",
-                },
+                "&:active": { transform: "scale(0.95)" },
               }}
             >
               <Box
@@ -77,14 +73,11 @@ export default function BottomNavbar() {
                   width: 40,
                   height: 40,
                   borderRadius: 2,
-                  bgcolor: isActive ? "rgba(1, 214, 118, 0.15)" : "transparent",
+                  bgcolor: isActive ? "rgba(1, 214, 118, 0.12)" : "transparent",
                   transition: "all 0.2s ease",
                 }}
               >
-                <Icon
-                  size={22}
-                  strokeWidth={isActive ? 2.5 : 2}
-                />
+                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
               </Box>
               <Typography
                 sx={{

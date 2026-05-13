@@ -18,8 +18,10 @@ import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
+  title: "Leaderboard — Top Earners This Month",
+  description: "See who's earning the most on Rewardoxy this month. Compete with other users and climb the leaderboard for exclusive rewards.",
   alternates: {
-    canonical: "https://rewardoxy.app/leaderboard",
+    canonical: "/leaderboard",
   },
 };
 

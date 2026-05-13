@@ -12,7 +12,7 @@ function sleep(ms: number) {
 }
 
 async function sendVerificationEmail(email: string, token: string) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rewardoxy.app";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.rewardoxy.app";
   const verifyUrl = `${siteUrl}/api/verify?token=${token}`;
   
   const brevoApiKey = process.env.BREVO_API_KEY;

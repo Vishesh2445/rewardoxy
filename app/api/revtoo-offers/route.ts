@@ -15,6 +15,7 @@ function parseRevtooAmount(amount: number | string | undefined): number {
   if (!amount) return 0;
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
   if (isNaN(num)) return 0;
+  if (num === -1) return -1; // Variable reward marker
   // Convert coins to USD: divide by 1000 and round to 2 decimal places
   return Math.round((num / 1000) * 100) / 100;
 }
@@ -157,8 +158,8 @@ export async function GET(request: NextRequest) {
         let payoutValue = 0;
         
         if (offer.reward === '*' || offer.payout === '*') {
-          // Variable reward - use reward_value from API response as estimate
-          payoutValue = data.reward_value || 0;
+          // Variable reward - mark as variable
+          payoutValue = -1;
         } else if (offer.reward && offer.reward !== '*') {
           // Use reward field (primary payout from Revtoo API)
           payoutValue = offer.reward;

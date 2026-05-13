@@ -6,9 +6,20 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/admin/', '/auth/', '/profile/', '/history/', '/cashout/', '/daily-bonus/', '/banned/'],
+        disallow: [
+          '/api/',
+          '/admin/',
+          '/auth/',
+          '/profile/',
+          '/history/',
+          '/cashout/',
+          '/daily-bonus/',
+          '/banned/',
+          '/my-offers/',
+          '/offers/',
+        ],
       },
     ],
-    sitemap: 'https://rewardoxy.app/sitemap.xml',
+    sitemap: 'https://www.rewardoxy.app/sitemap.xml',
   };
 }

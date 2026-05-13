@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 
 async function sendPasswordResetEmail(email: string, resetToken: string) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rewardoxy.app";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.rewardoxy.app";
   const resetUrl = `${siteUrl}/auth/reset-password?token=${resetToken}`;
   
   const brevoApiKey = process.env.BREVO_API_KEY;
