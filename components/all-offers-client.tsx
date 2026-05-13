@@ -935,12 +935,12 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                 gridTemplateColumns: {
                   xs: "repeat(4, 1fr)",
                   sm: "repeat(5, 1fr)",
-                  md: "repeat(7, 1fr)",
+                  md: "repeat(6, 1fr)",
                   lg: "repeat(9, 1fr)",
                   xl: "repeat(10, 1fr)",
                 },
-                gap: { xs: 0.5, sm: 0.75, md: 0.75 },
-                columnGap: 0,
+                gap: { xs: 0.75, sm: 1, md: 1.5 },
+                columnGap: { xs: 0.5, sm: 0.75, md: 1 },
               }}
             >
               {displayedOffers.map((offer, index) => (
@@ -961,6 +961,9 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                       borderRadius: { xs: 1.5, sm: 2.5 },
                       border: "1px solid rgba(255, 255, 255, 0.05)",
                       transition: "all 0.2s",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
                       "&:hover": {
                         bgcolor: "rgba(16, 185, 129, 0.08)",
                       },
@@ -999,10 +1002,10 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                       )}
                     </Box>
 
-                    <Box sx={{ height: 40, overflow: "hidden", mb: 0.5 }}>
+                    <Box sx={{ height: { xs: 32, sm: 40 }, overflow: "hidden", mb: 0.5 }}>
                       <Typography
                         sx={{
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
                           fontWeight: 500,
                           lineHeight: 1.3,
                           color: colors.text.primary,
@@ -1018,7 +1021,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
 
                     <Typography
                       sx={{
-                        fontSize: { xs: "0.6rem", sm: "0.6875rem" },
+                        fontSize: { xs: "0.55rem", sm: "0.6875rem" },
                         color: colors.text.secondary,
                         opacity: 0.6,
                         textTransform: "uppercase",
@@ -1030,7 +1033,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                       {offer.provider || 'Game'}
                     </Typography>
 
-                    <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600 }}>
+                    <Typography sx={{ fontSize: { xs: "0.7rem", sm: "0.875rem" }, fontWeight: 600, mt: "auto" }}>
                       {offer.payout === -1 ? "∞" : `$${offer.payout}`}
                     </Typography>
                   </Box>
