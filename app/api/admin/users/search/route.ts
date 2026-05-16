@@ -22,7 +22,17 @@ export async function GET(request: NextRequest) {
     .order("created_at", { ascending: false });
 
   if (q.trim()) {
-    query = query.ilike("email", `%${q.trim()}%`);
+    const searchTerm = q.trim();
+    // Check if it looks like a UUID (user ID search)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchTerm);
+    
+    if (isUuid) {
+      // Exact match on ID
+      query = query.eq("id", searchTerm.toLowerCase());
+    } else {
+      // Partial match on email
+      query = query.ilike("email", `%${searchTerm}%`);
+    }
   }
 
   const { data, count, error } = await query.range(from, to);

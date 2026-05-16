@@ -180,7 +180,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
         {withdrawals.map((w) => {
           const sc = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
           return (
-            <Paper key={w.id} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 2 }}>
+            <Paper key={w.id} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 2 }}>
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.8rem" }} truncate>{w.user_email}</Typography>
                 <Box sx={{ borderRadius: 50, px: 1.25, py: 0.25, fontSize: "10px", fontWeight: 600, bgcolor: sc.bg, color: sc.color, textTransform: "capitalize" }}>
@@ -232,7 +232,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
           <TableHead>
             <TableRow>
               {["User", "Date", "Coins", "USD", "Address", "Status", "TX Hash", "Actions"].map((h) => (
-                <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.primary }}>
+                <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.background.secondary }}>
                   {h}
                 </TableCell>
               ))}
@@ -305,12 +305,12 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
       {totalPages > 1 && (
         <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Button size="small" onClick={() => fetchWithdrawals(page - 1, filter)} disabled={page === 0 || loading} startIcon={<ChevronLeft size={14} />}
-            sx={{ color: colors.text.secondary, bgcolor: colors.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none" }}>
+            sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none" }}>
             Prev
           </Button>
           <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>Page {page + 1} of {totalPages}</Typography>
           <Button size="small" onClick={() => fetchWithdrawals(page + 1, filter)} disabled={page >= totalPages - 1 || loading} endIcon={<ChevronRight size={14} />}
-            sx={{ color: colors.text.secondary, bgcolor: colors.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none" }}>
+            sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none" }}>
             Next
           </Button>
         </Box>

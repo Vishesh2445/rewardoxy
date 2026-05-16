@@ -100,7 +100,7 @@ export default function AdminNotificationsClient({
         sx={{
           borderRadius: 3,
           border: `1px solid ${colors.divider}`,
-          bgcolor: colors.primary,
+          bgcolor: colors.background.primary,
           p: 3,
           mb: 3,
         }}
@@ -206,7 +206,7 @@ export default function AdminNotificationsClient({
             sx={{
               borderRadius: 3,
               border: `1px solid ${colors.divider}`,
-              bgcolor: colors.primary,
+              bgcolor: colors.background.primary,
               p: 2,
             }}
           >

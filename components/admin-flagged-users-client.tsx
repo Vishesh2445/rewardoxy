@@ -179,7 +179,7 @@ export default function AdminFlaggedUsersClient() {
           <CircularProgress sx={{ color: "#f59e0b" }} />
         </Box>
       ) : users.length === 0 ? (
-        <Paper elevation={0} sx={{ p: 4, textAlign: "center", borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary }}>
+        <Paper elevation={0} sx={{ p: 4, textAlign: "center", borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary }}>
           <Shield size={48} color={colors.text.secondary} style={{ opacity: 0.5, marginBottom: 16 }} />
           <Typography variant="h6">All clear!</Typography>
           <Typography variant="body2" color="textSecondary">No flagged users at the moment.</Typography>
@@ -190,7 +190,7 @@ export default function AdminFlaggedUsersClient() {
             <TableHead>
               <TableRow>
                 {["Email", "Signup Country", "Last Seen", "Fraud Status", "Risk Score", "Actions"].map((h) => (
-                  <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.primary, whiteSpace: "nowrap" }}>
+                  <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.background.secondary, whiteSpace: "nowrap" }}>
                     {h}
                   </TableCell>
                 ))}
@@ -269,12 +269,12 @@ export default function AdminFlaggedUsersClient() {
       {totalPages > 1 && (
         <Box sx={{ mt: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Button size="small" onClick={() => fetchFlaggedUsers(page - 1)} disabled={page === 0 || loading} startIcon={<ChevronLeft size={14} />}
-            sx={{ color: colors.text.secondary, bgcolor: colors.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
+            sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
             Prev
           </Button>
           <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>Page {page + 1} of {totalPages}</Typography>
           <Button size="small" onClick={() => fetchFlaggedUsers(page + 1)} disabled={page >= totalPages - 1 || loading} endIcon={<ChevronRight size={14} />}
-            sx={{ color: colors.text.secondary, bgcolor: colors.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
+            sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
             Next
           </Button>
         </Box>
@@ -287,7 +287,7 @@ export default function AdminFlaggedUsersClient() {
         maxWidth="md"
         fullWidth
         PaperProps={{
-          sx: { bgcolor: colors.primary, border: `1px solid ${colors.divider}`, borderRadius: 3 }
+          sx: { bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, borderRadius: 3 }
         }}
       >
         <DialogTitle sx={{ color: "#fff", display: "flex", alignItems: "center", gap: 1 }}>

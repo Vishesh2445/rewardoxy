@@ -186,7 +186,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
               ) : (
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                   {data.completions.map((c) => (
-                    <Box key={c.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", bgcolor: colors.primary, borderRadius: 2, px: 1.5, py: 0.75, fontSize: "0.8rem" }}>
+                    <Box key={c.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", bgcolor: colors.background.primary, borderRadius: 2, px: 1.5, py: 0.75, fontSize: "0.8rem" }}>
                       <Typography sx={{ fontSize: "0.8rem", fontWeight: 500, flex: 1 }} truncate>{c.offer_name}</Typography>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexShrink: 0 }}>
                         <Typography sx={{ fontSize: "0.8rem", fontWeight: 600, color: "#10B981" }}>+{c.coins}</Typography>
@@ -205,7 +205,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
               ) : (
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                   {data.withdrawals.map((w) => (
-                    <Box key={w.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", bgcolor: colors.primary, borderRadius: 2, px: 1.5, py: 0.75, fontSize: "0.8rem" }}>
+                    <Box key={w.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", bgcolor: colors.background.primary, borderRadius: 2, px: 1.5, py: 0.75, fontSize: "0.8rem" }}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Typography sx={{ fontSize: "0.8rem", fontWeight: 500 }}>${w.amount_usd.toFixed(2)}</Typography>
                         <Box sx={{ fontSize: "0.65rem", color: colors.text.secondary }}>LTC</Box>
@@ -291,7 +291,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
           const fs = FRAUD_STATUS_COLORS[u.fraud_status || "clean"] || FRAUD_STATUS_COLORS.clean;
           const countryMismatch = u.signup_country && u.last_seen_country && u.signup_country !== u.last_seen_country;
           return (
-            <Paper key={u.id} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.primary, p: 2 }}>
+            <Paper key={u.id} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 2 }}>
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
                 <Typography variant="body2" sx={{ fontWeight: 600 }} truncate>{u.email}</Typography>
                 <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
@@ -343,7 +343,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
           <TableHead>
             <TableRow>
               {["UID", "Email", "Balance", "Earned", "Signup Country", "Last Seen", "Fraud Status", "VPN", "Status", "Joined", "Actions"].map((h) => (
-                <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.primary, whiteSpace: "nowrap" }}>
+                <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.background.secondary, whiteSpace: "nowrap" }}>
                   {h}
                 </TableCell>
               ))}
@@ -424,12 +424,12 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
       {totalPages > 1 && (
         <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Button size="small" onClick={() => fetchUsers(search, page - 1)} disabled={page === 0 || loading} startIcon={<ChevronLeft size={14} />}
-            sx={{ color: colors.text.secondary, bgcolor: colors.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
+            sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
             Prev
           </Button>
           <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>Page {page + 1} of {totalPages}</Typography>
           <Button size="small" onClick={() => fetchUsers(search, page + 1)} disabled={page >= totalPages - 1 || loading} endIcon={<ChevronRight size={14} />}
-            sx={{ color: colors.text.secondary, bgcolor: colors.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
+            sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
             Next
           </Button>
         </Box>

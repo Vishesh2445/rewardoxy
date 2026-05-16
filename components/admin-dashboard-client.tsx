@@ -16,7 +16,7 @@ interface AdminDashboardClientProps {
 const STAT_CARD_STYLE = {
   borderRadius: 4,
   border: `1px solid ${colors.divider}`,
-  bgcolor: colors.primary,
+  bgcolor: colors.background.primary,
   p: 3,
   transition: "all 0.2s",
   "&:hover": { borderColor: "rgba(16,185,129,0.4)" },
