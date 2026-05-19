@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
         destination: "https://www.rewardoxy.app/:path*",
         permanent: true,
       },
+      // Legacy /dashboard route → earn page
+      {
+        source: "/dashboard",
+        destination: "/earn",
+        permanent: true,
+      },
     ];
   },
   async headers() {
