@@ -969,7 +969,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                       },
                     }}
                   >
-                    <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
+                    <Box sx={{ position: "relative", mb: { xs: 0.5, sm: 1 } }}>
                       <Box
                         sx={{
                           width: "100%",
@@ -1027,13 +1027,13 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                         textTransform: "uppercase",
                         letterSpacing: "0.05em",
                         fontWeight: 600,
-                        mb: { xs: 0.5, sm: 1 },
+                        mb: 0.25,
                       }}
                     >
                       {offer.provider || 'Game'}
                     </Typography>
 
-                    <Typography sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" }, fontWeight: 600, mt: "auto" }}>
+                    <Typography sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" }, fontWeight: 600 }}>
                       {offer.payout === -1 ? "∞" : `$${offer.payout}`}
                     </Typography>
                   </Box>
