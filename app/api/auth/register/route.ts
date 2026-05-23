@@ -131,13 +131,14 @@ async function sendVerificationEmail(email: string, token: string) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { user_id, email, referred_by, accepted_terms, is_google_oauth, turnstile_token } = body as {
+  const { user_id, email, referred_by, accepted_terms, is_google_oauth, turnstile_token, source } = body as {
     user_id: string;
     email: string;
     referred_by?: string;
     accepted_terms?: boolean;
     is_google_oauth?: boolean;
     turnstile_token?: string;
+    source?: string;
   };
 
   console.log("Registration attempt:", { user_id, email, referred_by, is_google_oauth });
@@ -288,8 +289,8 @@ export async function POST(request: NextRequest) {
           console.log("Referral record created");
         }
         
-        // Create email verification token for non-Google users
-        if (!is_google_oauth) {
+        // Create email verification token for non-Google users (skip for app - app uses OTP)
+        if (!is_google_oauth && source !== 'app') {
           // Create token
           const { data: tokenData, error: tokenError } = await admin
             .from("email_verification_tokens")
