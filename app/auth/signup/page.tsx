@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Sign Up — Create Your Free Account",
   robots: { index: false, follow: true },
   alternates: {
-    canonical: "/auth/signup",
+    canonical: "https://www.rewardoxy.app/auth/signup",
   },
 };
 

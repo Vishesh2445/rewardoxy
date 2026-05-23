@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Sign In — Access Your Account",
   robots: { index: false, follow: true },
   alternates: {
-    canonical: "/auth/login",
+    canonical: "https://www.rewardoxy.app/auth/login",
   },
 };
 
