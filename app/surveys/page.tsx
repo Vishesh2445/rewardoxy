@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Box, Container, Paper, Grid } from "@mui/material";
 import { ClipboardList, Clock, DollarSign, Globe, Shield, CheckCircle } from "lucide-react";
+import PublicFooter from "@/components/public-footer";
 
 export const metadata: Metadata = {
   title: "Paid Surveys — Earn Money Answering Questions",
@@ -149,30 +150,7 @@ export default function SurveysPage() {
         </Box>
       </Container>
 
-      {/* Footer */}
-      <Box sx={{ borderTop: `1px solid ${colors.divider}`, bgcolor: colors.bgCard, py: 4 }}>
-        <Container maxWidth="md">
-          <Box sx={{ display: "flex", justifyContent: "center", gap: 3, fontSize: "0.875rem", flexWrap: "wrap" }}>
-            {[
-              { label: "Home", href: "/" },
-              { label: "About", href: "/about" },
-              { label: "FAQ", href: "/faq" },
-              { label: "Surveys", href: "/surveys" },
-              { label: "Rewards", href: "/rewards" },
-              { label: "Contact", href: "/contact" },
-              { label: "Terms", href: "/terms" },
-              { label: "Privacy", href: "/privacy" },
-            ].map((item) => (
-              <Link key={item.href} href={item.href} style={{ color: colors.textSecondary, textDecoration: "none" }}>
-                {item.label}
-              </Link>
-            ))}
-          </Box>
-          <Box sx={{ textAlign: "center", mt: 2, fontSize: "0.75rem", color: "rgba(169,169,202,0.5)" }}>
-            &copy; {new Date().getFullYear()} Rewardoxy. All rights reserved.
-          </Box>
-        </Container>
-      </Box>
+      <PublicFooter />
     </Box>
   );
 }

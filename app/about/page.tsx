@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Box, Container, Paper, Grid } from "@mui/material";
 import { Shield, Zap, Globe, Users, Wallet, CheckCircle } from "lucide-react";
+import ProviderCarousel from "@/components/provider-carousel";
+import PublicFooter from "@/components/public-footer";
 
 export const metadata: Metadata = {
   title: "About Rewardoxy — Who We Are & How It Works",
@@ -109,13 +111,14 @@ export default function AboutPage() {
           ))}
         </Grid>
 
-        {/* Our Partners */}
-        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.divider}`, borderRadius: 4, p: { xs: 3, sm: 5 }, mb: 5 }}>
-          <Box component="h2" sx={{ fontSize: "1.5rem", fontWeight: 700, mt: 0, mb: 2 }}>Our Offer Partners</Box>
-          <Box component="p" sx={{ color: colors.textSecondary, lineHeight: 1.8, m: 0 }}>
-            We work with established offerwalls and survey routers including CPX Research, MyLead, Notik, Revtoo, GemiAd, and TheoremReach. These companies have been in the market research and advertising space for years, ensuring you always have legitimate, well-paying offers available.
+        {/* Our Partners - Carousel */}
+        <Box sx={{ mb: 6 }}>
+          <Box component="h2" sx={{ fontSize: "1.5rem", fontWeight: 700, mb: 3 }}>Our Offer Partners</Box>
+          <Box component="p" sx={{ color: colors.textSecondary, lineHeight: 1.8, mb: 4 }}>
+            We work with established offerwalls and survey routers to ensure you always have legitimate, well-paying offers available.
           </Box>
-        </Paper>
+          <ProviderCarousel />
+        </Box>
 
         {/* CTA */}
         <Box sx={{ textAlign: "center", mt: 8 }}>
@@ -140,30 +143,7 @@ export default function AboutPage() {
         </Box>
       </Container>
 
-      {/* Footer */}
-      <Box sx={{ borderTop: `1px solid ${colors.divider}`, bgcolor: colors.bgCard, py: 4 }}>
-        <Container maxWidth="md">
-          <Box sx={{ display: "flex", justifyContent: "center", gap: 3, fontSize: "0.875rem", flexWrap: "wrap" }}>
-            {[
-              { label: "Home", href: "/" },
-              { label: "About", href: "/about" },
-              { label: "FAQ", href: "/faq" },
-              { label: "Surveys", href: "/surveys" },
-              { label: "Rewards", href: "/rewards" },
-              { label: "Contact", href: "/contact" },
-              { label: "Terms", href: "/terms" },
-              { label: "Privacy", href: "/privacy" },
-            ].map((item) => (
-              <Link key={item.href} href={item.href} style={{ color: colors.textSecondary, textDecoration: "none" }}>
-                {item.label}
-              </Link>
-            ))}
-          </Box>
-          <Box sx={{ textAlign: "center", mt: 2, fontSize: "0.75rem", color: "rgba(169,169,202,0.5)" }}>
-            &copy; {new Date().getFullYear()} Rewardoxy. All rights reserved.
-          </Box>
-        </Container>
-      </Box>
+      <PublicFooter />
     </Box>
   );
 }

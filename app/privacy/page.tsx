@@ -1,6 +1,7 @@
 import { Box, Container, Divider } from "@mui/material";
 import Icons from "@/components/icons";
 import Typography from "@/components/ui/Typography";
+import PublicFooter from "@/components/public-footer";
 
 const colors = {
   bgPage: "#141523",
@@ -142,31 +143,7 @@ export default function PrivacyPage() {
         </Section>
       </Container>
 
-      {/* Footer */}
-      <Divider sx={{ borderColor: colors.divider }} />
-      <Box sx={{ bgcolor: colors.bgCard, py: 4 }}>
-        <Container maxWidth="md">
-          <Box sx={{ display: "flex", justifyContent: "center", gap: 3, fontSize: "0.875rem" }}>
-            {[
-              { label: "Terms", href: "/terms" },
-              { label: "Privacy", href: "/privacy" },
-              { label: "Contact", href: "/contact" },
-            ].map((item) => (
-              <Box
-                key={item.href}
-                component="a"
-                href={item.href}
-                sx={{ color: colors.textSecondary, textDecoration: "none", "&:hover": { color: colors.textPrimary } }}
-              >
-                {item.label}
-              </Box>
-            ))}
-          </Box>
-          <Typography alignCenter sx={{ mt: 2, fontSize: "0.75rem", color: "rgba(169,169,202,0.5)" }}>
-            &copy; {new Date().getFullYear()} Rewardoxy. All rights reserved.
-          </Typography>
-        </Container>
-      </Box>
+      <PublicFooter />
     </Box>
   );
 }

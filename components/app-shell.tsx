@@ -76,7 +76,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
               <Box sx={{ position: "relative", width: 28, height: 24 }}><Image src="/logo.png" alt="Rewardoxy" width={28} height={24} style={{ objectFit: "contain" }} /></Box>
             </Box>
             <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>{userId && <BalanceDisplay userId={userId} initialBalance={coins} />}</Box>
-            <NotificationBell />
+            {userId ? <NotificationBell /> : <Button component={Link} href="/auth/signup" sx={{ bgcolor: colors.primary, color: "#fff", textTransform: "none", fontWeight: 600, fontSize: "0.75rem", px: 1.5, py: 0.5, borderRadius: "6px", minWidth: "auto", "&:hover": { bgcolor: "rgba(16,185,129,0.85)" } }}>Sign Up</Button>}
           </Box>
 
           {/* Desktop */}
@@ -95,24 +95,32 @@ export default function AppShell({ children, coins, userName = "User", userAvata
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               {userId && <BalanceDisplay userId={userId} initialBalance={coins} />}
-              <NotificationBell />
-              <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ p: 0.5, bgcolor: open ? "rgba(16,185,129,0.06)" : "transparent", "&:hover": { bgcolor: "rgba(16,185,129,0.06)" } }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Avatar src={userAvatar} sx={{ width: 32, height: 32, bgcolor: colors.primary, fontSize: "0.8rem", fontWeight: 700 }}>{userName?.charAt(0).toUpperCase() || "U"}</Avatar>
-                  <ChevronDown size={14} color={colors.text.secondary} />
-                </Box>
-              </IconButton>
-              <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)} slotProps={{ paper: { sx: { bgcolor: colors.background.primary, border: `1px solid ${colors.glass.border}`, borderRadius: "12px", mt: 1, minWidth: 200 } } }} transformOrigin={{ horizontal: "right", vertical: "top" }} anchorOrigin={{ horizontal: "right", vertical: "bottom" }}>
-                {DROPDOWN_ITEMS.map(({ label, href, Icon }) => (
-                  <MenuItem key={href} component={Link} href={href} onClick={() => setAnchorEl(null)} sx={{ py: 1.5, px: 2, gap: 1.5, color: colors.text.primary, fontSize: "0.875rem", "&:hover": { bgcolor: "rgba(16,185,129,0.06)" } }}>
-                    <Icon size={17} />{label}
-                  </MenuItem>
-                ))}
-                <Box sx={{ borderTop: `1px solid ${colors.glass.border}`, mt: 0.5 }} />
-                <MenuItem onClick={() => { setAnchorEl(null); handleLogout(); }} sx={{ py: 1.5, px: 2, gap: 1.5, color: "#f87171", "&:hover": { bgcolor: "rgba(239,68,68,0.08)" } }}>
-                  <LogOut size={17} />Log Out
-                </MenuItem>
-              </Menu>
+              {userId && <NotificationBell />}
+              {userId ? (
+                <>
+                  <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ p: 0.5, bgcolor: open ? "rgba(16,185,129,0.06)" : "transparent", "&:hover": { bgcolor: "rgba(16,185,129,0.06)" } }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Avatar src={userAvatar} sx={{ width: 32, height: 32, bgcolor: colors.primary, fontSize: "0.8rem", fontWeight: 700 }}>{userName?.charAt(0).toUpperCase() || "U"}</Avatar>
+                      <ChevronDown size={14} color={colors.text.secondary} />
+                    </Box>
+                  </IconButton>
+                  <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)} slotProps={{ paper: { sx: { bgcolor: colors.background.primary, border: `1px solid ${colors.glass.border}`, borderRadius: "12px", mt: 1, minWidth: 200 } } }} transformOrigin={{ horizontal: "right", vertical: "top" }} anchorOrigin={{ horizontal: "right", vertical: "bottom" }}>
+                    {DROPDOWN_ITEMS.map(({ label, href, Icon }) => (
+                      <MenuItem key={href} component={Link} href={href} onClick={() => setAnchorEl(null)} sx={{ py: 1.5, px: 2, gap: 1.5, color: colors.text.primary, fontSize: "0.875rem", "&:hover": { bgcolor: "rgba(16,185,129,0.06)" } }}>
+                        <Icon size={17} />{label}
+                      </MenuItem>
+                    ))}
+                    <Box sx={{ borderTop: `1px solid ${colors.glass.border}`, mt: 0.5 }} />
+                    <MenuItem onClick={() => { setAnchorEl(null); handleLogout(); }} sx={{ py: 1.5, px: 2, gap: 1.5, color: "#f87171", "&:hover": { bgcolor: "rgba(239,68,68,0.08)" } }}>
+                      <LogOut size={17} />Log Out
+                    </MenuItem>
+                  </Menu>
+                </>
+              ) : (
+                <Button component={Link} href="/auth/signup" sx={{ bgcolor: colors.primary, color: "#fff", textTransform: "none", fontWeight: 600, fontSize: "0.875rem", px: 2.5, py: 0.75, borderRadius: "8px", "&:hover": { bgcolor: "rgba(16,185,129,0.85)" } }}>
+                  Sign Up
+                </Button>
+              )}
             </Box>
           </Box>
         </Toolbar>
@@ -126,13 +134,20 @@ export default function AppShell({ children, coins, userName = "User", userAvata
             <IconButton onClick={() => setMobileOpen(false)} sx={{ color: colors.text.secondary }}><X size={20} /></IconButton>
           </Box>
           <Box sx={{ p: 2, borderBottom: `1px solid ${colors.glass.border}` }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Avatar src={userAvatar} sx={{ width: 44, height: 44, bgcolor: colors.primary, fontWeight: 700 }}>{userName?.charAt(0).toUpperCase() || "U"}</Avatar>
-              <Box>
-                <Typography sx={{ fontWeight: 700, fontSize: "0.9rem" }}>{userName || "User"}</Typography>
-                {userId && <BalanceDisplay userId={userId} initialBalance={coins} />}
+            {userId ? (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Avatar src={userAvatar} sx={{ width: 44, height: 44, bgcolor: colors.primary, fontWeight: 700 }}>{userName?.charAt(0).toUpperCase() || "U"}</Avatar>
+                <Box>
+                  <Typography sx={{ fontWeight: 700, fontSize: "0.9rem" }}>{userName || "User"}</Typography>
+                  {userId && <BalanceDisplay userId={userId} initialBalance={coins} />}
+                </Box>
               </Box>
-            </Box>
+            ) : (
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Button component={Link} href="/auth/login" onClick={() => setMobileOpen(false)} sx={{ flex: 1, border: `1px solid ${colors.glass.border}`, color: colors.text.primary, textTransform: "none", fontWeight: 600, fontSize: "0.8rem", borderRadius: "8px" }}>Log In</Button>
+                <Button component={Link} href="/auth/signup" onClick={() => setMobileOpen(false)} sx={{ flex: 1, bgcolor: colors.primary, color: "#fff", textTransform: "none", fontWeight: 600, fontSize: "0.8rem", borderRadius: "8px", "&:hover": { bgcolor: "rgba(16,185,129,0.85)" } }}>Sign Up</Button>
+              </Box>
+            )}
           </Box>
           <List sx={{ flex: 1, py: 1 }}>
             {ALL_NAV_ITEMS.map(({ label, href, Icon }) => {
@@ -148,12 +163,14 @@ export default function AppShell({ children, coins, userName = "User", userAvata
               );
             })}
           </List>
-          <Box sx={{ p: 2, borderTop: `1px solid ${colors.glass.border}` }}>
-            <ListItemButton onClick={() => { setMobileOpen(false); handleLogout(); }} sx={{ borderRadius: "10px", color: "#f87171", "&:hover": { bgcolor: "rgba(239,68,68,0.08)" } }}>
-              <ListItemIcon sx={{ minWidth: 36, color: "#f87171" }}><LogOut size={19} /></ListItemIcon>
-              <ListItemText primary="Log Out" primaryTypographyProps={{ fontWeight: 600, fontSize: "0.875rem" }} />
-            </ListItemButton>
-          </Box>
+          {userId && (
+            <Box sx={{ p: 2, borderTop: `1px solid ${colors.glass.border}` }}>
+              <ListItemButton onClick={() => { setMobileOpen(false); handleLogout(); }} sx={{ borderRadius: "10px", color: "#f87171", "&:hover": { bgcolor: "rgba(239,68,68,0.08)" } }}>
+                <ListItemIcon sx={{ minWidth: 36, color: "#f87171" }}><LogOut size={19} /></ListItemIcon>
+                <ListItemText primary="Log Out" primaryTypographyProps={{ fontWeight: 600, fontSize: "0.875rem" }} />
+              </ListItemButton>
+            </Box>
+          )}
         </Box>
       </Drawer>
 
