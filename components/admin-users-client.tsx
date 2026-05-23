@@ -74,6 +74,7 @@ interface UserActivity {
 interface AdminUsersClientProps {
   initialUsers: User[];
   initialTotal: number;
+  source?: string;
 }
 
 const PAGE_SIZE = 20;
@@ -84,7 +85,7 @@ const FRAUD_STATUS_COLORS: Record<string, { bg: string; color: string; border: s
   suspended: { bg: "rgba(239,68,68,0.12)", color: "#f87171", border: "rgba(239,68,68,0.25)" },
 };
 
-export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUsersClientProps) {
+export default function AdminUsersClient({ initialUsers, initialTotal, source = "" }: AdminUsersClientProps) {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(0);
@@ -106,6 +107,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal }: AdminUs
   const fetchUsers = useCallback(async (q: string, p: number) => {
     setLoading(true);
     const params = new URLSearchParams({ q, page: String(p) });
+    if (source) params.set("source", source);
     const res = await fetch(`/api/admin/users/search?${params}`);
     if (res.ok) {
       const data = await res.json();

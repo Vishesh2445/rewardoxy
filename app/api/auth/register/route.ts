@@ -273,6 +273,7 @@ export async function POST(request: NextRequest) {
         country: country,
         signup_country: country,
         signup_ip: clientIp,
+        signup_source: source || 'web',
       });
 
       if (!error) {

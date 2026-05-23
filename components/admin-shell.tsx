@@ -36,7 +36,9 @@ const drawerWidth = 220;
 
 const ADMIN_NAV_ITEMS = [
   { label: "Dashboard", href: "/admin", Icon: LayoutDashboard },
-  { label: "Users", href: "/admin/users", Icon: Users },
+  { label: "Users (All)", href: "/admin/users", Icon: Users },
+  { label: "Users (Web)", href: "/admin/users?source=web", Icon: Users },
+  { label: "Users (App)", href: "/admin/users?source=app", Icon: Users },
   { label: "Withdrawals", href: "/admin/withdrawals", Icon: Wallet },
   { label: "Notifications", href: "/admin/notifications", Icon: Bell },
   { label: "Settings", href: "/admin/settings", Icon: Settings },
@@ -63,7 +65,7 @@ export default function AdminShell({ children }: AdminShellProps) {
           <ListItemButton
             LinkComponent={Link}
             href={href}
-            selected={pathname === href}
+            selected={href === '/admin' ? pathname === href : pathname.startsWith(href.split('?')[0])}
             onClick={onClickItem}
           >
             <ListItemIcon>

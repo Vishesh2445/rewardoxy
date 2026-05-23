@@ -10,16 +10,21 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q") ?? "";
+  const source = searchParams.get("source") ?? "";
   const page = parseInt(searchParams.get("page") ?? "0", 10);
   const from = page * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
   let query = adminSupabase
     .from("users")
-    .select("id, email, coins_balance, total_earned, role, is_banned, created_at, signup_country, last_seen_country, fraud_status, vpn_detected_count, mismatch_count", {
+    .select("id, email, coins_balance, total_earned, role, is_banned, created_at, signup_country, last_seen_country, fraud_status, vpn_detected_count, mismatch_count, signup_source", {
       count: "exact",
     })
     .order("created_at", { ascending: false });
+
+  if (source === "web" || source === "app") {
+    query = query.eq("signup_source", source);
+  }
 
   if (q.trim()) {
     const searchTerm = q.trim();
