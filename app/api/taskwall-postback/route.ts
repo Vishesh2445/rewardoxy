@@ -190,17 +190,26 @@ async function handleTaskwallPostback(request: NextRequest) {
     log(`SUCCESS: Credited ${amountNum} to user ${userid}. New balance: ${newBalance}, New total: ${newTotal}`);
 
     // ── 9. Log transaction ───────────────────────────────────────────────
+    // Parse completion_date safely - fallback to now if invalid
+    let completionDate: string;
+    try {
+      const parsed = new Date(date);
+      completionDate = isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
+    } catch {
+      completionDate = new Date().toISOString();
+    }
+
     const { error: insertError } = await supabase.from('taskwall_transactions').insert({
       txn_key: txn_key,
       user_id: userid,
-      app_name: app_name,
+      app_name: app_name || null,
       offer_id: offer_id,
-      offer_name: offer_name,
+      offer_name: offer_name || null,
       amount: amountNum,
       payout: payoutNum,
-      ip_address: ip_address,
-      currency_name: currency_name,
-      completion_date: date,
+      ip_address: ip_address || null,
+      currency_name: currency_name || null,
+      completion_date: completionDate,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     });

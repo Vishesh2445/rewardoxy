@@ -131,6 +131,13 @@ export default async function ProfilePage() {
     .eq("user_id", user.id)
     .gte("created_at", startOfMonth);
 
+  // Get this month's Taskwall earnings
+  const { data: monthlyTaskwall } = await supabase
+    .from("taskwall_transactions")
+    .select("amount")
+    .eq("user_id", user.id)
+    .gte("created_at", startOfMonth);
+
   const monthEarnedFromCompletions = monthlyCompletions?.reduce((sum, c) => sum + (c.coins_awarded || 0), 0) || 0;
   const monthEarnedFromCpx = monthlyCpx?.reduce((sum, c) => {
     const amount = Math.round(Number(c.amount_local || 0));
@@ -152,7 +159,8 @@ export default async function ProfilePage() {
     const amount = Math.round(Number(r.reward || 0));
     return sum + (r.status === 1 ? amount : -Math.abs(amount)); // Status 2 is reversal
   }, 0) || 0;
-  const monthEarned = monthEarnedFromCompletions + monthEarnedFromCpx + monthEarnedFromNotik + monthEarnedFromGemiad + monthEarnedFromTheoremreach + monthEarnedFromRevtoo;
+  const monthEarnedFromTaskwall = monthlyTaskwall?.reduce((sum, t) => sum + Math.round(Number(t.amount || 0)), 0) || 0;
+  const monthEarned = monthEarnedFromCompletions + monthEarnedFromCpx + monthEarnedFromNotik + monthEarnedFromGemiad + monthEarnedFromTheoremreach + monthEarnedFromRevtoo + monthEarnedFromTaskwall;
 
   const coins = userData?.coins_balance ?? 0;
 

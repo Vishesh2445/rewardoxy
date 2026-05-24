@@ -1440,7 +1440,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
         console.error("Taskwall app_id not configured");
         return "";
       }
-      return `https://rewardtask.com/wall?app_id=${appId}&userid=${userId}`;
+      return `https://wall.taskwall.io/?app_id=${appId}&userid=${userId}`;
     }
     if (activeWall === "Notik") {
       const apiKey = process.env.NEXT_PUBLIC_NOTIK_API_KEY || "PYMTzu6owFJ8roFouth5bEYxoJRmg7q9";

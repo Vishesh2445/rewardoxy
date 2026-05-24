@@ -96,8 +96,8 @@ export default function HistoryClient({
     const from = newPage * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
     
-    // Fetch completions, CPX transactions, Notik transactions, GemiAd transactions, TheoremReach transactions, and Revtoo transactions
-    const [completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, revtooResult] = await Promise.all([
+    // Fetch completions, CPX transactions, Notik transactions, GemiAd transactions, TheoremReach transactions, Revtoo transactions, and Taskwall transactions
+    const [completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, revtooResult, taskwallResult] = await Promise.all([
       supabase
         .from("completions")
         .select("id, program_id, payout_decimal, coins_awarded, created_at, source", { count: "exact" })
@@ -136,6 +136,13 @@ export default function HistoryClient({
       supabase
         .from("revtoo_transactions")
         .select("id, trans_id, reward, offer_name, status, created_at", { count: "exact" })
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .range(from, to),
+
+      supabase
+        .from("taskwall_transactions")
+        .select("id, txn_key, amount, offer_name, created_at", { count: "exact" })
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .range(from, to),
@@ -194,9 +201,17 @@ export default function HistoryClient({
         created_at: revtoo.created_at,
         source: 'revtoo',
       })),
+      ...(taskwallResult.data ?? []).map((tw) => ({
+        id: tw.id,
+        program_id: tw.offer_name || 'Taskwall Offer',
+        payout_decimal: tw.amount / 1000,
+        coins_awarded: tw.amount,
+        created_at: tw.created_at,
+        source: 'taskwall',
+      })),
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0) + (revtooResult.count ?? 0);
+    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0) + (revtooResult.count ?? 0) + (taskwallResult.count ?? 0);
 
     if (merged) setCompletions(merged.slice(0, PAGE_SIZE));
     if (totalCount !== null) setTotal(totalCount);
