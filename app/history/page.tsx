@@ -18,7 +18,7 @@ export default async function HistoryPage() {
     redirect("/auth/login");
   }
 
-  const [userResult, completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, revtooResult] = await Promise.all([
+  const [userResult, completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, revtooResult, taskwallResult] = await Promise.all([
     supabase
       .from("users")
       .select("coins_balance, display_name")
@@ -83,6 +83,16 @@ export default async function HistoryPage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .range(0, PAGE_SIZE - 1),
+
+    // Fetch Taskwall transactions
+    supabase
+      .from("taskwall_transactions")
+      .select("id, txn_key, amount, offer_name, created_at", {
+        count: "exact",
+      })
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .range(0, PAGE_SIZE - 1),
   ]);
 
   const coins = userResult.data?.coins_balance ?? 0;
@@ -140,9 +150,17 @@ export default async function HistoryPage() {
       created_at: revtoo.created_at,
       source: 'revtoo',
     })),
+    ...(taskwallResult.data ?? []).map((tw) => ({
+      id: tw.id,
+      program_id: tw.offer_name || 'Taskwall Offer',
+      payout_decimal: Number(tw.amount) / 1000,
+      coins_awarded: Math.round(Number(tw.amount)),
+      created_at: tw.created_at,
+      source: 'taskwall',
+    })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0) + (revtooResult.count ?? 0);
+  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0) + (revtooResult.count ?? 0) + (taskwallResult.count ?? 0);
 
   return (
     <AppShell 
