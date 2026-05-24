@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   AppBar,
   Box,
@@ -26,6 +26,7 @@ import {
   X,
   ArrowLeft,
   Settings,
+  ShieldAlert,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Icons from "@/components/icons";
@@ -39,6 +40,7 @@ const ADMIN_NAV_ITEMS = [
   { label: "Users (All)", href: "/admin/users", Icon: Users },
   { label: "Users (Web)", href: "/admin/users?source=web", Icon: Users },
   { label: "Users (App)", href: "/admin/users?source=app", Icon: Users },
+  { label: "Flagged Users", href: "/admin/users/flagged", Icon: ShieldAlert },
   { label: "Withdrawals", href: "/admin/withdrawals", Icon: Wallet },
   { label: "Notifications", href: "/admin/notifications", Icon: Bell },
   { label: "Settings", href: "/admin/settings", Icon: Settings },
@@ -50,7 +52,16 @@ interface AdminShellProps {
 
 export default function AdminShell({ children }: AdminShellProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const currentUrl = searchParams.toString() ? `${pathname}?${searchParams.toString()}` : pathname;
+
+  function isSelected(href: string) {
+    if (href === "/admin") return pathname === "/admin";
+    if (href.includes("?")) return currentUrl === href;
+    return pathname === href || (pathname.startsWith(href) && !href.includes("?"));
+  }
 
   async function handleLogout() {
     const supabase = createClient();
@@ -65,7 +76,7 @@ export default function AdminShell({ children }: AdminShellProps) {
           <ListItemButton
             LinkComponent={Link}
             href={href}
-            selected={href === '/admin' ? pathname === href : pathname.startsWith(href.split('?')[0])}
+            selected={isSelected(href)}
             onClick={onClickItem}
           >
             <ListItemIcon>

@@ -127,27 +127,12 @@ async function handlePostback(request: NextRequest) {
     const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
     log(`Credited ${amount} coins. New balance: ${newBalance}, New total: ${newTotal}`);
 
-    // 8. Check for referrer and add 5% commission to pending earnings if referrer exists and referred user has verified email
-    const { data: userWithReferrer, error: referrerError } = await supabase
-      .from('users')
-      .select('referred_by, email_verified')
-      .eq('id', player_id)
-      .single();
-
-    if (!referrerError && userWithReferrer?.referred_by && userWithReferrer?.email_verified) {
-      // Add 5% commission to referrer's pending earnings (no email verification required)
-      const commissionAmount = Math.round(amount * 0.05);
-      if (commissionAmount > 0) {
-        const { error: commissionError } = await supabase.rpc('increment_pending_referral_earnings', {
-          uid: userWithReferrer.referred_by,
-          amount: commissionAmount,
-        });
-        if (commissionError) {
-          log(`Referral commission failed: ${commissionError.message}`);
-        } else {
-          log(`Referral commission: ${commissionAmount} coins added to pending earnings for referrer ${userWithReferrer.referred_by}`);
-        }
-      }
+    // 8. Enqueue 10-level referral commissions (processed async)
+    try {
+      await supabase.rpc('enqueue_commissions', { p_earner_id: player_id, p_amount: amount, p_source: 'mylead' });
+      log('Referral commissions enqueued');
+    } catch (e: any) {
+      log(`Enqueue commissions error: ${e.message}`);
     }
 
     // 9. Verify

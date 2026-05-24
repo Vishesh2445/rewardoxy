@@ -291,6 +291,14 @@ async function handleNotikPostback(request: NextRequest) {
 
       // Note: We do NOT insert into completions table here because the history page
       // queries notik_transactions directly. Inserting into both would cause duplicates.
+
+      // Enqueue 10-level referral commissions (processed async)
+      try {
+        await supabase.rpc('enqueue_commissions', { p_earner_id: user_id, p_amount: amountNum, p_source: 'notik' });
+        log('Referral commissions enqueued');
+      } catch (e: any) {
+        log(`Enqueue commissions error: ${e.message}`);
+      }
     } else {
       log(`Amount is 0, skipping credit/debit`);
     }

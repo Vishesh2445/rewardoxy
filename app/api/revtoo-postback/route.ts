@@ -174,26 +174,12 @@ async function handleRevtooPostback(request: NextRequest) {
         const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
         log(`SUCCESS: Credited ${rewardAmount} to user ${subId}. New balance: ${newBalance}, New total: ${newTotal}`);
 
-        // Check for referrer and add 5% commission
-        const { data: userWithReferrer, error: referrerError } = await supabase
-          .from('users')
-          .select('referred_by, email_verified')
-          .eq('id', subId)
-          .single();
-
-        if (!referrerError && userWithReferrer?.referred_by && userWithReferrer?.email_verified) {
-          const commissionAmount = Math.round(rewardAmount * 0.05);
-          if (commissionAmount > 0) {
-            const { error: commissionError } = await supabase.rpc('increment_pending_referral_earnings', {
-              uid: userWithReferrer.referred_by,
-              amount: commissionAmount,
-            });
-            if (commissionError) {
-              log(`Referral commission failed: ${commissionError.message}`);
-            } else {
-              log(`Referral commission: ${commissionAmount} coins added to pending earnings for referrer ${userWithReferrer.referred_by}`);
-            }
-          }
+        // Enqueue 10-level referral commissions (processed async)
+        try {
+          await supabase.rpc('enqueue_commissions', { p_earner_id: subId, p_amount: rewardAmount, p_source: 'revtoo' });
+          log('Referral commissions enqueued');
+        } catch (e: any) {
+          log(`Enqueue commissions error: ${e.message}`);
         }
       } else {
         log(`Reward is 0, skipping credit`);

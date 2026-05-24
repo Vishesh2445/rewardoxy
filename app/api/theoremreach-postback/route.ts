@@ -355,27 +355,13 @@ async function handleTheoremReachPostback(request: NextRequest) {
         log(`Transaction logged: tx_id=${tx_id}, type=${txType}`);
       }
 
-      // Check for referrer and add 5% commission
+      // Enqueue 10-level referral commissions (processed async)
       if (rewardAmount > 0) {
-        const { data: userWithReferrer, error: referrerError } = await supabase
-          .from('users')
-          .select('referred_by, email_verified')
-          .eq('id', user_id)
-          .single();
-
-        if (!referrerError && userWithReferrer?.referred_by && userWithReferrer?.email_verified) {
-          const commissionAmount = Math.round(rewardAmount * 0.05);
-          if (commissionAmount > 0) {
-            const { error: commissionError } = await supabase.rpc('increment_pending_referral_earnings', {
-              uid: userWithReferrer.referred_by,
-              amount: commissionAmount,
-            });
-            if (commissionError) {
-              log(`Referral commission failed: ${commissionError.message}`);
-            } else {
-              log(`Referral commission: ${commissionAmount} coins added to pending earnings for referrer ${userWithReferrer.referred_by}`);
-            }
-          }
+        try {
+          await supabase.rpc('enqueue_commissions', { p_earner_id: user_id, p_amount: rewardAmount, p_source: 'theoremreach' });
+          log('Referral commissions enqueued');
+        } catch (e: any) {
+          log(`Enqueue commissions error: ${e.message}`);
         }
       }
 

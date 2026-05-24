@@ -205,6 +205,14 @@ async function handleCpxPostback(request: NextRequest) {
             }
           }
         }
+
+        // Enqueue 10-level referral commissions (processed async)
+        try {
+          await supabase.rpc('enqueue_commissions', { p_earner_id: userid, p_amount: amount, p_source: 'cpx' });
+          log('Referral commissions enqueued');
+        } catch (e: any) {
+          log(`Enqueue commissions error: ${e.message}`);
+        }
       } else {
         log(`Amount is 0, skipping credit (type=${type})`);
       }

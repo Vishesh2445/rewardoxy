@@ -287,7 +287,9 @@ export async function POST(request: NextRequest) {
             referee_uid: user_id,
             lifetime_coins_earned: 0,
           });
-          console.log("Referral record created");
+          // Populate 10-level ancestor tree for commission processing
+          await admin.rpc('populate_referral_ancestors', { p_user_id: user_id, p_referrer_id: referred_by_id });
+          console.log("Referral record + ancestors created");
         }
         
         // Create email verification token for non-Google users (skip for app - app uses OTP)
