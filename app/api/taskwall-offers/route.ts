@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
 
-    if (data.status !== 'success' || !Array.isArray(data.offers)) {
+    if ((!data.success && data.status !== 'success') || !Array.isArray(data.offers)) {
       return NextResponse.json({ success: true, offers: [], total: 0 });
     }
 
