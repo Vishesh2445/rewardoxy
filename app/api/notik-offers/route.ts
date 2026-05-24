@@ -296,15 +296,17 @@ export async function GET(request: NextRequest) {
           description3: offer.description3,
           image_url: offer.image_url || offer.image,
           payout: convertToUSD(offer.payout),
+          coins: typeof offer.payout === 'string' ? parseFloat(offer.payout) || 0 : (offer.payout || 0),
           click_url: offer.click_url,
           categories: offer.categories || [],
-          provider: 'Notik', // Add provider field
-          device: offer.device || offer.devices || [], // Add device field
-          trackingType: offer.tracking_type || offer.trackingType || '', // Add tracking type
+          provider: 'Notik',
+          device: offer.device || offer.devices || [],
+          trackingType: offer.tracking_type || offer.trackingType || '',
           events: offer.events?.map((event: any) => ({
             id: event.id,
             name: event.name,
             payout: convertToUSD(event.payout),
+            coins: typeof event.payout === 'string' ? parseFloat(event.payout) || 0 : (event.payout || 0),
           })),
         };
 

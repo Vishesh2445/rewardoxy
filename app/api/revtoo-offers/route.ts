@@ -200,15 +200,17 @@ export async function GET(request: NextRequest) {
           description3: offer.description3 || '',
           image_url: imageUrl,
           payout: parseRevtooAmount(payoutValue),
+          coins: offer.reward && offer.reward !== '*' ? offer.reward : (typeof payoutValue === 'string' ? parseFloat(payoutValue) || 0 : (payoutValue || 0)),
           click_url: offer.url || offer.click_url || `https://revtoo.com/offerwall/${REVTOO_API_KEY}/${user_id}`,
           categories: offer.categories || offer.category || [],
           provider: 'Revtoo',
           device: offer.os || offer.device || offer.devices || [],
           trackingType: offer.tracking_type || offer.trackingType || offer.type || '',
           events: offer.events?.map((event: any) => ({
-            id: event.id || event.event_id,
-            name: event.name || event.title || event.event_title,
-            payout: parseRevtooAmount(event.payout || event.reward || 0),
+            id: event.event_id || event.id,
+            name: event.event_title || event.event_description || event.name || event.title || 'Complete action',
+            payout: parseRevtooAmount(event.event_reward || event.reward || event.payout || 0),
+            coins: event.event_reward || event.reward || 0,
           })) || [],
         };
 

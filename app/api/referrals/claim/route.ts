@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     // Get user's pending referral earnings
     const { data: userData, error: fetchError } = await supabase
       .from("users")
-      .select("pending_referral_earnings, coins_balance, total_earned")
+      .select("pending_referral_earnings, coins_balance, total_earned, this_month_earnings")
       .eq("id", user.id)
       .single();
 
@@ -28,12 +28,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No pending earnings to claim" }, { status: 400 });
     }
 
-    // Add pending earnings to balance and reset pending to 0
+    // Add pending earnings to balance, total_earned, this_month_earnings and reset pending to 0
     const { error: updateError } = await supabase
       .from("users")
       .update({
         coins_balance: (userData.coins_balance ?? 0) + pendingEarnings,
         total_earned: (userData.total_earned ?? 0) + pendingEarnings,
+        this_month_earnings: (userData.this_month_earnings ?? 0) + pendingEarnings,
         pending_referral_earnings: 0,
       })
       .eq("id", user.id);
