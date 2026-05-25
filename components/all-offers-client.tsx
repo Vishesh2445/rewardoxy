@@ -37,11 +37,13 @@ interface NotikOffer {
 function OfferDetailsModal({ 
   offer, 
   open, 
-  onClose 
+  onClose,
+  userId
 }: { 
   offer: NotikOffer | null; 
   open: boolean; 
   onClose: () => void;
+  userId: string;
 }) {
   const muiTheme = useTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
@@ -53,6 +55,23 @@ function OfferDetailsModal({
   const hasEvents = offer.events && offer.events.length > 0;
 
   const handlePlayClick = () => {
+    // Track offer click
+    fetch('/api/track-offer-click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: userId,
+        offer_id: offer.offer_id,
+        offer_name: offer.name,
+        provider: offer.provider || 'unknown',
+        click_url: offer.click_url,
+        image_url: offer.image_url,
+        payout: offer.payout,
+        tracking_type: offer.trackingType || '',
+        events: offer.events || []
+      })
+    }).catch(() => {});
+
     if (isMobile) {
       // On mobile, open the link directly
       window.open(offer.click_url, "_blank");
@@ -1083,7 +1102,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
       </Box>
 
       {/* Offer Details Modal */}
-      <OfferDetailsModal offer={selectedOffer} open={modalOpen} onClose={() => setModalOpen(false)} />
+      <OfferDetailsModal offer={selectedOffer} open={modalOpen} onClose={() => setModalOpen(false)} userId={userId} />
     </Box>
   );
 }

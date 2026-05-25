@@ -229,6 +229,27 @@ async function handleTaskwallPostback(request: NextRequest) {
       log(`Enqueue commissions error: ${e.message}`);
     }
 
+    // ── 11. Update user_offer_interactions status
+    try {
+      const { data: interaction } = await supabase
+        .from('user_offer_interactions')
+        .select('id')
+        .eq('user_id', userid)
+        .eq('offer_id', offer_id)
+        .eq('provider', 'taskwall')
+        .single();
+
+      if (interaction) {
+        await supabase
+          .from('user_offer_interactions')
+          .update({ status: 'completed', updated_at: new Date().toISOString() })
+          .eq('id', interaction.id);
+        log('Offer interaction marked completed');
+      }
+    } catch (e: any) {
+      log(`Offer interaction update error: ${e.message}`);
+    }
+
     return ok('OK');
 
   } catch (err: unknown) {

@@ -36,6 +36,7 @@ import {
   X,
   Mail,
   ShoppingBag,
+  Target,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Icons from "@/components/icons";
@@ -47,12 +48,14 @@ import colors from "@/theme/colors";
 
 const NAV_ITEMS = [
   { label: "Earn", href: "/earn", Icon: Gift },
+  { label: "My Offers", href: "/my-offers", Icon: Target },
   { label: "Offers", href: "/offers/all", Icon: ShoppingBag },
   { label: "Cashout", href: "/cashout", Icon: Wallet },
   { label: "Rewards", href: "/daily-bonus", Icon: CalendarCheck },
 ];
 
 const DROPDOWN_ITEMS = [
+  { label: "My Offers", href: "/my-offers", Icon: Target },
   { label: "Profile", href: "/profile", Icon: User },
   { label: "Leaderboard", href: "/leaderboard", Icon: Trophy },
   { label: "Referrals", href: "/referrals", Icon: Users },
@@ -61,6 +64,7 @@ const DROPDOWN_ITEMS = [
 
 const ALL_NAV_ITEMS = [
   { label: "Earn", href: "/earn", Icon: Gift },
+  { label: "My Offers", href: "/my-offers", Icon: Target },
   { label: "Profile", href: "/profile", Icon: User },
   { label: "Daily Bonus", href: "/daily-bonus", Icon: CalendarCheck },
   { label: "Cashout", href: "/cashout", Icon: Wallet },
