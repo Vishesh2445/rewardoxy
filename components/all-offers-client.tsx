@@ -439,7 +439,7 @@ function OfferDetailsModal({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {offer.events?.map((event, index) => (
               <Box
-                key={event.id}
+                key={event.id || index}
                 sx={{
                   display: "flex",
                   alignItems: "center",

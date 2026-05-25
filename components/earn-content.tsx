@@ -689,18 +689,20 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       setLoading(true);
       const primaryOS = deviceOS.length > 0 ? deviceOS[0] : 'android';
       
-      // Fetch from Gemiad, Notik, Vortex, and Revtoo APIs in parallel
-      const [gemiadResponse, notikResponse, vortexResponse, revtooResponse] = await Promise.all([
+      // Fetch from Gemiad, Notik, Vortex, Revtoo, and Taskwall APIs in parallel
+      const [gemiadResponse, notikResponse, vortexResponse, revtooResponse, taskwallResponse] = await Promise.all([
         fetch(`/api/gemiad-offers?user_id=${userId}`),
         fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
         fetch(`/api/vortex-offers?user_id=${userId}`),
-        fetch(`/api/revtoo-offers?user_id=${userId}`)
+        fetch(`/api/revtoo-offers?user_id=${userId}`),
+        fetch(`/api/taskwall-offers?user_id=${userId}&os=${primaryOS}`)
       ]);
       
       let gemiadOffers: NotikOffer[] = [];
       let notikOffers: NotikOffer[] = [];
       let vortexOffers: NotikOffer[] = [];
       let revtooOffers: NotikOffer[] = [];
+      let taskwallOffers: NotikOffer[] = [];
       
       // Process Gemiad offers (Priority 1)
       if (gemiadResponse.ok) {
@@ -744,16 +746,26 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         }
       }
       
-      // Combine offers with priority: Gemiad > Notik > Vortex > Revtoo
+      // Process Taskwall offers (Priority 5)
+      if (taskwallResponse.ok) {
+        const taskwallData = await taskwallResponse.json();
+        if (taskwallData.success && taskwallData.offers && Array.isArray(taskwallData.offers)) {
+          taskwallOffers = taskwallData.offers;
+          console.log(`Taskwall offers loaded: ${taskwallOffers.length}`);
+        }
+      }
+      
+      // Combine offers with priority: Gemiad > Notik > Vortex > Revtoo > Taskwall
       // Mix them in a round-robin fashion for better distribution
       const combinedOffers: NotikOffer[] = [];
-      const maxProviderLength = Math.max(gemiadOffers.length, notikOffers.length, vortexOffers.length, revtooOffers.length);
+      const maxProviderLength = Math.max(gemiadOffers.length, notikOffers.length, vortexOffers.length, revtooOffers.length, taskwallOffers.length);
       
       for (let i = 0; i < maxProviderLength; i++) {
         if (i < gemiadOffers.length) combinedOffers.push(gemiadOffers[i]);
         if (i < notikOffers.length) combinedOffers.push(notikOffers[i]);
         if (i < vortexOffers.length) combinedOffers.push(vortexOffers[i]);
         if (i < revtooOffers.length) combinedOffers.push(revtooOffers[i]);
+        if (i < taskwallOffers.length) combinedOffers.push(taskwallOffers[i]);
       }
       
       console.log(`Total combined offers: ${combinedOffers.length}`);
@@ -806,6 +818,11 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       const pinnedOfferId = process.env.NEXT_PUBLIC_PINNED_OFFER_ID;
       let finalOffers = sortedOffers;
       
+      // Pin Taskwall infinity offers (payout === -1) to the top
+      const infinityOffers = finalOffers.filter(o => o.payout === -1 && o.provider === 'Taskwall');
+      const regularOffers = finalOffers.filter(o => !(o.payout === -1 && o.provider === 'Taskwall'));
+      finalOffers = [...infinityOffers, ...regularOffers];
+
       if (pinnedOfferId) {
         const pinnedOfferIndex = finalOffers.findIndex(o => String(o.id) === pinnedOfferId || String(o.offer_id) === pinnedOfferId);
         if (pinnedOfferIndex > 0) {

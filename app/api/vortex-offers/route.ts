@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const placementId = "69e46bc7a982f180b5cae8fa";
     const apiKey = "3701379f-cbb6-4f78-a565-dba3a08072d1";
 
-    // Build Vortex API URL
+    // Build Vortex API URL - don't filter by country to get all available offers
     const vortexUrl = new URL("https://api.vortexwall.com/api/v1/offers/static");
     vortexUrl.searchParams.set("placementId", placementId);
     vortexUrl.searchParams.set("apiKey", apiKey);
@@ -42,9 +42,11 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     
     console.log("Vortex API response success:", data.success);
-    console.log("Vortex offers count:", data.data?.length || 0);
+    
+    const offersArray = data.data || data.offers;
+    console.log("Vortex offers count:", offersArray?.length || 0);
 
-    if (!data.success || !Array.isArray(data.data)) {
+    if (!data.success || !Array.isArray(offersArray)) {
       return NextResponse.json(
         { success: false, error: "Invalid response from Vortex", offers: [] },
         { status: 200 }
@@ -52,7 +54,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform Vortex offers to match our format
-    const offers = data.data.map((offer: any) => {
+    const offers = offersArray.map((offer: any) => {
       // Replace [USER_ID] in the URL with actual user ID
       const clickUrl = offer.url?.replace("[USER_ID]", userId) || "";
       
