@@ -17,10 +17,14 @@ export async function GET(request: NextRequest) {
     const placementId = "69e46bc7a982f180b5cae8fa";
     const apiKey = "3701379f-cbb6-4f78-a565-dba3a08072d1";
 
-    // Build Vortex API URL - don't filter by country to get all available offers
+    // Get country from query param, headers, or skip
+    const country = searchParams.get("country_code") || request.headers.get("cf-ipcountry") || request.headers.get("x-vercel-ip-country") || "";
+
+    // Build Vortex API URL
     const vortexUrl = new URL("https://api.vortexwall.com/api/v1/offers/static");
     vortexUrl.searchParams.set("placementId", placementId);
     vortexUrl.searchParams.set("apiKey", apiKey);
+    if (country) vortexUrl.searchParams.set("country", country);
 
     console.log("Fetching Vortex offers:", vortexUrl.toString());
 
