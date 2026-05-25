@@ -50,6 +50,13 @@ export async function GET(request: NextRequest) {
       categories: [],
       provider: 'Taskwall',
       device: offer.devices || [],
+      events: offer.multi_event && Array.isArray(offer.events) && offer.events.length > 0
+        ? offer.events.map((e: any) => ({
+            id: String(e.event_id),
+            name: e.event_instructions || `Step ${e.event_id}`,
+            payout: parseFloat(e.event_payout) || 0,
+          }))
+        : undefined,
     }));
 
     return NextResponse.json({ success: true, offers, total: offers.length });
