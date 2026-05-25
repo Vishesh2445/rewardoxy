@@ -17,14 +17,13 @@ export async function GET(request: NextRequest) {
     const placementId = "69e46bc7a982f180b5cae8fa";
     const apiKey = "3701379f-cbb6-4f78-a565-dba3a08072d1";
 
-    // Get country from query param, headers, or skip
-    const country = searchParams.get("country_code") || request.headers.get("cf-ipcountry") || request.headers.get("x-vercel-ip-country") || "";
+    // Get country from query param or headers for filtering
+    const userCountry = searchParams.get("country_code") || request.headers.get("cf-ipcountry") || request.headers.get("x-vercel-ip-country") || "";
 
     // Build Vortex API URL
     const vortexUrl = new URL("https://api.vortexwall.com/api/v1/offers/static");
     vortexUrl.searchParams.set("placementId", placementId);
     vortexUrl.searchParams.set("apiKey", apiKey);
-    if (country) vortexUrl.searchParams.set("country", country);
 
     console.log("Fetching Vortex offers:", vortexUrl.toString());
 
@@ -99,10 +98,15 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Filter by user's country if detected
+    const filteredOffers = userCountry
+      ? offers.filter((o: any) => !o.country?.length || o.country.includes(userCountry) || o.country.includes('00'))
+      : offers;
+
     return NextResponse.json({
       success: true,
-      offers: offers,
-      count: offers.length,
+      offers: filteredOffers,
+      count: filteredOffers.length,
     });
   } catch (error) {
     console.error("Error fetching Vortex offers:", error);

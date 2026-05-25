@@ -67,7 +67,7 @@ function OfferDetailsModal({
         click_url: offer.click_url,
         image_url: offer.image_url,
         payout: offer.payout,
-        tracking_type: offer.trackingType || '',
+        tracking_type: (offer as any).trackingType || '',
         events: offer.events || []
       })
     }).catch(() => {});
