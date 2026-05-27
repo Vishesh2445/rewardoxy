@@ -59,22 +59,15 @@ function ok(message: string) {
 }
 
 /**
- * Reconstructs the base URL from query parameters for hash verification
- * TheoremReach hash is created from the full URL without the hash parameter
+ * Reconstructs the base URL from the incoming request for hash verification.
+ * TheoremReach hashes the full callback URL without the hash parameter.
+ * We must use the exact URL as TheoremReach constructed it (preserving order and encoding).
  */
-function reconstructBaseUrlForHash(params: Record<string, string>): string {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.rewardoxy.app';
-  const callbackPath = '/api/theoremreach-postback';
-
-  // Remove hash and debug params as they aren't part of the URL for hashing
-  const paramsToInclude = { ...params };
-  delete paramsToInclude.hash;
-
-  const queryString = Object.entries(paramsToInclude)
-    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-    .join('&');
-
-  return `${baseUrl}${callbackPath}?${queryString}`;
+function reconstructBaseUrlForHash(requestUrl: string): string {
+  const urlObj = new URL(requestUrl);
+  // Remove the hash parameter — TheoremReach hashes the URL without it
+  urlObj.searchParams.delete('hash');
+  return urlObj.toString();
 }
 
 /**
@@ -160,7 +153,7 @@ async function handleTheoremReachPostback(request: NextRequest) {
     }
 
     // ── 4. Hash Verification (Security — MUST verify) ────────────────────
-    const baseUrlForHash = reconstructBaseUrlForHash(allParams);
+    const baseUrlForHash = reconstructBaseUrlForHash(request.url);
     log(`Base URL for hash: ${baseUrlForHash}`);
 
     if (!verifyTheoremReachHash(baseUrlForHash, hash)) {
