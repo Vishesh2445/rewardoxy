@@ -66,7 +66,7 @@ export default function AboutPage() {
         </Box>
 
         {/* Mission */}
-        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.divider}`, borderRadius: 4, p: { xs: 3, sm: 5 }, mb: 5 }}>
+        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, borderRadius: 4, p: { xs: 3, sm: 5 }, mb: 5 }}>
           <Box component="h2" sx={{ fontSize: "1.5rem", fontWeight: 700, mt: 0, mb: 2 }}>Our Mission</Box>
           <Box component="p" sx={{ color: colors.textSecondary, lineHeight: 1.8, m: 0 }}>
             Rewardoxy was built to give everyone — regardless of location — a simple way to earn extra income online. We partner with trusted advertisers and research companies who pay for user engagement. When you complete a survey, try an app, or finish a task, the advertiser pays us and we share that revenue with you as coins. Those coins convert directly to cryptocurrency you can withdraw at any time.
@@ -82,7 +82,7 @@ export default function AboutPage() {
             { icon: <Wallet size={28} />, title: "Cash Out", desc: "Once you reach the minimum threshold, withdraw your earnings as LTC cryptocurrency directly to your wallet." },
           ].map((step) => (
             <Grid size={{ xs: 12, sm: 4 }} key={step.title}>
-              <Paper elevation={0} sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.divider}`, borderRadius: 3, p: 3, height: "100%" }}>
+              <Paper elevation={0} sx={{ bgcolor: colors.bgCard, borderRadius: 3, p: 3, height: "100%" }}>
                 <Box sx={{ color: colors.green, mb: 2 }}>{step.icon}</Box>
                 <Box sx={{ fontWeight: 700, fontSize: "1rem", mb: 1 }}>{step.title}</Box>
                 <Box sx={{ color: colors.textSecondary, fontSize: "0.9rem", lineHeight: 1.7 }}>{step.desc}</Box>

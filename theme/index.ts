@@ -122,7 +122,7 @@ const theme = createTheme({
       styleOverrides: { root: { minWidth: "auto", marginRight: 8 } },
     },
     MuiPaper: {
-      styleOverrides: { root: { backgroundColor: background.default, backgroundImage: "none" } },
+      styleOverrides: { root: { backgroundColor: background.default, backgroundImage: "none", border: "none" } },
     },
     MuiBottomNavigation: {
       styleOverrides: {

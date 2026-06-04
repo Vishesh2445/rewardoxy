@@ -71,7 +71,7 @@ export default function SurveysPage() {
         </Box>
 
         {/* Survey providers */}
-        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.divider}`, borderRadius: 4, p: { xs: 3, sm: 4 }, mb: 5 }}>
+        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, borderRadius: 4, p: { xs: 3, sm: 4 }, mb: 5 }}>
           <Box component="h2" sx={{ fontSize: "1.25rem", fontWeight: 700, mt: 0, mb: 2 }}>Our Survey Partners</Box>
           <Grid container spacing={3}>
             {[
@@ -113,7 +113,7 @@ export default function SurveysPage() {
         </Grid>
 
         {/* FAQ mini section */}
-        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.divider}`, borderRadius: 4, p: { xs: 3, sm: 4 }, mb: 5 }}>
+        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, borderRadius: 4, p: { xs: 3, sm: 4 }, mb: 5 }}>
           <Box component="h2" sx={{ fontSize: "1.25rem", fontWeight: 700, mt: 0, mb: 3 }}>Survey FAQ</Box>
           {[
             { q: "Why do I get disqualified from surveys?", a: "Surveys target specific demographics. If your profile doesn't match what the researcher needs, you'll be screened out. This is normal — try the next survey." },

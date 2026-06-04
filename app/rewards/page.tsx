@@ -73,7 +73,7 @@ export default function RewardsPage() {
             { step: "3", icon: <Bitcoin size={28} />, title: "Withdraw as Crypto", desc: "Enter your LTC wallet address and confirm. Your coins are converted and sent directly to your wallet." },
           ].map((item) => (
             <Grid size={{ xs: 12, sm: 4 }} key={item.step}>
-              <Paper elevation={0} sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.divider}`, borderRadius: 3, p: 3, height: "100%", textAlign: "center" }}>
+              <Paper elevation={0} sx={{ bgcolor: colors.bgCard, borderRadius: 3, p: 3, height: "100%", textAlign: "center" }}>
                 <Box sx={{ color: colors.green, mb: 2, display: "flex", justifyContent: "center" }}>{item.icon}</Box>
                 <Box sx={{ fontWeight: 700, fontSize: "1rem", mb: 1 }}>{item.title}</Box>
                 <Box sx={{ color: colors.textSecondary, fontSize: "0.9rem", lineHeight: 1.7 }}>{item.desc}</Box>
@@ -83,7 +83,7 @@ export default function RewardsPage() {
         </Grid>
 
         {/* Payout details */}
-        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.divider}`, borderRadius: 4, p: { xs: 3, sm: 5 }, mb: 5 }}>
+        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, borderRadius: 4, p: { xs: 3, sm: 5 }, mb: 5 }}>
           <Box component="h2" sx={{ fontSize: "1.25rem", fontWeight: 700, mt: 0, mb: 3 }}>Payout Details</Box>
           <Grid container spacing={3}>
             {[
@@ -131,7 +131,7 @@ export default function RewardsPage() {
         </Grid>
 
         {/* Earning methods summary */}
-        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, border: `1px solid ${colors.divider}`, borderRadius: 4, p: { xs: 3, sm: 4 }, mb: 5 }}>
+        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, borderRadius: 4, p: { xs: 3, sm: 4 }, mb: 5 }}>
           <Box component="h2" sx={{ fontSize: "1.25rem", fontWeight: 700, mt: 0, mb: 2 }}>Ways to Earn Coins</Box>
           <Box component="ul" sx={{ color: colors.textSecondary, lineHeight: 2.2, pl: 2.5, m: 0 }}>
             <li><strong style={{ color: colors.textPrimary }}>Surveys</strong> — Answer questions from research companies (5–200 coins per survey)</li>

@@ -98,7 +98,6 @@ export default function ContactPage() {
             sx={{
               flex: 1,
               bgcolor: colors.bgCard,
-              border: `1px solid ${colors.divider}`,
               borderRadius: 3,
               p: 3,
               textAlign: "center",
@@ -115,7 +114,6 @@ export default function ContactPage() {
                 height: 48,
                 borderRadius: 3,
                 bgcolor: colors.greenTint,
-                border: "1px solid rgba(16,185,129,0.2)",
               }}
             >
               <Mail size={22} color={colors.green} />
@@ -135,7 +133,6 @@ export default function ContactPage() {
             sx={{
               flex: 1,
               bgcolor: colors.bgCard,
-              border: `1px solid ${colors.divider}`,
               borderRadius: 3,
               p: 3,
               textAlign: "center",
@@ -152,7 +149,6 @@ export default function ContactPage() {
                 height: 48,
                 borderRadius: 3,
                 bgcolor: colors.greenTint,
-                border: "1px solid rgba(16,185,129,0.2)",
               }}
             >
               <HelpCircle size={22} color={colors.green} />
@@ -173,7 +169,6 @@ export default function ContactPage() {
           elevation={0}
           sx={{
             bgcolor: colors.bgCard,
-            border: `1px solid ${colors.divider}`,
             borderRadius: 3,
             p: { xs: 3, sm: 4 },
           }}

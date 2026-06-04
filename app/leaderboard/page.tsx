@@ -187,7 +187,6 @@ export default async function LeaderboardPage() {
             elevation={0}
             sx={{
               borderRadius: 4,
-              border: `1px solid ${colors.divider}`,
               bgcolor: colors.background.secondary,
               p: 6,
               textAlign: "center",
@@ -227,7 +226,6 @@ export default async function LeaderboardPage() {
                         elevation={0}
                         sx={{
                           borderRadius: 4,
-                          border: `1px solid ${isMe ? "rgba(16,185,129,0.5)" : st.border}`,
                           background: isMe ? "linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(0,126,69,0.06) 100%)" : st.cardBg,
                           p: 3,
                           textAlign: "center",
@@ -327,7 +325,6 @@ export default async function LeaderboardPage() {
                 sx={{
                   mb: 3,
                   borderRadius: 3,
-                  border: "1px solid rgba(16,185,129,0.35)",
                   bgcolor: "rgba(16,185,129,0.06)",
                   px: 3,
                   py: 2,
@@ -372,7 +369,6 @@ export default async function LeaderboardPage() {
                           px: 2,
                           py: 1.5,
                           transition: "all 0.2s",
-                          border: `1px solid ${isMe ? "rgba(16,185,129,0.4)" : colors.divider}`,
                           bgcolor: isMe ? "rgba(16,185,129,0.05)" : colors.background.secondary,
                           ...(isMe
                             ? { boxShadow: "0 4px 20px rgba(16,185,129,0.05)" }
@@ -434,7 +430,6 @@ export default async function LeaderboardPage() {
                   sx={{
                     display: { xs: "none", sm: "block" },
                     borderRadius: 4,
-                    border: `1px solid ${colors.divider}`,
                     bgcolor: "transparent",
                     overflow: "hidden",
                   }}

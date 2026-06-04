@@ -131,15 +131,14 @@ export default function FAQPage() {
 
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {faqs.map((faq, i) => (
-            <Paper
-              key={i}
-              elevation={0}
-              sx={{
-                bgcolor: colors.bgCard,
-                border: `1px solid ${colors.divider}`,
-                borderRadius: 3,
-                p: { xs: 2.5, sm: 3.5 },
-              }}
+              <Paper
+                key={i}
+                elevation={0}
+                sx={{
+                  bgcolor: colors.bgCard,
+                  borderRadius: 3,
+                  p: { xs: 2.5, sm: 3.5 },
+                }}
             >
               <Box component="h2" sx={{ fontSize: "1.05rem", fontWeight: 700, m: 0, mb: 1.5 }}>
                 {faq.q}

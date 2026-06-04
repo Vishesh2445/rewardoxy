@@ -78,12 +78,8 @@ const sxGradientBtn = {
 
 const sxCard = {
   bgcolor: colors.bgCard,
-  border: `1px solid ${colors.divider}`,
+  border: "none",
   borderRadius: "16px",
-  transition: "border-color 0.2s, box-shadow 0.2s",
-  "&:hover": {
-    borderColor: "rgba(16,185,129,0.3)",
-  },
 } as const;
 
 const sxBadge = {
