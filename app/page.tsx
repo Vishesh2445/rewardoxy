@@ -200,13 +200,15 @@ export default function Home() {
           backdropFilter: "blur(24px)",
         }}
       >
-        <Container
-          maxWidth="lg"
+        <Box
           sx={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             height: 64,
+            maxWidth: "1200px",
+            mx: "auto",
+            px: { xs: 2, sm: 3, lg: 4 },
           }}
         >
           <Icons.Logo />
@@ -286,7 +288,7 @@ export default function Home() {
               </>
             )}
           </Box>
-        </Container>
+        </Box>
       </Box>
 
       {/* ===================== HERO ===================== */}
@@ -295,7 +297,6 @@ export default function Home() {
         sx={{
           position: "relative",
           overflow: "hidden",
-          px: { xs: 2, sm: 3, lg: 4 },
           pt: { xs: 6, sm: 8 },
           pb: { xs: 6, sm: 8 },
         }}
@@ -321,7 +322,14 @@ export default function Home() {
           />
         </Box>
 
-        <Container maxWidth="lg" sx={{ position: "relative" }}>
+        <Box
+          sx={{
+            position: "relative",
+            maxWidth: "1200px",
+            mx: "auto",
+            px: { xs: 2, sm: 3, lg: 4 },
+          }}
+        >
           {/* Main Heading - Full Width at Top Center */}
           <Box sx={{ textAlign: "center", mb: { xs: 4, sm: 6 } }}>
             <Typography
@@ -331,13 +339,14 @@ export default function Home() {
                 fontSize: { xs: "1.75rem", sm: "2.5rem", lg: "3rem" },
                 lineHeight: 1.2,
                 letterSpacing: "-0.02em",
+                fontWeight: 800,
               }}
             >
               <Typography
                 component="span"
                 isGradient
                 isBold
-                sx={{ fontSize: "inherit", lineHeight: "inherit" }}
+                sx={{ fontSize: "inherit", lineHeight: "inherit", fontWeight: 800 }}
               >
                 Get paid
               </Typography>{" "}
@@ -385,88 +394,85 @@ export default function Home() {
             {/* Left side — Game cards only */}
             <Grid size={{ xs: 12, md: 6 }}>
               {/* Game Cards */}
-              <Grid container spacing={{ xs: 1, sm: 1.5 }} sx={{ mt: { xs: 4, sm: 6 } }}>
-                {[
-                  {
-                    image: "/sunshine_island.webp",
-                    title: "Sunshine Island",
-                    subtitle: "Match & earn",
-                    reward: "$391.00",
-                    rating: "5.0",
-                  },
-                  {
-                    image: "/match_masters.webp",
-                    title: "Match Masters",
-                    subtitle: "Play duels",
-                    reward: "$280.00",
-                    rating: "5.0",
-                  },
-                  {
-                    image: "/board_kings.webp",
-                    title: "Board Kings",
-                    subtitle: "Earn gift cards",
-                    reward: "$32.00",
-                    rating: "5.0",
-                  },
-                ].map((game, index) => (
-                  <Grid key={game.title} size={{ xs: 4, sm: 4 }}>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        bgcolor: colors.bgCard,
-                        border: "none",
-                        borderRadius: { xs: "10px", sm: "16px" },
-                        p: { xs: 1, sm: 1.5 },
-                        textAlign: "left",
-                        cursor: "pointer",
-                        transition: "all 0.3s",
-                        // Middle card (index 1) always has hover effect
-                        transform: index === 1 ? "translateY(-4px)" : "none",
-                        boxShadow: index === 1 ? `0 12px 24px rgba(16,185,129,0.15)` : "none",
-                        "&:hover": {
-                          transform: "translateY(-4px)",
-                          boxShadow: `0 12px 24px rgba(16,185,129,0.15)`,
-                        },
-                      }}
-                    >
-                      <Box
-                        component="img"
-                        src={game.image}
-                        alt={game.title}
+              <Grid container columnSpacing={{ xs: 1.5, sm: 3 }} rowSpacing={{ xs: 1.5, sm: 3 }} sx={{ mt: { xs: 4, sm: 6 } }}>
+                  {[
+                    {
+                      image: "/sunshine_island.webp",
+                      title: "Sunshine Island",
+                      subtitle: "Match & earn",
+                      reward: "$391.00",
+                      rating: "5.0",
+                    },
+                    {
+                      image: "/match_masters.webp",
+                      title: "Match Masters",
+                      subtitle: "Play duels",
+                      reward: "$280.00",
+                      rating: "5.0",
+                    },
+                    {
+                      image: "/board_kings.webp",
+                      title: "Board Kings",
+                      subtitle: "Earn gift cards",
+                      reward: "$32.00",
+                      rating: "5.0",
+                    },
+                  ].map((game, index) => (
+                    <Grid key={game.title} size={{ xs: 4, sm: 4 }} sx={{ display: "flex", minWidth: 0 }}>
+                      <Paper
+                        elevation={0}
                         sx={{
-                          width: "100%",
-                          aspectRatio: "1",
-                          borderRadius: { xs: "6px", sm: "8px" },
-                          mb: { xs: 0.75, sm: 1.25 },
-                          objectFit: "cover",
+                          bgcolor: colors.bgCard,
+                          border: "none",
+                          borderRadius: { xs: "10px", sm: "16px" },
+                          p: { xs: 1, sm: 2 },
+                          textAlign: "left",
+                          cursor: "pointer",
+                          transition: "all 0.3s",
+                          flex: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          // Middle card (index 1) always has hover effect
+                          transform: index === 1 ? "translateY(-4px)" : "none",
+                          boxShadow: index === 1 ? `0 12px 24px rgba(16,185,129,0.15)` : "none",
+                          "&:hover": {
+                            transform: "translateY(-4px)",
+                            boxShadow: `0 12px 24px rgba(16,185,129,0.15)`,
+                          },
                         }}
-                      />
-                      <Typography variant="h6" isBold sx={{ fontSize: { xs: "0.75rem", sm: "0.9rem" }, mb: { xs: 0.15, sm: 0.25 } }}>
-                        {game.title}
-                      </Typography>
-                      <Typography sx={{ fontSize: { xs: "0.6rem", sm: "0.7rem" }, color: colors.textSecondary, mb: { xs: 0.75, sm: 1.25 } }}>
-                        {game.subtitle}
-                      </Typography>
-                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <Box>
-                          <Typography sx={{ fontSize: { xs: "0.5rem", sm: "0.6rem" }, color: colors.textSecondary, mb: 0.25 }}>
-                            UP TO
-                          </Typography>
-                          <Typography isBold sx={{ fontSize: { xs: "0.85rem", sm: "1rem" }, color: colors.textPrimary }}>
-                            {game.reward}
-                          </Typography>
+                      >
+                        <Box
+                          component="img"
+                          src={game.image}
+                          alt={game.title}
+                          sx={{
+                            width: "100%",
+                            aspectRatio: "1",
+                            borderRadius: { xs: "7px", sm: "10px" },
+                            mb: { xs: 0.75, sm: 1.5 },
+                            objectFit: "cover",
+                          }}
+                        />
+                        <Typography variant="h6" isBold sx={{ fontSize: { xs: "0.75rem", sm: "0.95rem" }, mb: { xs: 0.2, sm: 0.5 }, lineHeight: 1.25 }}>
+                          {game.title}
+                        </Typography>
+                        <Typography sx={{ fontSize: { xs: "0.6rem", sm: "0.75rem" }, color: colors.textSecondary, mb: { xs: 0.75, sm: 1.5 }, lineHeight: 1.25 }}>
+                          {game.subtitle}
+                        </Typography>
+                        <Box sx={{ display: "flex", alignItems: "center", mt: "auto" }}>
+                          <Box>
+                            <Typography sx={{ fontSize: { xs: "0.5rem", sm: "0.65rem" }, color: colors.textSecondary, mb: 0.2 }}>
+                              UP TO
+                            </Typography>
+                            <Typography isBold sx={{ fontSize: { xs: "0.85rem", sm: "1.05rem" }, color: colors.textPrimary }}>
+                              {game.reward}
+                            </Typography>
+                          </Box>
                         </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
-                          <Star size={12} fill={colors.green} color={colors.green} />
-                          <Typography isBold sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" } }}>
-                            {game.rating}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
             </Grid>
 
             {/* Right side — signup card */}
@@ -483,21 +489,18 @@ export default function Home() {
                   }}
                 >
                   <Box
+                    component="img"
+                    src="/rewardoxy_logocontinue.png"
+                    alt=""
                     sx={{
+                      width: 56,
+                      height: 56,
                       mx: "auto",
                       mb: 1.5,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 48,
-                      height: 48,
+                      display: "block",
                       borderRadius: "12px",
-                      background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-                      boxShadow: "0 8px 32px rgba(16,185,129,0.25)",
                     }}
-                  >
-                    <Sparkles size={24} color="#fff" />
-                  </Box>
+                  />
                   <Typography variant="h5" isBold sx={{ mb: 0.5, fontSize: "1.2rem" }}>
                     Welcome Back!
                   </Typography>
@@ -722,7 +725,7 @@ export default function Home() {
               )}
             </Grid>
           </Grid>
-        </Container>
+        </Box>
       </Box>
 
       {/* ===================== TRUSTED OFFER PROVIDERS ===================== */}
