@@ -296,8 +296,8 @@ export default function Home() {
           position: "relative",
           overflow: "hidden",
           px: { xs: 2, sm: 3, lg: 4 },
-          pt: { xs: 8, sm: 12 },
-          pb: { xs: 8, sm: 12 },
+          pt: { xs: 6, sm: 8 },
+          pb: { xs: 6, sm: 8 },
         }}
       >
         {/* Glow */}
@@ -322,110 +322,186 @@ export default function Home() {
         </Box>
 
         <Container maxWidth="lg" sx={{ position: "relative" }}>
-          <Grid container spacing={6} alignItems="center">
-            {/* Left side — headline */}
-            <Grid size={{ xs: 12, md: 6 }}>
+          {/* Main Heading - Full Width at Top Center */}
+          <Box sx={{ textAlign: "center", mb: { xs: 4, sm: 6 } }}>
+            <Typography
+              variant="h1"
+              isBold
+              sx={{
+                fontSize: { xs: "1.75rem", sm: "2.5rem", lg: "3rem" },
+                lineHeight: 1.2,
+                letterSpacing: "-0.02em",
+              }}
+            >
               <Typography
-                variant="h1"
+                component="span"
+                isGradient
                 isBold
-                sx={{
-                  fontSize: { xs: "2.25rem", sm: "2.75rem", lg: "3.5rem" },
-                  lineHeight: 1.15,
-                  letterSpacing: "-0.02em",
-                }}
+                sx={{ fontSize: "inherit", lineHeight: "inherit" }}
               >
-                Earn Money by
-                <br />
-                <Typography
-                  component="span"
-                  isGradient
-                  isBold
-                  sx={{ fontSize: "inherit", lineHeight: "inherit" }}
-                >
-                  Completing Tasks
-                </Typography>
-              </Typography>
+                Get paid
+              </Typography>{" "}
+              for testing apps,
+              <br />
+              games & surveys
+            </Typography>
 
-              <Typography
-                sx={{
-                  mt: 3,
-                  maxWidth: 480,
-                  fontSize: { xs: "1rem", sm: "1.125rem" },
-                  lineHeight: 1.7,
-                  color: colors.textSecondary,
-                }}
-              >
-                Complete offers, play games, fill surveys and earn coins. Cash out
-                instantly as USDT crypto. Free to join, worldwide.
+            <Box
+              sx={{
+                mt: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 2,
+                flexWrap: "wrap",
+                fontSize: { xs: "0.85rem", sm: "0.95rem" },
+              }}
+            >
+              <Typography sx={{ color: colors.textSecondary }}>
+                Earn up to{" "}
+                <Typography component="span" isBold sx={{ color: colors.green }}>
+                  $391
+                </Typography>{" "}
+                per offer
               </Typography>
-
-              {/* Trust badges */}
               <Box
                 sx={{
-                  mt: 4,
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: { xs: 2, sm: 3 },
-                  color: colors.textSecondary,
-                  fontSize: "0.875rem",
+                  width: 3,
+                  height: 3,
+                  borderRadius: "50%",
+                  bgcolor: colors.green,
                 }}
-              >
+              />
+              <Typography sx={{ color: colors.textSecondary }}>
+                <Typography component="span" isBold sx={{ color: colors.green }}>
+                  500+
+                </Typography>{" "}
+                Offers available now
+              </Typography>
+            </Box>
+          </Box>
+
+          <Grid container spacing={4} alignItems="flex-start">
+            {/* Left side — Game cards only */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              {/* Game Cards */}
+              <Grid container spacing={{ xs: 1, sm: 1.5 }} sx={{ mt: { xs: 4, sm: 6 } }}>
                 {[
-                  { icon: <Shield size={16} />, label: "Secure & Safe" },
-                    { icon: <Zap size={16} />, label: "Instant Payouts" },
-                ].map((badge) => (
-                  <Box key={badge.label} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Box
+                  {
+                    image: "/sunshine_island.webp",
+                    title: "Sunshine Island",
+                    subtitle: "Match & earn",
+                    reward: "$391.00",
+                    rating: "5.0",
+                  },
+                  {
+                    image: "/match_masters.webp",
+                    title: "Match Masters",
+                    subtitle: "Play duels",
+                    reward: "$280.00",
+                    rating: "5.0",
+                  },
+                  {
+                    image: "/board_kings.webp",
+                    title: "Board Kings",
+                    subtitle: "Earn gift cards",
+                    reward: "$32.00",
+                    rating: "5.0",
+                  },
+                ].map((game, index) => (
+                  <Grid key={game.title} size={{ xs: 4, sm: 4 }}>
+                    <Paper
+                      elevation={0}
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: 32,
-                        height: 32,
-                        borderRadius: "8px",
-                        bgcolor: colors.greenTint,
-                        color: colors.green,
+                        bgcolor: colors.bgCard,
+                        border: "none",
+                        borderRadius: { xs: "10px", sm: "16px" },
+                        p: { xs: 1, sm: 1.5 },
+                        textAlign: "left",
+                        cursor: "pointer",
+                        transition: "all 0.3s",
+                        // Middle card (index 1) always has hover effect
+                        transform: index === 1 ? "translateY(-4px)" : "none",
+                        boxShadow: index === 1 ? `0 12px 24px rgba(16,185,129,0.15)` : "none",
+                        "&:hover": {
+                          transform: "translateY(-4px)",
+                          boxShadow: `0 12px 24px rgba(16,185,129,0.15)`,
+                        },
                       }}
                     >
-                      {badge.icon}
-                    </Box>
-                    {badge.label}
-                  </Box>
+                      <Box
+                        component="img"
+                        src={game.image}
+                        alt={game.title}
+                        sx={{
+                          width: "100%",
+                          aspectRatio: "1",
+                          borderRadius: { xs: "6px", sm: "8px" },
+                          mb: { xs: 0.75, sm: 1.25 },
+                          objectFit: "cover",
+                        }}
+                      />
+                      <Typography variant="h6" isBold sx={{ fontSize: { xs: "0.75rem", sm: "0.9rem" }, mb: { xs: 0.15, sm: 0.25 } }}>
+                        {game.title}
+                      </Typography>
+                      <Typography sx={{ fontSize: { xs: "0.6rem", sm: "0.7rem" }, color: colors.textSecondary, mb: { xs: 0.75, sm: 1.25 } }}>
+                        {game.subtitle}
+                      </Typography>
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <Box>
+                          <Typography sx={{ fontSize: { xs: "0.5rem", sm: "0.6rem" }, color: colors.textSecondary, mb: 0.25 }}>
+                            UP TO
+                          </Typography>
+                          <Typography isBold sx={{ fontSize: { xs: "0.85rem", sm: "1rem" }, color: colors.textPrimary }}>
+                            {game.reward}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
+                          <Star size={12} fill={colors.green} color={colors.green} />
+                          <Typography isBold sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" } }}>
+                            {game.rating}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Paper>
+                  </Grid>
                 ))}
-              </Box>
+              </Grid>
             </Grid>
 
-            {/* Right side — signup card or start earning */}
+            {/* Right side — signup card */}
             <Grid size={{ xs: 12, md: 6 }}>
               {isAuthenticated ? (
                 <Paper
                   elevation={0}
                   sx={{
-                    ...sxCard,
-                    p: { xs: 4, sm: 5 },
+                    bgcolor: colors.bgCard,
+                    border: "none",
+                    borderRadius: "16px",
+                    p: { xs: 3, sm: 3 },
                     textAlign: "center",
                   }}
                 >
                   <Box
                     sx={{
                       mx: "auto",
-                      mb: 2.5,
+                      mb: 1.5,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      width: 64,
-                      height: 64,
-                      borderRadius: "16px",
+                      width: 48,
+                      height: 48,
+                      borderRadius: "12px",
                       background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
                       boxShadow: "0 8px 32px rgba(16,185,129,0.25)",
                     }}
                   >
-                    <Sparkles size={32} color="#fff" />
+                    <Sparkles size={24} color="#fff" />
                   </Box>
-                  <Typography variant="h5" isBold sx={{ mb: 1 }}>
+                  <Typography variant="h5" isBold sx={{ mb: 0.5, fontSize: "1.2rem" }}>
                     Welcome Back!
                   </Typography>
-                  <Typography sx={{ fontSize: "0.95rem", color: colors.textSecondary, mb: 3 }}>
+                  <Typography sx={{ fontSize: "0.85rem", color: colors.textSecondary, mb: 2 }}>
                     Continue earning coins and cash out anytime.
                   </Typography>
                   <Button
@@ -435,70 +511,39 @@ export default function Home() {
                     fullWidth
                     sx={{
                       ...sxGradientBtn,
-                      height: 52,
-                      fontSize: "1rem",
-                      gap: 1,
+                      height: 44,
+                      fontSize: "0.9rem",
+                      gap: 0.75,
                     }}
                   >
                     Start Earning
-                    <ArrowRight size={20} />
+                    <ArrowRight size={16} />
                   </Button>
                 </Paper>
               ) : (
                 <Paper
                   elevation={0}
                   sx={{
-                    ...sxCard,
-                    p: { xs: 3, sm: 4 },
+                    bgcolor: colors.bgCard,
+                    border: "none",
+                    borderRadius: "16px",
+                    p: { xs: 3, sm: 3 },
                   }}
                 >
-                  <Typography variant="h5" isBold sx={{ mb: 0.5, textAlign: "center" }}>
-                    Create Free Account
+                  <Typography variant="h5" isBold sx={{ mb: 0.75, textAlign: "center", fontSize: "1.4rem" }}>
+                    Sign Up for Free
                   </Typography>
-                  <Typography sx={{ fontSize: "0.85rem", color: colors.textSecondary, textAlign: "center", mb: 3 }}>
-                    Start earning in under 2 minutes
-                  </Typography>
-
-                  {/* Google button */}
-                  <Button
-                    onClick={handleGoogleSignup}
-                    fullWidth
-                    sx={{
-                      height: 48,
-                      textTransform: "none",
-                      fontWeight: 600,
-                      borderRadius: "12px",
-                      bgcolor: "#fff",
-                      color: "#333",
-                      fontSize: "0.9rem",
-                      gap: 1.5,
-                      mb: 2.5,
-                      "&:hover": { bgcolor: "#f5f5f5" },
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 18 18">
-                      <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
-                      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-                      <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-                      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 2.58 9 2.58z" fill="#EA4335"/>
-                    </svg>
-                    Continue with Google
-                  </Button>
-
-                  <Divider sx={{ borderColor: colors.divider, mb: 2.5, fontSize: "0.75rem", color: colors.textSecondary }}>
-                    or sign up with email
-                  </Divider>
 
                   {/* Signup form */}
                   <Box
                     component="form"
                     onSubmit={handleSignup}
-                    sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                    sx={{ display: "flex", flexDirection: "column", gap: 1.5, mt: 2 }}
                   >
                     <TextField
                       type="email"
                       required
-                      placeholder="you@example.com"
+                      placeholder="Email address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       size="small"
@@ -511,11 +556,20 @@ export default function Home() {
                           ),
                         },
                       }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          height: 44,
+                          fontSize: "0.875rem",
+                          bgcolor: colors.bgInput,
+                          borderRadius: "8px",
+                        },
+                      }}
                     />
+
                     <TextField
                       type="password"
                       required
-                      placeholder="Min 6 characters"
+                      placeholder="Password (min 6 characters)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       size="small"
@@ -529,6 +583,14 @@ export default function Home() {
                           ),
                         },
                       }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          height: 44,
+                          fontSize: "0.875rem",
+                          bgcolor: colors.bgInput,
+                          borderRadius: "8px",
+                        },
+                      }}
                     />
 
                     {/* Referral Code - Optional */}
@@ -539,13 +601,16 @@ export default function Home() {
                       size="small"
                       sx={{
                         "& .MuiOutlinedInput-root": {
+                          height: 44,
                           fontSize: "0.85rem",
+                          bgcolor: colors.bgInput,
+                          borderRadius: "8px",
                         },
                       }}
                     />
 
                     {signupError && (
-                      <Alert severity="error" sx={{ fontSize: "0.8rem" }}>
+                      <Alert severity="error" sx={{ fontSize: "0.8rem", py: 0.5 }}>
                         {signupError}
                       </Alert>
                     )}
@@ -556,7 +621,8 @@ export default function Home() {
                         <Checkbox
                           checked={acceptedTerms}
                           onChange={(e) => setAcceptedTerms(e.target.checked)}
-                          sx={{ color: colors.textSecondary }}
+                          sx={{ color: colors.textSecondary, py: 0.25 }}
+                          size="small"
                         />
                       }
                       label={
@@ -570,7 +636,7 @@ export default function Home() {
                           </Link>
                         </Typography>
                       }
-                      sx={{ alignItems: "flex-start", mt: 1 }}
+                      sx={{ alignItems: "flex-start", my: 0 }}
                     />
 
                     {/* Turnstile Verification */}
@@ -592,19 +658,53 @@ export default function Home() {
                       disabled={signupLoading}
                       sx={{
                         ...sxGradientBtn,
-                        height: 48,
+                        height: 46,
                         fontSize: "0.95rem",
-                        gap: 1,
+                        fontWeight: 700,
+                        gap: 0.75,
+                        mt: 0.5,
                       }}
                     >
                       {signupLoading ? (
-                        <CircularProgress size={20} color="inherit" />
+                        <CircularProgress size={18} color="inherit" />
                       ) : (
                         <>
-                          Sign Up Free
-                          <ArrowRight size={18} />
+                          Start earning now
+                          <ArrowRight size={16} />
                         </>
                       )}
+                    </Button>
+                  </Box>
+
+                  <Divider sx={{ borderColor: colors.divider, my: 2, fontSize: "0.75rem", color: colors.textSecondary }}>
+                    OR
+                  </Divider>
+
+                  {/* Social buttons */}
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+                    <Button
+                      onClick={handleGoogleSignup}
+                      fullWidth
+                      sx={{
+                        height: 44,
+                        textTransform: "none",
+                        fontWeight: 600,
+                        borderRadius: "8px",
+                        bgcolor: "#fff",
+                        color: "#333",
+                        fontSize: "0.875rem",
+                        gap: 1.25,
+                        border: `1px solid ${colors.divider}`,
+                        "&:hover": { bgcolor: "#f5f5f5" },
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 18 18">
+                        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+                        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+                        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 2.58 9 2.58z" fill="#EA4335"/>
+                      </svg>
+                      Sign Up with Google
                     </Button>
                   </Box>
 
@@ -625,7 +725,40 @@ export default function Home() {
         </Container>
       </Box>
 
+      {/* ===================== TRUSTED OFFER PROVIDERS ===================== */}
+      <Divider sx={{ borderColor: colors.divider }} />
+      <Box
+        component="section"
+        sx={{
+          px: { xs: 2, sm: 3, lg: 4 },
+          py: { xs: 10, sm: 14 },
+          bgcolor: colors.bgPage,
+        }}
+      >
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: "center", mb: 8 }}>
+            <Typography
+              variant="h2"
+              isBold
+              sx={{
+                fontSize: { xs: "1.875rem", sm: "2.25rem", lg: "3rem" },
+                color: colors.green,
+                mb: 2,
+              }}
+            >
+              Trusted offer providers
+            </Typography>
+            <Typography sx={{ fontSize: "1rem", color: colors.textSecondary, maxWidth: 600, mx: "auto" }}>
+              We partner with established offerwalls so you always have something new to complete.
+            </Typography>
+          </Box>
+
+          <ProviderCarousel />
+        </Container>
+      </Box>
+
       {/* ===================== HOW IT WORKS ===================== */}
+      <Divider sx={{ borderColor: colors.divider }} />
       <Box
         component="section"
         id="how-it-works"
@@ -678,38 +811,6 @@ export default function Home() {
               />
             </Grid>
           </Grid>
-        </Container>
-      </Box>
-
-      {/* ===================== TRUSTED OFFER PROVIDERS ===================== */}
-      <Divider sx={{ borderColor: colors.divider }} />
-      <Box
-        component="section"
-        sx={{
-          px: { xs: 2, sm: 3, lg: 4 },
-          py: { xs: 10, sm: 14 },
-          bgcolor: colors.bgPage,
-        }}
-      >
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: "center", mb: 8 }}>
-            <Typography
-              variant="h2"
-              isBold
-              sx={{
-                fontSize: { xs: "1.875rem", sm: "2.25rem", lg: "3rem" },
-                color: colors.green,
-                mb: 2,
-              }}
-            >
-              Trusted offer providers
-            </Typography>
-            <Typography sx={{ fontSize: "1rem", color: colors.textSecondary, maxWidth: 600, mx: "auto" }}>
-              We partner with established offerwalls so you always have something new to complete.
-            </Typography>
-          </Box>
-
-          <ProviderCarousel />
         </Container>
       </Box>
 
