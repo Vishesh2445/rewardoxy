@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Box, Paper, CircularProgress, Dialog, DialogContent, IconButton } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { Target, TrendingUp, Clock, Gamepad2 } from "lucide-react";
+import { Target } from "lucide-react";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
 import { QRCodeSVG } from "qrcode.react";
@@ -137,8 +137,9 @@ export default function MyOffersClient({ userId }: MyOffersClientProps) {
       <Box
         key={offer.id}
         sx={{
-          minWidth: { xs: 100, sm: 140 },
-          maxWidth: { xs: 100, sm: 140 },
+          minWidth: { xs: "auto", sm: 140 },
+          maxWidth: { xs: "none", sm: 140 },
+          width: { xs: "100%", sm: "auto" },
           flexShrink: 0,
           cursor: "pointer",
         }}
@@ -155,7 +156,7 @@ export default function MyOffersClient({ userId }: MyOffersClientProps) {
             },
           }}
         >
-          <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
+          <Box sx={{ position: "relative", mb: { xs: 0.75, sm: 1.5 } }}>
             <Box
               sx={{
                 width: "100%",
@@ -190,7 +191,7 @@ export default function MyOffersClient({ userId }: MyOffersClientProps) {
             </Box>
           </Box>
 
-          <Box sx={{ height: 40, overflow: "hidden", mb: 0.5 }}>
+          <Box sx={{ height: { xs: 34, sm: 40 }, overflow: "hidden", mb: 0.5 }}>
             <Typography
               sx={{
                 fontSize: { xs: "0.75rem", sm: "0.875rem" },
@@ -220,7 +221,7 @@ export default function MyOffersClient({ userId }: MyOffersClientProps) {
             {offer.provider}
           </Typography>
 
-          <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600, mb: 1 }}>
+          <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600, mb: { xs: 0.5, sm: 1 } }}>
             ${offer.payout}
           </Typography>
 
@@ -359,133 +360,103 @@ export default function MyOffersClient({ userId }: MyOffersClientProps) {
   return (
     <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
-          <Box>
-            <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <Target size={26} color={colors.primary} />
-              My Offers
-            </Typography>
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
-              Track your offer progress and earnings
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              borderRadius: 3,
-              border: `1px solid ${colors.divider}`,
-              bgcolor: colors.background.secondary,
-              px: 2,
-              py: 1,
-            }}
-          >
-            <TrendingUp size={15} color={colors.primary} />
-            <Box>
-              <Typography sx={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: colors.text.secondary }}>
-                Total Offers
-              </Typography>
-              <Typography sx={{ fontSize: "1rem", fontWeight: 800, color: "#fff" }}>
-                {data?.total || 0}
-              </Typography>
-            </Box>
-          </Box>
+      <Box sx={{ mb: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 0.5 }}>
+          <Target size={26} color={colors.primary} />
+          <Typography variant="h5" isBold>My Offers</Typography>
         </Box>
-      </Box>
+        <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+          Track your offer progress and earnings
+        </Typography>
 
-      {/* Tabs */}
-      <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap" }}>
-        <Box
-          onClick={() => setActiveTab(0)}
-          sx={{
-            px: 3,
-            py: 1.5,
-            borderRadius: 3,
-            background: activeTab === 0 
-              ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-              : "rgba(255, 255, 255, 0.05)",
-            color: activeTab === 0 ? "#fff" : colors.text.secondary,
-            fontWeight: 600,
-            fontSize: "0.875rem",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            border: activeTab === 0 ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
-            "&:hover": {
-              background: activeTab === 0 
-                ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                : "rgba(255, 255, 255, 0.08)",
-            },
-          }}
-        >
-          Started ({data?.started.length || 0})
-        </Box>
-        <Box
-          onClick={() => setActiveTab(1)}
-          sx={{
-            px: 3,
-            py: 1.5,
-            borderRadius: 3,
-            background: activeTab === 1 
-              ? "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
-              : "rgba(255, 255, 255, 0.05)",
-            color: activeTab === 1 ? "#fff" : colors.text.secondary,
-            fontWeight: 600,
-            fontSize: "0.875rem",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            border: activeTab === 1 ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
-            "&:hover": {
-              background: activeTab === 1 
-                ? "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
-                : "rgba(255, 255, 255, 0.08)",
-            },
-          }}
-        >
-          In Progress ({data?.in_progress.length || 0})
-        </Box>
-        <Box
-          onClick={() => setActiveTab(2)}
-          sx={{
-            px: 3,
-            py: 1.5,
-            borderRadius: 3,
-            background: activeTab === 2 
-              ? "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-              : "rgba(255, 255, 255, 0.05)",
-            color: activeTab === 2 ? "#fff" : colors.text.secondary,
-            fontWeight: 600,
-            fontSize: "0.875rem",
-            cursor: "pointer",
-            transition: "all 0.2s",
-            border: activeTab === 2 ? "none" : "1px solid rgba(255, 255, 255, 0.1)",
-            "&:hover": {
-              background: activeTab === 2 
-                ? "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-                : "rgba(255, 255, 255, 0.08)",
-            },
-          }}
-        >
-          Completed ({data?.completed.length || 0})
+        {/* Stats Row */}
+        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1 }}>
+          <Paper elevation={0} sx={{ bgcolor: colors.background.secondary, borderRadius: 2, p: 1.5, textAlign: "center" }}>
+            <Typography sx={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", color: colors.text.secondary, mb: 0.5 }}>
+              Total
+            </Typography>
+            <Typography sx={{ fontSize: "1.25rem", fontWeight: 800, color: "#fff", lineHeight: 1 }}>
+              {data?.total || 0}
+            </Typography>
+          </Paper>
+          <Paper
+            elevation={0}
+            onClick={() => setActiveTab(0)}
+            sx={{ bgcolor: activeTab === 0 ? "rgba(102, 126, 234, 0.15)" : colors.background.secondary, borderRadius: 2, p: 1.5, textAlign: "center", cursor: "pointer", border: activeTab === 0 ? "1px solid rgba(102, 126, 234, 0.4)" : "none", transition: "all 0.2s" }}
+          >
+            <Typography sx={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", color: colors.text.secondary, mb: 0.5 }}>
+              Started
+            </Typography>
+            <Typography sx={{ fontSize: "1.1rem", fontWeight: 800, color: activeTab === 0 ? "#667eea" : "#fff", lineHeight: 1 }}>
+              {data?.started.length || 0}
+            </Typography>
+          </Paper>
+          <Paper
+            elevation={0}
+            onClick={() => setActiveTab(1)}
+            sx={{ bgcolor: activeTab === 1 ? "rgba(240, 147, 251, 0.15)" : colors.background.secondary, borderRadius: 2, p: 1.5, textAlign: "center", cursor: "pointer", border: activeTab === 1 ? "1px solid rgba(240, 147, 251, 0.4)" : "none", transition: "all 0.2s" }}
+          >
+            <Typography sx={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", color: colors.text.secondary, mb: 0.5 }}>
+              Progress
+            </Typography>
+            <Typography sx={{ fontSize: "1.1rem", fontWeight: 800, color: activeTab === 1 ? "#f093fb" : "#fff", lineHeight: 1 }}>
+              {data?.in_progress.length || 0}
+            </Typography>
+          </Paper>
+          <Paper
+            elevation={0}
+            onClick={() => setActiveTab(2)}
+            sx={{ bgcolor: activeTab === 2 ? "rgba(79, 172, 254, 0.15)" : colors.background.secondary, borderRadius: 2, p: 1.5, textAlign: "center", cursor: "pointer", border: activeTab === 2 ? "1px solid rgba(79, 172, 254, 0.4)" : "none", transition: "all 0.2s" }}
+          >
+            <Typography sx={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", color: colors.text.secondary, mb: 0.5 }}>
+              Done
+            </Typography>
+            <Typography sx={{ fontSize: "1.1rem", fontWeight: 800, color: activeTab === 2 ? "#4facfe" : "#fff", lineHeight: 1 }}>
+              {data?.completed.length || 0}
+            </Typography>
+          </Paper>
         </Box>
       </Box>
 
       {/* Offers Grid */}
       {activeTab === 0 && (
-        <Box sx={{ display: "flex", gap: { xs: 1, sm: 1.5 }, overflowX: "auto", pb: 2, "&::-webkit-scrollbar": { display: "none" }, scrollbarWidth: "none" }}>
+        <Box sx={{
+          display: { xs: "grid", sm: "flex" },
+          gridTemplateColumns: { xs: "repeat(3, 1fr)" },
+          gap: { xs: 1, sm: 1.5 },
+          overflowX: { xs: "visible", sm: "auto" },
+          pb: 2,
+          "&::-webkit-scrollbar": { display: "none" },
+          scrollbarWidth: "none",
+        }}>
           {data?.started.length === 0 ? renderEmptyState("No started offers") : data?.started.map(renderOfferCard)}
         </Box>
       )}
 
       {activeTab === 1 && (
-        <Box sx={{ display: "flex", gap: { xs: 1, sm: 1.5 }, overflowX: "auto", pb: 2, "&::-webkit-scrollbar": { display: "none" }, scrollbarWidth: "none" }}>
+        <Box sx={{
+          display: { xs: "grid", sm: "flex" },
+          gridTemplateColumns: { xs: "repeat(3, 1fr)" },
+          gap: { xs: 1, sm: 1.5 },
+          overflowX: { xs: "visible", sm: "auto" },
+          pb: 2,
+          "&::-webkit-scrollbar": { display: "none" },
+          scrollbarWidth: "none",
+        }}>
           {data?.in_progress.length === 0 ? renderEmptyState("No offers in progress") : data?.in_progress.map(renderOfferCard)}
         </Box>
       )}
 
       {activeTab === 2 && (
-        <Box sx={{ display: "flex", gap: { xs: 1, sm: 1.5 }, overflowX: "auto", pb: 2, "&::-webkit-scrollbar": { display: "none" }, scrollbarWidth: "none" }}>
+        <Box sx={{
+          display: { xs: "grid", sm: "flex" },
+          gridTemplateColumns: { xs: "repeat(3, 1fr)" },
+          gap: { xs: 1, sm: 1.5 },
+          overflowX: { xs: "visible", sm: "auto" },
+          pb: 2,
+          "&::-webkit-scrollbar": { display: "none" },
+          scrollbarWidth: "none",
+        }}>
           {data?.completed.length === 0 ? renderEmptyState("No completed offers") : data?.completed.map(renderOfferCard)}
         </Box>
       )}
@@ -762,7 +733,6 @@ function OfferDetailsModal({
                     p: 1.5,
                     bgcolor: isCompleted ? "rgba(16, 185, 129, 0.05)" : "#222339",
                     borderRadius: 2,
-                    border: `1px solid ${isCompleted ? "rgba(16, 185, 129, 0.2)" : "rgba(255,255,255,0.05)"}`,
                     transition: "all 0.2s",
                     "&:hover": {
                       borderColor: isCompleted ? "rgba(16, 185, 129, 0.4)" : "rgba(16, 185, 129, 0.3)",
@@ -922,7 +892,6 @@ function OfferDetailsModal({
             bgcolor: "#222339",
             p: 2,
             borderRadius: 2,
-            border: "1px solid rgba(255,255,255,0.05)",
             wordBreak: "break-all",
             fontSize: "0.75rem",
             color: "#10B981",

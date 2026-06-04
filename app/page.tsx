@@ -110,6 +110,9 @@ export default function Home() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        router.push("/earn");
+      }
       setIsAuthenticated(!!user);
     });
   }, []);
@@ -183,6 +186,7 @@ export default function Home() {
   }
 
   return (
+    isAuthenticated === null ? null : (
     <Box sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
       {/* ===================== NAVBAR ===================== */}
       <Box
@@ -418,7 +422,7 @@ export default function Home() {
                       <Paper
                         elevation={0}
                         sx={{
-                          bgcolor: colors.bgCard,
+                          bgcolor: "#232645",
                           border: "none",
                           borderRadius: { xs: "10px", sm: "16px" },
                           p: { xs: 1, sm: 2 },
@@ -1287,7 +1291,7 @@ export default function Home() {
           </Box>
         </Container>
       </Box>
-    </Box>
+    </Box>)
   );
 }
 

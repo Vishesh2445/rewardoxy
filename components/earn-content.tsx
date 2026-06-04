@@ -6,7 +6,7 @@ import { Box, Dialog, DialogTitle, DialogContent, IconButton, Paper, CircularPro
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
-import { Gamepad2, ChevronRight, ChevronLeft, Monitor, Smartphone } from "lucide-react";
+import { ChevronRight, ChevronLeft, Smartphone } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 import CheckIcon from "@mui/icons-material/Check";
@@ -329,7 +329,6 @@ function OfferDetailsModal({
               bgcolor: "#151B26",
               p: 2,
               borderRadius: 2,
-              border: "1px solid rgba(255,255,255,0.05)",
             }}
           >
             {offer.description1 && (
@@ -405,11 +404,10 @@ function OfferDetailsModal({
                   p: 1.5,
                   bgcolor: "#151B26",
                   borderRadius: 2,
-                  border: "1px solid rgba(255,255,255,0.05)",
                   transition: "all 0.2s",
                   "&:hover": {
                     borderColor: "rgba(16, 185, 129, 0.3)",
-                    bgcolor: "#151B26",
+                  bgcolor: "#141523",
                   },
                 }}
               >
@@ -554,7 +552,6 @@ function OfferDetailsModal({
             bgcolor: "#151B26",
             p: 2,
             borderRadius: 2,
-            border: "1px solid rgba(255,255,255,0.05)",
             wordBreak: "break-all",
             fontSize: "0.75rem",
             color: "#10B981",
@@ -608,83 +605,6 @@ function OfferDetailsModal({
   );
 }
 
-// Platform Selector Component
-function PlatformSelector({ 
-  selectedPlatforms, 
-  onToggle 
-}: { 
-  selectedPlatforms: DeviceOS[], 
-  onToggle: (platform: DeviceOS) => void 
-}) {
-  // Real Android and iOS SVG icons
-  const AndroidIcon = () => (
-    <svg viewBox="0 0 24 24" style={{ width: 14, height: 14 }} fill="currentColor">
-      <path d="M17.6,9.48l1.84-3.18c0.16-0.31,0.04-0.69-0.26-0.85c-0.29-0.15-0.65-0.06-0.83,0.22l-1.88,3.24 c-2.86-1.21-6.08-1.21-8.94,0L5.65,5.67c-0.19-0.29-0.58-0.38-0.87-0.2C4.5,5.65,4.41,6.01,4.56,6.3L6.4,9.48 C3.3,11.25,1.28,14.44,1,18h22C22.72,14.44,20.7,11.25,17.6,9.48z M7,15.25c-0.69,0-1.25-0.56-1.25-1.25 c0-0.69,0.56-1.25,1.25-1.25S8.25,13.31,8.25,14C8.25,14.69,7.69,15.25,7,15.25z M17,15.25c-0.69,0-1.25-0.56-1.25-1.25 c0-0.69,0.56-1.25,1.25-1.25s1.25,0.56,1.25,1.25C18.25,14.69,17.69,15.25,17,15.25z"/>
-    </svg>
-  );
-
-  const AppleIcon = () => (
-    <svg viewBox="0 0 24 24" style={{ width: 14, height: 14 }} fill="currentColor">
-      <path d="M17.05,20.28c-0.98,0.95-2.05,0.8-3.08,0.35c-1.09-0.46-2.09-0.48-3.24,0c-1.44,0.62-2.2,0.44-3.06-0.35 C2.79,15.25,3.51,7.59,9.05,7.31c1.35,0.07,2.29,0.74,3.08,0.8c1.18-0.24,2.31-0.93,3.57-0.84c1.51,0.12,2.65,0.72,3.4,1.8 c-3.12,1.87-2.38,5.98,0.48,7.13c-0.57,1.5-1.31,2.99-2.54,4.09L17.05,20.28z M12.03,7.25c-0.15-2.23,1.66-4.07,3.74-4.25 c0.29,2.58-2.34,4.5-3.74,4.25z"/>
-    </svg>
-  );
-
-  const platforms: { id: DeviceOS; label: string; icon: any }[] = [
-    { id: "android", label: "Android", icon: AndroidIcon },
-    { id: "ios", label: "iOS", icon: AppleIcon },
-    { id: "windows", label: "Desktop", icon: Monitor },
-  ];
-
-  return (
-    <Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.75, sm: 2 }, mb: { xs: 2, sm: 3 }, flexWrap: "wrap" }}>
-        <Typography variant="h5" isBold sx={{ fontSize: { xs: "1.25rem", sm: "1.75rem" } }}>
-          Earn
-        </Typography>
-        <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.9375rem" }, color: colors.text.secondary, mr: { xs: 0, sm: 1 }, display: { xs: "none", sm: "block" } }}>
-          on
-        </Typography>
-        {platforms.map((platform) => {
-          const Icon = platform.icon;
-          const isSelected = selectedPlatforms.includes(platform.id);
-          
-          return (
-            <Box
-              key={platform.id}
-              onClick={() => onToggle(platform.id)}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: { xs: 0.5, sm: 1 },
-                px: { xs: 1, sm: 2 },
-                py: { xs: 0.5, sm: 1 },
-                borderRadius: { xs: 1.5, sm: 2 },
-                bgcolor: isSelected ? "rgba(16, 185, 129, 0.1)" : "#0A0D14",
-                border: `1px solid ${isSelected ? "rgba(16, 185, 129, 0.3)" : "rgba(255, 255, 255, 0.05)"}`,
-                cursor: "pointer",
-                transition: "all 0.2s",
-                "&:hover": {
-                  borderColor: isSelected ? "rgba(16, 185, 129, 0.5)" : "rgba(255, 255, 255, 0.1)",
-                  bgcolor: isSelected ? "rgba(16, 185, 129, 0.15)" : "#0F1219",
-                },
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", color: isSelected ? "#10B981" : colors.text.secondary }}>
-                <Icon />
-              </Box>
-              <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 500, color: isSelected ? "#10B981" : colors.text.primary, display: { xs: "none", sm: "block" } }}>
-                {platform.label}
-              </Typography>
-              {isSelected && (
-                <CheckIcon sx={{ fontSize: { xs: 12, sm: 16 }, color: "#10B981" }} />
-              )}
-            </Box>
-          );
-        })}
-      </Box>
-    </Box>
-  );
-}
 
 function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: DeviceOS[] }) {
   const [displayedOffers, setDisplayedOffers] = useState<NotikOffer[]>([]);
@@ -831,23 +751,10 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       
       console.log(`Sorted gaming offers: ${sortedOffers.length}`);
       
-      // Pin a specific offer to the top (if configured)
-      const pinnedOfferId = process.env.NEXT_PUBLIC_PINNED_OFFER_ID;
-      let finalOffers = sortedOffers;
-      
       // Pin Taskwall infinity offers (payout === -1) to the top
-      const infinityOffers = finalOffers.filter(o => o.payout === -1 && o.provider === 'Taskwall');
-      const regularOffers = finalOffers.filter(o => !(o.payout === -1 && o.provider === 'Taskwall'));
-      finalOffers = [...infinityOffers, ...regularOffers];
-
-      if (pinnedOfferId) {
-        const pinnedOfferIndex = finalOffers.findIndex(o => String(o.id) === pinnedOfferId || String(o.offer_id) === pinnedOfferId);
-        if (pinnedOfferIndex > 0) {
-          const pinnedOffer = finalOffers.splice(pinnedOfferIndex, 1)[0];
-          finalOffers.unshift(pinnedOffer);
-          console.log(`Pinned offer ${pinnedOfferId} to top`);
-        }
-      }
+      const infinityOffers = sortedOffers.filter(o => o.payout === -1 && o.provider === 'Taskwall');
+      const regularOffers = sortedOffers.filter(o => !(o.payout === -1 && o.provider === 'Taskwall'));
+      const finalOffers = [...infinityOffers, ...regularOffers];
       
       // Store all offers
       setAllOffers(finalOffers);
@@ -923,21 +830,18 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
 
   // Skeleton loader with shimmer animation
   const SkeletonOffer = () => (
-    <Box sx={{ minWidth: 140, maxWidth: 140, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: "#0F1219", border: "1px solid rgba(16,185,129,0.06)", p: 1, borderRadius: "10px" }}>
+    <Box sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 }, flexShrink: 0 }}>
+      <Box sx={{ bgcolor: "#232645", borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
         <Box sx={{ 
-          width: "100%", aspectRatio: "1", borderRadius: "8px", bgcolor: "#151B26", mb: 0.75,
+          width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, bgcolor: "#141523", mb: { xs: 0.75, sm: 1.5 },
           position: "relative", overflow: "hidden",
           animation: "pulse 2s ease-in-out infinite",
           "@keyframes pulse": { "0%,100%": { opacity: 0.6 }, "50%": { opacity: 1 } },
           "&::after": { content: '""', position: "absolute", top: 0, left: "-100%", width: "100%", height: "100%", background: "linear-gradient(90deg, transparent, rgba(16,185,129,0.04), transparent)", animation: "shimmer 1.4s ease-in-out infinite" },
         }} />
-        <Box sx={{ height: 36, mb: 0.25 }}>
-          <Box sx={{ height: 12, bgcolor: "#151B26", borderRadius: "4px", mb: 0.5, animation: "pulse 2s ease-in-out infinite 0.1s", "@keyframes pulse": { "0%,100%": { opacity: 0.6 }, "50%": { opacity: 1 } } }} />
-          <Box sx={{ height: 12, bgcolor: "#151B26", borderRadius: "4px", width: "70%", animation: "pulse 2s ease-in-out infinite 0.2s" }} />
-        </Box>
-        <Box sx={{ height: 9, bgcolor: "#151B26", borderRadius: "4px", width: "40%", mb: 0.5, animation: "pulse 2s ease-in-out infinite 0.3s" }} />
-        <Box sx={{ height: 12, bgcolor: "#151B26", borderRadius: "4px", width: "50%", animation: "pulse 2s ease-in-out infinite 0.4s" }} />
+        <Box sx={{ height: { xs: 14, sm: 20 }, bgcolor: "#141523", borderRadius: "4px", width: "85%", mb: { xs: 0.2, sm: 0.5 }, animation: "pulse 2s ease-in-out infinite 0.1s" }} />
+        <Box sx={{ height: { xs: 8, sm: 10 }, bgcolor: "#141523", borderRadius: "4px", width: "35%", mb: 0.2, animation: "pulse 2s ease-in-out infinite 0.2s" }} />
+        <Box sx={{ height: { xs: 12, sm: 16 }, bgcolor: "#141523", borderRadius: "4px", width: "45%", animation: "pulse 2s ease-in-out infinite 0.3s" }} />
       </Box>
     </Box>
   );
@@ -945,10 +849,9 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
   return (
     <Box 
       sx={{ 
-        bgcolor: "#0A0D14", 
+        bgcolor: "#141523", 
         borderRadius: 3, 
         overflow: "hidden",
-        border: "1px solid rgba(255, 255, 255, 0.05)"
       }}
     >
       <Box sx={{ p: { xs: 1.5, sm: 2 }, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1060,92 +963,63 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
           >
             <Box
               sx={{
-                bgcolor: "#151B26",
-                p: { xs: 0.75, sm: 1.5 },
-                borderRadius: { xs: 1.5, sm: 2.5 },
-                transition: "all 0.2s",
-                border: index === 0 ? "2px solid #10B981" : "1px solid rgba(255, 255, 255, 0.05)",
+                bgcolor: "#232645",
+                border: "none",
+                borderRadius: { xs: "10px", sm: "16px" },
+                p: { xs: 1, sm: 2 },
+                display: "flex",
+                flexDirection: "column",
+                transition: "all 0.3s",
                 "&:hover": {
-                  bgcolor: "rgba(16, 185, 129, 0.08)",
+                  transform: "translateY(-4px)",
+                  boxShadow: "0 12px 24px rgba(16,185,129,0.15)",
                 },
               }}
             >
-              <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
-                <Box
-                  sx={{
-                    width: "100%",
-                    aspectRatio: "1",
-                    borderRadius: { xs: 1, sm: 1.5 },
-                    overflow: "hidden",
-                    bgcolor: "#0F1219",
-                    backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                />
-                {offer.categories && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: { xs: 4, sm: 8 },
-                      right: { xs: 4, sm: 8 },
-                      bgcolor: "rgba(30, 30, 46, 0.6)",
-                      px: { xs: 0.5, sm: 1 },
-                      py: { xs: 0.25, sm: 0.5 },
-                      borderRadius: 10,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                    }}
-                  >
-                    <Gamepad2 size={8} color="#fff" />
-                  </Box>
-                )}
-              </Box>
-
-              <Box sx={{ height: 40, overflow: "hidden", mb: 0.5 }}>
-                <Typography
-                  sx={{
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    fontWeight: 500,
-                    lineHeight: 1.3,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                  }}
-                >
-                  {offer.name}
-                </Typography>
-              </Box>
-
-              <Typography
+              <Box
                 sx={{
-                  fontSize: { xs: "0.6rem", sm: "0.6875rem" },
-                  color: colors.text.secondary,
-                  opacity: 0.6,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  fontWeight: 600,
-                  mb: { xs: 0.5, sm: 1 },
+                  width: "100%",
+                  aspectRatio: "1",
+                  borderRadius: { xs: "7px", sm: "10px" },
+                  mb: { xs: 0.75, sm: 1.5 },
+                  backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+          bgcolor: "#141523",
+                }}
+              />
+              <Typography
+                variant="h6"
+                isBold
+                sx={{
+                  fontSize: { xs: "0.75rem", sm: "0.95rem" },
+                  mb: { xs: 0.2, sm: 0.5 },
+                  lineHeight: 1.25,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
-                Game
+                {offer.name}
               </Typography>
-
-              <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600 }}>
-                {offer.payout === -1 ? "∞" : `$${offer.payout}`}
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", mt: "auto" }}>
+                <Box>
+                  <Typography sx={{ fontSize: { xs: "0.5rem", sm: "0.65rem" }, color: colors.text.secondary, mb: 0.2 }}>
+                    UP TO
+                  </Typography>
+                  <Typography isBold sx={{ fontSize: { xs: "0.85rem", sm: "1.05rem" }, color: colors.text.primary }}>
+                    {offer.payout === -1 ? "\u221E" : typeof offer.payout === 'number' ? `$${offer.payout.toFixed(2)}` : offer.payout ? `$${offer.payout}` : "$0.00"}
+                  </Typography>
+                </Box>
+              </Box>
             </Box>
           </Box>
         ))}
         
-        {/* Loading indicator when fetching more */}
-        {loadingMore && (
-          <Box sx={{ minWidth: 140, maxWidth: 140, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <CircularProgress size={24} sx={{ color: "#10B981" }} />
-          </Box>
-        )}
+        {/* Skeleton loaders when loading more */}
+        {loadingMore && Array.from({ length: 12 }).map((_, i) => (
+          <SkeletonOffer key={`more-skel-${i}`} />
+        ))}
         </>
         )}
       </Box>
@@ -1205,14 +1079,14 @@ function CPXSurveysSection({ userId }: { userId: string }) {
 
   // Skeleton loader
   const SkeletonSurvey = () => (
-    <Box sx={{ minWidth: 140, maxWidth: 140, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: "#151B26", p: 1.5, borderRadius: 2.5 }}>
+    <Box sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 }, flexShrink: 0 }}>
+      <Box sx={{ bgcolor: "#151B26", p: { xs: 0.75, sm: 1.5 }, borderRadius: { xs: 1.5, sm: 2.5 } }}>
         <Box sx={{ 
           width: "100%", 
           aspectRatio: "1", 
-          borderRadius: 1.5, 
+          borderRadius: { xs: 1, sm: 1.5 }, 
           bgcolor: "#0F1219",
-          mb: 1.5,
+          mb: { xs: 1, sm: 1.5 },
           position: "relative",
           overflow: "hidden",
           "&::after": {
@@ -1230,12 +1104,8 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             "100%": { left: "100%" },
           },
         }} />
-        <Box sx={{ height: 40, mb: 0.5 }}>
-          <Box sx={{ height: 14, bgcolor: "#0F1219", borderRadius: 1, mb: 0.5 }} />
-          <Box sx={{ height: 14, bgcolor: "#0F1219", borderRadius: 1, width: "70%" }} />
-        </Box>
-        <Box sx={{ height: 10, bgcolor: "#0F1219", borderRadius: 1, width: "40%", mb: 1 }} />
-        <Box sx={{ height: 14, bgcolor: "#0F1219", borderRadius: 1, width: "50%" }} />
+        <Box sx={{ height: { xs: 10, sm: 11 }, bgcolor: "#0F1219", borderRadius: 1, width: "80%", mb: { xs: 0.5, sm: 1 }, animation: "pulse 2s ease-in-out infinite 0.1s" }} />
+        <Box sx={{ height: { xs: 12, sm: 14 }, bgcolor: "#0F1219", borderRadius: 1, width: "45%", animation: "pulse 2s ease-in-out infinite 0.2s" }} />
       </Box>
     </Box>
   );
@@ -1243,10 +1113,9 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   return (
     <Box 
       sx={{ 
-        bgcolor: "#0A0D14", 
+        bgcolor: "#141523", 
         borderRadius: 3, 
         overflow: "hidden",
-        border: "1px solid rgba(255, 255, 255, 0.05)"
       }}
     >
       <Box sx={{ p: { xs: 1.5, sm: 2 }, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1333,11 +1202,15 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             >
               <Box
                 sx={{
-                  bgcolor: "#151B26",
+                  bgcolor: "#1a1b2e",
                   p: { xs: 0.75, sm: 1.5 },
                   borderRadius: { xs: 1.5, sm: 2.5 },
-                  transition: "all 0.2s",
-                  "&:hover": { bgcolor: "rgba(16, 185, 129, 0.08)" },
+                  transition: "all 0.3s",
+                  "&:hover": {
+                    bgcolor: "#2a2b4a",
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 12px 24px rgba(37, 100, 79, 0.15)",
+                  },
                 }}
               >
                 <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
@@ -1347,7 +1220,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                       aspectRatio: "1",
                       borderRadius: { xs: 1, sm: 1.5 },
                       overflow: "hidden",
-                      background: "linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(13, 148, 136, 0.3) 100%)",
+                      background: "linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(13, 148, 136, 0.25) 100%)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -1358,7 +1231,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '40%', height: '40%', color: '#14b8a6' }}>
                       <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM7 10H9V17H7V10ZM11 7H13V17H11V7ZM15 13H17V17H15V13Z" fill="currentColor"/>
                     </svg>
-                    <Typography sx={{ fontSize: { xs: "0.625rem", sm: "0.75rem" }, color: "#14b8a6", fontWeight: 600 }}>
+                    <Typography sx={{ fontSize: { xs: "0.625rem", sm: "0.75rem" }, color: "#14b8a6", fontWeight: 700 }}>
                       {survey.loi} min
                     </Typography>
                   </Box>
@@ -1367,8 +1240,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                 <Typography
                   sx={{
                     fontSize: { xs: "0.6rem", sm: "0.6875rem" },
-                    color: colors.text.secondary,
-                    opacity: 0.6,
+                    color: "rgba(255,255,255,0.5)",
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                     fontWeight: 600,
@@ -1378,7 +1250,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                 CPX Survey
                 </Typography>
 
-                <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 600, color: "#10B981" }}>
+                <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 700, color: "#10B981" }}>
                   ${survey.payout_usd.toFixed(2)}
                 </Typography>
               </Box>
@@ -1516,12 +1388,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
   const iframeSrc = getIframeSrc();
 
   return (
-    <Box sx={{ bgcolor: "#0A0D14", minHeight: "100vh", width: "100%", pb: 4 }}>
-      {/* Platform Selector */}
-      <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, pt: { xs: 2, sm: 3 }, pb: 2 }}>
-        <PlatformSelector selectedPlatforms={selectedPlatforms} onToggle={handlePlatformToggle} />
-      </Box>
-
+    <Box sx={{ bgcolor: "#141523", minHeight: "100vh", width: "100%", pb: 4 }}>
       {/* Gaming Offers */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3 } }}>
         <GamingOffersSection userId={userId} deviceOS={selectedPlatforms} />
@@ -1540,7 +1407,6 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               width: 28, height: 28, borderRadius: 1.5,
               background: colors.background.glass,
               backdropFilter: colors.glass.backdrop,
-              border: `1px solid ${colors.glass.border}`,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
@@ -1576,10 +1442,9 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alignItems: "center", 
               justifyContent: "space-between",
               borderRadius: 2, 
-              p: 2, 
+              p: { xs: 1.5, sm: 2 }, 
               cursor: "pointer",
               background: "linear-gradient(180deg, #0F1219 0%, #3d2f1f 40%, rgba(217, 119, 6, 0.3) 100%)",
-              border: "1px solid rgba(217, 119, 6, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1642,24 +1507,24 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alt="Vortex"
               className="wall-logo"
               sx={{ 
-                width: 100, 
-                height: 100, 
+                width: { xs: 70, sm: 100 }, 
+                height: { xs: 70, sm: 100 }, 
                 borderRadius: 1, 
                 objectFit: "contain",
-                mb: 2,
+                mb: { xs: 1, sm: 2 },
                 transition: "filter 0.2s ease",
               }}
             />
 
             {/* Name */}
-            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
               Vortex
             </Typography>
 
             {/* Star Rating */}
             <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 3 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                <Box key={star} sx={{ color: star <= 3 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
                   ★
                 </Box>
               ))}
@@ -1677,10 +1542,9 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alignItems: "center",
               justifyContent: "space-between",
               borderRadius: 2,
-              p: 2,
+              p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
               background: "linear-gradient(180deg, #0F1219 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.3) 100%)",
-              border: "1px solid rgba(34, 197, 94, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1742,25 +1606,25 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               src="/taskwall.svg"
               alt="Taskwall"
               sx={{
-                width: 100,
-                height: 100,
+                width: { xs: 70, sm: 100 },
+                height: { xs: 70, sm: 100 },
                 borderRadius: 1,
                 objectFit: "contain",
-                mb: 2,
+                mb: { xs: 1, sm: 2 },
                 transition: "filter 0.2s ease",
               }}
               className="wall-logo"
             />
 
             {/* Name */}
-            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
               Taskwall
             </Typography>
 
             {/* Star Rating */}
             <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
                   ★
                 </Box>
               ))}
@@ -1778,10 +1642,9 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alignItems: "center",
               justifyContent: "space-between",
               borderRadius: 2,
-              p: 2,
+              p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
               background: "linear-gradient(180deg, #0F1219 0%, #2d1f3d 40%, rgba(124, 58, 237, 0.3) 100%)",
-              border: "1px solid rgba(124, 58, 237, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1844,24 +1707,24 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alt="Notik"
               className="wall-logo"
               sx={{
-                width: 100,
-                height: 100,
+                width: { xs: 70, sm: 100 },
+                height: { xs: 70, sm: 100 },
                 borderRadius: 1,
                 objectFit: "contain",
-                mb: 2,
+                mb: { xs: 1, sm: 2 },
                 transition: "filter 0.2s ease",
               }}
             />
 
             {/* Name */}
-            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
               Notik
             </Typography>
 
             {/* Star Rating */}
             <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 3 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                <Box key={star} sx={{ color: star <= 3 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
                   ★
                 </Box>
               ))}
@@ -1879,7 +1742,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alignItems: "center",
               justifyContent: "space-between",
               borderRadius: 2,
-              p: 2,
+              p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
               background: "linear-gradient(180deg, rgba(168, 85, 247, 0.25) 0%, rgba(147, 51, 234, 0.2) 50%, rgba(126, 34, 206, 0.3) 100%)",
               border: "none",
@@ -1945,24 +1808,24 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alt="GemiAd"
               className="wall-logo"
               sx={{
-                width: 100,
-                height: 100,
+                width: { xs: 70, sm: 100 },
+                height: { xs: 70, sm: 100 },
                 borderRadius: 1,
                 objectFit: "contain",
-                mb: 2,
+                mb: { xs: 1, sm: 2 },
                 transition: "filter 0.2s ease",
               }}
             />
 
             {/* Name */}
-            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
               GemiAd
             </Typography>
 
             {/* Star Rating */}
             <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 5 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                <Box key={star} sx={{ color: star <= 5 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
                   ★
                 </Box>
               ))}
@@ -1980,10 +1843,9 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alignItems: "center",
               justifyContent: "space-between",
               borderRadius: 2,
-              p: 2,
+              p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
               background: "linear-gradient(180deg, #0F1219 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.3) 100%)",
-              border: "1px solid rgba(34, 197, 94, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2046,24 +1908,24 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alt="Revtoo"
               className="wall-logo"
               sx={{
-                width: 100,
-                height: 100,
+                width: { xs: 70, sm: 100 },
+                height: { xs: 70, sm: 100 },
                 borderRadius: 1,
                 objectFit: "contain",
-                mb: 2,
+                mb: { xs: 1, sm: 2 },
                 transition: "filter 0.2s ease",
               }}
             />
 
             {/* Name */}
-            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
               Revtoo
             </Typography>
 
             {/* Star Rating */}
             <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
                   ★
                 </Box>
               ))}
@@ -2081,10 +1943,9 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alignItems: "center", 
               justifyContent: "space-between",
               borderRadius: 2, 
-              p: 2, 
+              p: { xs: 1.5, sm: 2 }, 
               cursor: "pointer",
               background: "linear-gradient(180deg, #0F1219 0%, #2d3748 40%, rgba(59, 130, 246, 0.3) 100%)",
-              border: "1px solid rgba(59, 130, 246, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2147,24 +2008,24 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alt="MyLead"
               className="wall-logo"
               sx={{ 
-                width: 100, 
-                height: 100, 
+                width: { xs: 70, sm: 100 }, 
+                height: { xs: 70, sm: 100 }, 
                 borderRadius: 1, 
                 objectFit: "contain",
-                mb: 2,
+                mb: { xs: 1, sm: 2 },
                 transition: "filter 0.2s ease",
               }}
             />
 
             {/* Name */}
-            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
               MyLead
             </Typography>
 
             {/* Star Rating */}
             <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 3 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                <Box key={star} sx={{ color: star <= 3 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
                   ★
                 </Box>
               ))}
@@ -2181,7 +2042,6 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               width: 28, height: 28, borderRadius: 1.5,
               background: colors.background.glass,
               backdropFilter: colors.glass.backdrop,
-              border: `1px solid ${colors.glass.border}`,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
@@ -2217,10 +2077,9 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alignItems: "center",
               justifyContent: "space-between",
               borderRadius: 2,
-              p: 2,
+              p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
               background: "linear-gradient(180deg, #0F1219 0%, #1f3d3d 40%, rgba(20, 184, 166, 0.3) 100%)",
-              border: "1px solid rgba(20, 184, 166, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2283,24 +2142,24 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alt="CPX Research"
               className="wall-logo"
               sx={{
-                width: 100,
-                height: 100,
+                width: { xs: 70, sm: 100 },
+                height: { xs: 70, sm: 100 },
                 borderRadius: 1,
                 objectFit: "contain",
-                mb: 2,
+                mb: { xs: 1, sm: 2 },
                 transition: "filter 0.2s ease",
               }}
             />
 
             {/* Name */}
-            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
               CPX Research
             </Typography>
 
             {/* Star Rating */}
             <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
                   ★
                 </Box>
               ))}
@@ -2318,10 +2177,9 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alignItems: "center",
               justifyContent: "space-between",
               borderRadius: 2,
-              p: 2,
+              p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
               background: "linear-gradient(180deg, #0F1219 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.3) 100%)",
-              border: "1px solid rgba(16, 185, 129, 0.2)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2384,24 +2242,24 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               alt="TheoremReach"
               className="wall-logo"
               sx={{
-                width: 100,
-                height: 100,
+                width: { xs: 70, sm: 100 },
+                height: { xs: 70, sm: 100 },
                 borderRadius: 1,
                 objectFit: "contain",
-                mb: 2,
+                mb: { xs: 1, sm: 2 },
                 transition: "filter 0.2s ease",
               }}
             />
 
             {/* Name */}
-            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: 1, textAlign: "center" }}>
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
               TheoremReach
             </Typography>
 
             {/* Star Rating */}
             <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: "0.875rem" }}>
+                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
                   ★
                 </Box>
               ))}
@@ -2416,7 +2274,6 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
           borderRadius: 2, 
           background: colors.background.glass,
           backdropFilter: colors.glass.backdrop,
-          border: `1px solid ${colors.glass.border}`, 
           p: 2.5, 
           mt: { xs: 2, sm: 3 }
         }}>
@@ -2437,7 +2294,6 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
           paper: {
             sx: {
               bgcolor: colors.background.default,
-              border: `1px solid ${colors.glass.border}`,
               borderRadius: 2,
               height: "90vh", maxHeight: "90vh",
               display: "flex", flexDirection: "column", overflow: "hidden",
@@ -2464,7 +2320,6 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             sx={{
               background: colors.background.glass,
               backdropFilter: colors.glass.backdrop,
-              border: `1px solid ${colors.glass.border}`,
               borderRadius: 1, color: colors.text.secondary, width: 32, height: 32,
               "&:hover": { borderColor: colors.glass.borderHover, color: colors.primary },
             }}
@@ -2494,7 +2349,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
                 position: "absolute", inset: 0,
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                 textAlign: "center", p: 3, zIndex: 3, bgcolor: colors.background.default,
-                border: `1px solid ${colors.glass.border}`, borderRadius: 2, m: 2
+                borderRadius: 2, m: 2
               }}
             >
               <Typography sx={{ color: colors.text.secondary, mb: 1.5, fontSize: "1rem" }}>
@@ -2513,7 +2368,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
                 position: "absolute", inset: 0,
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                 textAlign: "center", p: 3, zIndex: 3, bgcolor: colors.background.default,
-                border: `1px solid ${colors.glass.border}`, borderRadius: 2, m: 2
+                borderRadius: 2, m: 2
               }}
             >
               <Typography sx={{ color: colors.text.secondary, mb: 1.5, fontSize: "1rem" }}>

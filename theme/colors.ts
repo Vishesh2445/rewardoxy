@@ -11,7 +11,7 @@ const colors = {
   green: "#10B981",
   greenTint: "rgba(16, 185, 129, 0.1)",
   gradient: "linear-gradient(135deg, #10B981 0%, #06B6D4 100%)",
-  bgPage: "#080B12",
+  bgPage: "#141523",
   bgCard: "#0F1219",
   bgButton: "#151B26",
   textPrimary: "#F1F5F9",
@@ -23,7 +23,7 @@ const colors = {
     gradient: "linear-gradient(135deg, #10B981 0%, #06B6D4 100%)",
   },
   background: {
-    default: "#080B12",
+    default: "#141523",
     primary: "#0F1219",
     secondary: "#151B26",
     ternary: "#1C2433",

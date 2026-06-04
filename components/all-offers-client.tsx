@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Box, CircularProgress, Dialog, IconButton } from "@mui/material";
+import { Box, Dialog, IconButton } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
-import { Monitor, Smartphone, Gamepad2 } from "lucide-react";
+import { Monitor, Smartphone } from "lucide-react";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -244,10 +244,9 @@ function OfferDetailsModal({
                         py: 0.5,
                         bgcolor: "#151B26",
                         borderRadius: 1,
-                        border: "1px solid rgba(255,255,255,0.05)",
                         color: colors.text.secondary,
                       }}
-                      title={label}
+                      title={platform}
                     >
                       {icon}
                       <Typography sx={{ fontSize: "0.7rem", fontWeight: 500 }}>
@@ -390,7 +389,6 @@ function OfferDetailsModal({
               bgcolor: "#151B26",
               p: 2,
               borderRadius: 2,
-              border: "1px solid rgba(255,255,255,0.05)",
             }}
           >
             {offer.description1 && (
@@ -466,7 +464,6 @@ function OfferDetailsModal({
                   p: 1.5,
                   bgcolor: "#151B26",
                   borderRadius: 2,
-                  border: "1px solid rgba(255,255,255,0.05)",
                   transition: "all 0.2s",
                   "&:hover": {
                     borderColor: "rgba(16, 185, 129, 0.3)",
@@ -615,7 +612,6 @@ function OfferDetailsModal({
             bgcolor: "#151B26",
             p: 2,
             borderRadius: 2,
-            border: "1px solid rgba(255,255,255,0.05)",
             wordBreak: "break-all",
             fontSize: "0.75rem",
             color: "#10B981",
@@ -667,83 +663,6 @@ function OfferDetailsModal({
   );
 }
 
-// Platform Selector Component
-function PlatformSelector({ 
-  selectedPlatforms, 
-  onToggle 
-}: { 
-  selectedPlatforms: DeviceOS[], 
-  onToggle: (platform: DeviceOS) => void 
-}) {
-  // Real Android and iOS SVG icons
-  const AndroidIcon = () => (
-    <svg viewBox="0 0 24 24" style={{ width: 16, height: 16 }} fill="currentColor">
-      <path d="M17.6,9.48l1.84-3.18c0.16-0.31,0.04-0.69-0.26-0.85c-0.29-0.15-0.65-0.06-0.83,0.22l-1.88,3.24 c-2.86-1.21-6.08-1.21-8.94,0L5.65,5.67c-0.19-0.29-0.58-0.38-0.87-0.2C4.5,5.65,4.41,6.01,4.56,6.3L6.4,9.48 C3.3,11.25,1.28,14.44,1,18h22C22.72,14.44,20.7,11.25,17.6,9.48z M7,15.25c-0.69,0-1.25-0.56-1.25-1.25 c0-0.69,0.56-1.25,1.25-1.25S8.25,13.31,8.25,14C8.25,14.69,7.69,15.25,7,15.25z M17,15.25c-0.69,0-1.25-0.56-1.25-1.25 c0-0.69,0.56-1.25,1.25-1.25s1.25,0.56,1.25,1.25C18.25,14.69,17.69,15.25,17,15.25z"/>
-    </svg>
-  );
-
-  const AppleIcon = () => (
-    <svg viewBox="0 0 24 24" style={{ width: 16, height: 16 }} fill="currentColor">
-      <path d="M17.05,20.28c-0.98,0.95-2.05,0.8-3.08,0.35c-1.09-0.46-2.09-0.48-3.24,0c-1.44,0.62-2.2,0.44-3.06-0.35 C2.79,15.25,3.51,7.59,9.05,7.31c1.35,0.07,2.29,0.74,3.08,0.8c1.18-0.24,2.31-0.93,3.57-0.84c1.51,0.12,2.65,0.72,3.4,1.8 c-3.12,1.87-2.38,5.98,0.48,7.13c-0.57,1.5-1.31,2.99-2.54,4.09L17.05,20.28z M12.03,7.25c-0.15-2.23,1.66-4.07,3.74-4.25 c0.29,2.58-2.34,4.5-3.74,4.25z"/>
-    </svg>
-  );
-
-  const platforms: { id: DeviceOS; label: string; icon: any }[] = [
-    { id: "android", label: "Android", icon: AndroidIcon },
-    { id: "ios", label: "iOS", icon: AppleIcon },
-    { id: "windows", label: "Desktop", icon: Monitor },
-  ];
-
-  return (
-    <Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 1.5 }, mb: { xs: 2, sm: 3 }, flexWrap: "wrap" }}>
-        <Typography variant="h5" isBold sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}>
-          All Offers
-        </Typography>
-        <Typography sx={{ fontSize: { xs: "0.875rem", sm: "1rem" }, color: colors.text.secondary, mr: { xs: 0, sm: 0.5 } }}>
-          on
-        </Typography>
-        {platforms.map((platform) => {
-          const Icon = platform.icon;
-          const isSelected = selectedPlatforms.includes(platform.id);
-          
-          return (
-            <Box
-              key={platform.id}
-              onClick={() => onToggle(platform.id)}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: { xs: 0.5, sm: 0.75 },
-                px: { xs: 1.25, sm: 1.5 },
-                py: { xs: 0.625, sm: 0.75 },
-                borderRadius: { xs: 1.5, sm: 2 },
-                bgcolor: isSelected ? "rgba(16, 185, 129, 0.1)" : "#0A0D14",
-                border: `1px solid ${isSelected ? "rgba(16, 185, 129, 0.3)" : "rgba(255, 255, 255, 0.05)"}`,
-                cursor: "pointer",
-                transition: "all 0.2s",
-                "&:hover": {
-                  borderColor: isSelected ? "rgba(16, 185, 129, 0.5)" : "rgba(255, 255, 255, 0.1)",
-                  bgcolor: isSelected ? "rgba(16, 185, 129, 0.15)" : "#0F1219",
-                },
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", color: isSelected ? "#10B981" : colors.text.secondary }}>
-                <Icon />
-              </Box>
-              <Typography sx={{ fontSize: { xs: "0.8125rem", sm: "0.875rem" }, fontWeight: 500, color: isSelected ? "#10B981" : colors.text.primary }}>
-                {platform.label}
-              </Typography>
-              {isSelected && (
-                <CheckIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: "#10B981" }} />
-              )}
-            </Box>
-          );
-        })}
-      </Box>
-    </Box>
-  );
-}
 
 export default function AllOffersClient({ userId }: { userId: string }) {
   const [displayedOffers, setDisplayedOffers] = useState<NotikOffer[]>([]);
@@ -930,24 +849,18 @@ export default function AllOffersClient({ userId }: { userId: string }) {
   }
 
   return (
-    <Box sx={{ bgcolor: "#0A0D14", minHeight: "100vh", width: "100%", pb: 4 }}>
-      {/* Platform Selector */}
-      <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, pt: { xs: 2, sm: 3 }, pb: 2 }}>
-        <PlatformSelector selectedPlatforms={selectedPlatforms} onToggle={handlePlatformToggle} />
-      </Box>
-
+    <Box sx={{ bgcolor: "#141523", minHeight: "100vh", width: "100%", pb: 4 }}>
       {/* All Offers Grid */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
         {loading && displayedOffers.length === 0 ? (
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(3, 1fr)", sm: "repeat(4, 1fr)", md: "repeat(6, 1fr)", lg: "repeat(7, 1fr)", xl: "repeat(8, 1fr)" }, gap: { xs: 0.5, sm: 0.75, md: 0.75 }, columnGap: 0 }}>
             {Array.from({ length: 24 }).map((_, i) => (
-              <Box key={i} sx={{ p: { xs: 0.75, sm: 1 } }}>
-                <Box sx={{ bgcolor: "#0F1219", border: "1px solid rgba(16,185,129,0.06)", p: { xs: 0.75, sm: 1 }, borderRadius: "10px" }}>
-                  <Box sx={{ width: "100%", aspectRatio: "1", borderRadius: "8px", bgcolor: "#151B26", mb: 0.75, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05}s`, "@keyframes pulse": { "0%,100%": { opacity: 0.5 }, "50%": { opacity: 1 } }, position: "relative", overflow: "hidden", "&::after": { content: '""', position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 0%, rgba(16,185,129,0.03) 50%, transparent 100%)", animation: "shimmer 1.5s ease-in-out infinite", animationDelay: `${i * 0.05}s` } }} />
-                  <Box sx={{ height: 10, bgcolor: "#151B26", borderRadius: "4px", mb: 0.5, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.1}s` }} />
-                  <Box sx={{ height: 10, bgcolor: "#151B26", borderRadius: "4px", width: "65%", mb: 0.5, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.2}s` }} />
-                  <Box sx={{ height: 8, bgcolor: "#151B26", borderRadius: "4px", width: "40%", mb: 0.5, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.3}s` }} />
-                  <Box sx={{ height: 11, bgcolor: "#151B26", borderRadius: "4px", width: "50%", animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.4}s` }} />
+              <Box key={i} sx={{ p: { xs: 0.5, sm: 1 } }}>
+                <Box sx={{ bgcolor: "#232645", borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
+                  <Box sx={{ width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, bgcolor: "#0F1219", mb: { xs: 0.75, sm: 1.5 }, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05}s`, "@keyframes pulse": { "0%,100%": { opacity: 0.5 }, "50%": { opacity: 1 } }, position: "relative", overflow: "hidden", "&::after": { content: '""', position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 0%, rgba(16,185,129,0.03) 50%, transparent 100%)", animation: "shimmer 1.5s ease-in-out infinite", animationDelay: `${i * 0.05}s` } }} />
+                  <Box sx={{ height: { xs: 14, sm: 20 }, bgcolor: "#0F1219", borderRadius: "4px", width: "85%", mb: { xs: 0.2, sm: 0.5 }, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.1}s` }} />
+                  <Box sx={{ height: { xs: 8, sm: 10 }, bgcolor: "#0F1219", borderRadius: "4px", width: "35%", mb: 0.2, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.2}s` }} />
+                  <Box sx={{ height: { xs: 12, sm: 16 }, bgcolor: "#0F1219", borderRadius: "4px", width: "45%", animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.3}s` }} />
                 </Box>
               </Box>
             ))}
@@ -977,9 +890,11 @@ export default function AllOffersClient({ userId }: { userId: string }) {
               {displayedOffers.map((offer, index) => (
                 <Box
                   key={`${offer.offer_id}-${index}`}
-                  sx={{
-                    cursor: "pointer",
-                  }}
+              sx={{
+                cursor: "pointer",
+                minWidth: { xs: 100, sm: 140 },
+                maxWidth: { xs: 100, sm: 140 },
+              }}
                   onClick={() => {
                     setSelectedOffer(offer);
                     setModalOpen(true);
@@ -987,86 +902,66 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                 >
                   <Box
                     sx={{
-                      bgcolor: "#151B26",
-                      p: { xs: 0.75, sm: 1.5 },
-                      borderRadius: { xs: 1.5, sm: 2.5 },
-                      border: "1px solid rgba(255, 255, 255, 0.05)",
-                      transition: "all 0.2s",
-                      height: "100%",
+                      bgcolor: "#232645",
+                      border: "none",
+                      borderRadius: { xs: "10px", sm: "16px" },
+                      p: { xs: 1, sm: 2 },
                       display: "flex",
                       flexDirection: "column",
+                      height: "100%",
+                      transition: "all 0.3s",
                       "&:hover": {
-                        bgcolor: "rgba(16, 185, 129, 0.08)",
+                        transform: "translateY(-4px)",
+                        boxShadow: "0 12px 24px rgba(16,185,129,0.15)",
                       },
                     }}
                   >
-                    <Box sx={{ position: "relative", mb: { xs: 0.5, sm: 1 } }}>
-                      <Box
-                        sx={{
-                          width: "100%",
-                          aspectRatio: "1",
-                          borderRadius: { xs: 1, sm: 1.5 },
-                          overflow: "hidden",
-                          bgcolor: "#0F1219",
-                          backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                        }}
-                      />
-                      {offer.categories && (
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            top: { xs: 4, sm: 8 },
-                            right: { xs: 4, sm: 8 },
-                            bgcolor: "rgba(30, 30, 46, 0.6)",
-                            px: { xs: 0.5, sm: 1 },
-                            py: { xs: 0.25, sm: 0.5 },
-                            borderRadius: 10,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 0.5,
-                          }}
-                        >
-                          <Gamepad2 size={8} color="#fff" />
-                        </Box>
-                      )}
-                    </Box>
-
-                    <Box sx={{ height: { xs: 36, sm: 40 }, overflow: "hidden", mb: 0.5 }}>
-                      <Typography
-                        sx={{
-                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                          fontWeight: 500,
-                          lineHeight: 1.3,
-                          color: colors.text.primary,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {offer.name}
-                      </Typography>
-                    </Box>
-
-                    <Typography
+                    <Box
                       sx={{
-                        fontSize: { xs: "0.6rem", sm: "0.6875rem" },
-                        color: colors.text.secondary,
-                        opacity: 0.6,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        fontWeight: 600,
-                        mb: 0.25,
+                        width: "100%",
+                        aspectRatio: "1",
+                        borderRadius: { xs: "7px", sm: "10px" },
+                        mb: { xs: 0.75, sm: 1.5 },
+                        backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        bgcolor: "#0F1219",
+                      }}
+                    />
+                    <Typography
+                      variant="h6"
+                      isBold
+                      sx={{
+                        fontSize: { xs: "0.75rem", sm: "0.95rem" },
+                        mb: { xs: 0.2, sm: 0.5 },
+                        lineHeight: 1.25,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
                       }}
                     >
-                      {offer.provider || 'Game'}
+                      {offer.name}
                     </Typography>
-
-                    <Typography sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" }, fontWeight: 600 }}>
-                      {offer.payout === -1 ? "∞" : `$${offer.payout}`}
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", mt: "auto" }}>
+                      <Box>
+                        <Typography sx={{ fontSize: { xs: "0.5rem", sm: "0.65rem" }, color: colors.text.secondary, mb: 0.2 }}>
+                          UP TO
+                        </Typography>
+                        <Typography isBold sx={{ fontSize: { xs: "0.85rem", sm: "1.05rem" }, color: colors.text.primary }}>
+                          {offer.payout === -1 ? "\u221E" : typeof offer.payout === 'number' ? `$${offer.payout.toFixed(2)}` : offer.payout ? `$${offer.payout}` : "$0.00"}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+              ))}
+              {loadingMore && Array.from({ length: 20 }).map((_, i) => (
+                <Box key={`skel-${i}`} sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 } }}>
+                  <Box sx={{ bgcolor: "#232645", borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
+                    <Box sx={{ width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, bgcolor: "#0F1219", mb: { xs: 0.75, sm: 1.5 }, position: "relative", overflow: "hidden", animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05}s`, "@keyframes pulse": { "0%,100%": { opacity: 0.5 }, "50%": { opacity: 1 } }, "&::after": { content: '""', position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 0%, rgba(16,185,129,0.03) 50%, transparent 100%)", animation: "shimmer 1.5s ease-in-out infinite", animationDelay: `${i * 0.05}s` } }} />
+                    <Box sx={{ height: { xs: 14, sm: 20 }, bgcolor: "#0F1219", borderRadius: "4px", width: "85%", mb: { xs: 0.2, sm: 0.5 }, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.1}s` }} />
+                    <Box sx={{ height: { xs: 8, sm: 10 }, bgcolor: "#0F1219", borderRadius: "4px", width: "35%", mb: 0.2, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.2}s` }} />
+                    <Box sx={{ height: { xs: 12, sm: 16 }, bgcolor: "#0F1219", borderRadius: "4px", width: "45%", animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.3}s` }} />
                   </Box>
                 </Box>
               ))}
@@ -1082,11 +977,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                   justifyContent: "center",
                   minHeight: 100
                 }}
-              >
-                {loadingMore && (
-                  <CircularProgress size={32} sx={{ color: "#10B981" }} />
-                )}
-              </Box>
+              />
             )}
 
             {/* End of offers message */}

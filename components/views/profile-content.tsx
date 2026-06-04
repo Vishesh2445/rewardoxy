@@ -303,7 +303,7 @@ export default function ProfileContent({
         </Box>
 
         <Box component="form" onSubmit={handleSave} sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 3 }}>
+          <Paper sx={{ borderRadius: 4, bgcolor: colors.background.primary, p: 3 }}>
             <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
               <User size={20} color={colors.primary} /> Account Info
             </Typography>
@@ -387,7 +387,7 @@ export default function ProfileContent({
             </Box>
           </Paper>
 
-          <Paper sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 3 }}>
+          <Paper sx={{ borderRadius: 4, bgcolor: colors.background.primary, p: 3 }}>
             <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
               <Wallet size={20} color={colors.primary} /> Withdrawal Settings
             </Typography>
@@ -703,7 +703,7 @@ export default function ProfileContent({
       {/* top cards */}
       <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" }, mb: 3 }}>
         {/* avatar + info card */}
-        <Paper sx={{ flex: 1, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, p: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <Paper sx={{ flex: 1, borderRadius: 4, bgcolor: colors.background.secondary, p: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
           <Avatar sx={{ bgcolor: colors.secondary, width: 100, height: 100, fontSize: "2.5rem", fontWeight: 700 }}>
             {initials}
           </Avatar>
@@ -713,10 +713,10 @@ export default function ProfileContent({
         </Paper>
 
         {/* stats card */}
-        <Paper sx={{ flex: 1, borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, p: 3 }}>
+        <Paper sx={{ flex: 1, borderRadius: 4, bgcolor: colors.background.secondary, p: 3 }}>
           <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, height: "100%" }}>
             {profileStats.map((s) => (
-              <Box key={s.label} sx={{ display: "flex", flexDirection: "column", gap: 0.5, p: 1.5, borderRadius: 3, bgcolor: colors.background.default, border: `1px solid ${colors.divider}` }}>
+              <Box key={s.label} sx={{ display: "flex", flexDirection: "column", gap: 0.5, p: 1.5, borderRadius: 3, bgcolor: colors.background.default }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                   {s.icon}
                 </Box>
@@ -741,7 +741,7 @@ export default function ProfileContent({
         ) : (
           <>
             {withdrawals.length === 0 ? (
-              <Paper sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 6, textAlign: "center" }}>
+              <Paper sx={{ borderRadius: 3, bgcolor: colors.background.primary, p: 6, textAlign: "center" }}>
                 <Typography sx={{ fontSize: "0.875rem", color: colors.text.secondary }}>No withdrawals yet</Typography>
               </Paper>
             ) : (
@@ -751,7 +751,7 @@ export default function ProfileContent({
                   {withdrawals.map((w) => {
                     const sc = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
                     return (
-                      <Box key={w.id} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, px: 2, py: 1.5 }}>
+                      <Box key={w.id} sx={{ borderRadius: 3, bgcolor: colors.background.primary, px: 2, py: 1.5 }}>
                         <Box sx={{ mb: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
                             {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
@@ -771,7 +771,7 @@ export default function ProfileContent({
                   })}
                 </Box>
                 {/* Desktop table */}
-                <TableContainer component={Paper} sx={{ display: { xs: "none", sm: "block" }, borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: "transparent", mb: 2 }}>
+                <TableContainer component={Paper} sx={{ display: { xs: "none", sm: "block" }, borderRadius: 3, bgcolor: "transparent", mb: 2 }}>
                   <Table>
                     <TableHead>
                       <TableRow>
