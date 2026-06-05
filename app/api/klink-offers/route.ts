@@ -24,11 +24,9 @@ export async function GET(request: NextRequest) {
     apiUrl.searchParams.append('page', '1');
     apiUrl.searchParams.append('limit', '100');
 
-    const token = Buffer.from(`${KLINK_PUB_ID}:${KLINK_API_KEY}`).toString('base64');
-
     const response = await fetch(apiUrl.toString(), {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${KLINK_PUB_ID}:${KLINK_API_KEY}`,
         'Accept': 'application/json',
       },
       signal: AbortSignal.timeout(15000),

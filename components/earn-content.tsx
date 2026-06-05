@@ -120,7 +120,7 @@ function OfferDetailsModal({
       scroll="body"
       PaperProps={{
         sx: {
-          bgcolor: "#0F1219",
+          bgcolor: "#1C213F",
           borderRadius: 3,
           maxWidth: "650px",
           maxHeight: "90vh",
@@ -1262,7 +1262,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
                 CPX Survey
                 </Typography>
 
-                <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 700, color: "#10B981" }}>
+                <Typography isBold sx={{ fontSize: { xs: "0.85rem", sm: "1rem" }, color: "#10B981" }}>
                   ${survey.payout_usd.toFixed(2)}
                 </Typography>
               </Box>

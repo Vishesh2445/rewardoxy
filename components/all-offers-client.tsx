@@ -102,7 +102,7 @@ function OfferDetailsModal({
       scroll="body"
       PaperProps={{
         sx: {
-          bgcolor: "#0F1219",
+          bgcolor: "#1C213F",
           borderRadius: 3,
           maxWidth: "650px",
           maxHeight: "90vh",
