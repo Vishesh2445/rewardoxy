@@ -19,6 +19,9 @@ import {
   Alert,
   Checkbox,
   FormControlLabel,
+  Dialog,
+  DialogContent,
+  IconButton,
 } from "@mui/material";
 import {
   Shield,
@@ -43,6 +46,7 @@ import {
   Sparkles,
   Mail,
   Lock,
+  X,
 } from "lucide-react";
 import Icons from "@/components/icons";
 import Typography from "@/components/ui/Typography";
@@ -107,6 +111,48 @@ export default function Home() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<"login" | "signup" | "forgotPassword">("signup");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotError, setForgotError] = useState<string | null>(null);
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setLoginError(null);
+    setLoginLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: loginEmail,
+      password: loginPassword,
+    });
+    if (error) {
+      setLoginError(error.message);
+      setLoginLoading(false);
+    } else {
+      router.push("/earn");
+    }
+  }
+
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setForgotError(null);
+    setForgotLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: "https://www.rewardoxy.app/auth/callback",
+    });
+    if (error) {
+      setForgotError(error.message);
+      setForgotLoading(false);
+    } else {
+      setForgotSent(true);
+      setForgotLoading(false);
+    }
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -257,9 +303,8 @@ export default function Home() {
             ) : (
               <>
                 <Button
-                  component={Link}
-                  href="/auth/login"
                   variant="text"
+                  onClick={() => { setAuthModalMode("login"); setAuthModalOpen(true); }}
                   sx={{
                     display: { xs: "none", sm: "inline-flex" },
                     color: colors.textSecondary,
@@ -272,9 +317,8 @@ export default function Home() {
                   Sign In
                 </Button>
                 <Button
-                  component={Link}
-                  href="/auth/signup"
                   variant="contained"
+                  onClick={() => { setAuthModalMode("signup"); setAuthModalOpen(true); }}
                   sx={{
                     ...sxGradientBtn,
                     height: 40,
@@ -411,16 +455,17 @@ export default function Home() {
                       rating: "5.0",
                     },
                     {
-                      image: "/board_kings.webp",
-                      title: "Board Kings",
-                      subtitle: "Earn gift cards",
-                      reward: "$32.00",
+                      image: "/animals.jpeg",
+                      title: "Animals & Coins",
+                      subtitle: "Complete islands",
+                      reward: "$78.00",
                       rating: "5.0",
                     },
                   ].map((game, index) => (
                     <Grid key={game.title} size={{ xs: 4, sm: 4 }} sx={{ display: "flex", minWidth: 0 }}>
                       <Paper
                         elevation={0}
+                        onClick={() => { setAuthModalMode("signup"); setAuthModalOpen(true); }}
                         sx={{
                           bgcolor: "#232645",
                           border: "none",
@@ -470,6 +515,74 @@ export default function Home() {
                           </Box>
                         </Box>
                       </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+
+                {/* Survey Cards - matching earn page design */}
+                <Grid container columnSpacing={{ xs: 1.5, sm: 3 }} rowSpacing={{ xs: 1.5, sm: 3 }} sx={{ mt: { xs: 2, sm: 3 }, justifyContent: "center" }}>
+                  {[
+                    { loi: "6", payout: "3.00" },
+                    { loi: "9", payout: "6.00" },
+                    ].map((survey) => (
+                    <Grid key={survey.loi} size={{ xs: 4, sm: 4 }} sx={{ display: "flex", minWidth: 0 }}>
+                      <Box
+                        onClick={() => { setAuthModalMode("signup"); setAuthModalOpen(true); }}
+                        sx={{
+                          bgcolor: "#1a1b2e",
+                          p: { xs: 0.75, sm: 1.5 },
+                          borderRadius: { xs: 1.5, sm: 2.5 },
+                          cursor: "pointer",
+                          transition: "all 0.3s",
+                          flex: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          "&:hover": {
+                            bgcolor: "#2a2b4a",
+                            transform: "translateY(-4px)",
+                            boxShadow: "0 12px 24px rgba(37, 100, 79, 0.15)",
+                          },
+                        }}
+                      >
+                        <Box sx={{ position: "relative", mb: { xs: 1, sm: 1.5 } }}>
+                          <Box
+                            sx={{
+                              width: "100%",
+                              aspectRatio: "1",
+                              borderRadius: { xs: 1, sm: 1.5 },
+                              overflow: "hidden",
+                              background: "linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(13, 148, 136, 0.25) 100%)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexDirection: "column",
+                              gap: 0.5,
+                            }}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '40%', height: '40%', color: '#14b8a6' }}>
+                              <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM7 10H9V17H7V10ZM11 7H13V17H11V7ZM15 13H17V17H15V13Z" fill="currentColor"/>
+                            </svg>
+                            <Typography sx={{ fontSize: { xs: "0.625rem", sm: "0.75rem" }, color: "#14b8a6", fontWeight: 700 }}>
+                              {survey.loi} min
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Typography
+                          sx={{
+                            fontSize: { xs: "0.6rem", sm: "0.6875rem" },
+                            color: "rgba(255,255,255,0.5)",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            fontWeight: 600,
+                            mb: { xs: 0.5, sm: 1 },
+                          }}
+                        >
+                          CPX Survey
+                        </Typography>
+                        <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" }, fontWeight: 700, color: "#10B981", mt: "auto" }}>
+                          ${survey.payout}
+                        </Typography>
+                      </Box>
                     </Grid>
                   ))}
                 </Grid>
@@ -714,9 +827,9 @@ export default function Home() {
                   <Typography sx={{ mt: 2, fontSize: "0.8rem", color: colors.textSecondary, textAlign: "center" }}>
                     Already have an account?{" "}
                     <Box
-                      component={Link}
-                      href="/auth/login"
-                      sx={{ color: colors.green, textDecoration: "none", fontWeight: 600 }}
+                      component="span"
+                      onClick={() => { setAuthModalMode("login"); setAuthModalOpen(true); }}
+                      sx={{ color: colors.green, cursor: "pointer", fontWeight: 600 }}
                     >
                       Sign In
                     </Box>
@@ -749,7 +862,7 @@ export default function Home() {
                 mb: 2,
               }}
             >
-              Trusted offer providers
+              Offer providers
             </Typography>
             <Typography sx={{ fontSize: "1rem", color: colors.textSecondary, maxWidth: 600, mx: "auto" }}>
               We partner with established offerwalls so you always have something new to complete.
@@ -887,10 +1000,9 @@ export default function Home() {
             {[
               { value: "100+", label: "Countries Supported" },
               { value: "500+", label: "Available Offers" },
-              { value: "Instant", label: "Crypto Payouts" },
               { value: "$2", label: "Minimum Cashout" },
             ].map((stat) => (
-              <Grid key={stat.label} size={{ xs: 6, sm: 3 }}>
+              <Grid key={stat.label} size={{ xs: 6, sm: 4 }}>
                 <Box sx={{ textAlign: "center" }}>
                   <Typography
                     isBold
@@ -940,7 +1052,7 @@ export default function Home() {
               {
                 icon: <DollarSign size={24} color={colors.green} />,
                 title: "Crypto Payouts",
-                description: "Withdraw USDT via TRC-20, BEP-20, or SOL",
+                description: "Withdraw crypto via LTC",
               },
               {
                 icon: <CalendarCheck size={24} color={colors.green} />,
@@ -970,78 +1082,7 @@ export default function Home() {
         </Container>
       </Box>
 
-      {/* ===================== PAYMENT METHODS ===================== */}
-      <Divider sx={{ borderColor: colors.divider }} />
-      <Box
-        component="section"
-        sx={{ px: { xs: 2, sm: 3, lg: 4 }, py: { xs: 10, sm: 14 } }}
-      >
-        <Container maxWidth="md">
-          <Box sx={{ textAlign: "center" }}>
-            <Box component="span" sx={sxBadge}>
-              <CreditCard size={12} style={{ marginRight: 6 }} />
-              CASHOUT
-            </Box>
-            <Typography
-              variant="h2"
-              isBold
-              sx={{ mt: 2, fontSize: { xs: "1.875rem", sm: "2.25rem" } }}
-            >
-              Choose Your{" "}
-              <Typography component="span" isGradient isBold sx={{ fontSize: "inherit" }}>
-                Reward
-              </Typography>
-            </Typography>
-            <Typography sx={{ mt: 1.5, color: colors.textSecondary }}>
-              Multiple withdrawal options available
-            </Typography>
-          </Box>
-
-          <Grid container spacing={2} sx={{ mt: 6 }} columns={{ xs: 3, sm: 3 }}>
-            {[
-              { name: "USDT", sub: "TRC-20" },
-              { name: "USDT", sub: "BEP-20" },
-              { name: "SOL", sub: "Solana" },
-            ].map((p) => (
-              <Grid key={p.sub} size={{ xs: 1, sm: 1 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    ...sxCard,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 1,
-                    p: 3,
-                    textAlign: "center",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 48,
-                      height: 48,
-                      borderRadius: "12px",
-                      bgcolor: colors.greenTint,
-                      border: `1px solid rgba(16,185,129,0.2)`,
-                    }}
-                  >
-                    <Bitcoin size={20} color={colors.green} />
-                  </Box>
-                  <Typography sx={{ fontSize: "0.875rem", fontWeight: 600 }}>
-                    {p.name}
-                  </Typography>
-                  <Typography sx={{ fontSize: "0.75rem", color: colors.textSecondary }}>
-                    {p.sub}
-                  </Typography>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
+     
 
       {/* ===================== FAQ ===================== */}
       <Divider sx={{ borderColor: colors.divider }} />
@@ -1108,21 +1149,18 @@ export default function Home() {
             }}
           >
             <Box
+              component="img"
+              src="/rewardoxy_logocontinue.png"
+              alt="Rewardoxy"
               sx={{
+                width: 80,
+                height: 80,
                 mx: "auto",
                 mb: 3,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 64,
-                height: 64,
+                display: "block",
                 borderRadius: "16px",
-                background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-                boxShadow: "0 8px 32px rgba(16,185,129,0.25)",
               }}
-            >
-              <Sparkles size={32} color="#fff" />
-            </Box>
+            />
             <Typography
               variant="h2"
               isBold
@@ -1140,9 +1178,8 @@ export default function Home() {
               and claim your first bonus!
             </Typography>
             <Button
-              component={Link}
-              href={isAuthenticated ? "/earn" : "/auth/signup"}
               variant="contained"
+              onClick={isAuthenticated ? () => router.push("/earn") : () => { setAuthModalMode("signup"); setAuthModalOpen(true); }}
               sx={{
                 ...sxGradientBtn,
                 mt: 4,
@@ -1291,6 +1328,155 @@ export default function Home() {
           </Box>
         </Container>
       </Box>
+
+      {/* Auth Modal */}
+      <Dialog
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { bgcolor: "#141523", borderRadius: "16px", border: "none" } }}
+      >
+        <Box sx={{ display: "flex", justifyContent: "flex-end", pt: 1, pr: 1 }}>
+          <IconButton onClick={() => setAuthModalOpen(false)} sx={{ color: colors.textSecondary }}>
+            <X size={18} />
+          </IconButton>
+        </Box>
+        <DialogContent sx={{ px: { xs: 2, sm: 3 }, pb: 3 }}>
+          {authModalMode === "signup" ? (
+            <>
+              <Typography variant="h5" isBold sx={{ mb: 0.5, textAlign: "center", fontSize: "1.3rem" }}>
+                Sign Up for Free
+              </Typography>
+              <Box component="form" onSubmit={handleSignup} sx={{ display: "flex", flexDirection: "column", gap: 1.5, mt: 2 }}>
+                <TextField
+                  type="email" required placeholder="Email address"
+                  value={email} onChange={(e) => setEmail(e.target.value)} size="small"
+                  slotProps={{ input: { startAdornment: <InputAdornment position="start"><Mail size={16} color={colors.textSecondary} /></InputAdornment> } }}
+                  sx={{ "& .MuiOutlinedInput-root": { height: 44, fontSize: "0.875rem", bgcolor: colors.bgInput, borderRadius: "8px" } }}
+                />
+                <TextField
+                  type="password" required placeholder="Password (min 6 characters)"
+                  value={password} onChange={(e) => setPassword(e.target.value)} size="small" inputProps={{ minLength: 6 }}
+                  slotProps={{ input: { startAdornment: <InputAdornment position="start"><Lock size={16} color={colors.textSecondary} /></InputAdornment> } }}
+                  sx={{ "& .MuiOutlinedInput-root": { height: 44, fontSize: "0.875rem", bgcolor: colors.bgInput, borderRadius: "8px" } }}
+                />
+                <TextField
+                  placeholder="Referral code (optional)" value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)} size="small"
+                  sx={{ "& .MuiOutlinedInput-root": { height: 44, fontSize: "0.85rem", bgcolor: colors.bgInput, borderRadius: "8px" } }}
+                />
+                {signupError && <Alert severity="error" sx={{ fontSize: "0.8rem", py: 0.5 }}>{signupError}</Alert>}
+                <FormControlLabel
+                  control={<Checkbox checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} sx={{ color: colors.textSecondary, py: 0.25 }} size="small" />}
+                  label={<Typography sx={{ fontSize: "0.75rem", color: colors.textSecondary }}>
+                    I agree to the{" "}
+                    <Link href="/terms" target="_blank" style={{ color: colors.green, textDecoration: "none" }}>Terms</Link>{" and "}
+                    <Link href="/privacy" target="_blank" style={{ color: colors.green, textDecoration: "none" }}>Privacy</Link>
+                  </Typography>}
+                  sx={{ alignItems: "flex-start", my: 0 }}
+                />
+                <Turnstile onVerify={(token) => setTurnstileToken(token)} onError={() => setSignupError("Verification failed. Please try again.")} onExpire={() => setSignupError("Verification expired. Please verify again.")} />
+                <Button type="submit" fullWidth disabled={signupLoading} sx={{ ...sxGradientBtn, height: 46, fontSize: "0.95rem", fontWeight: 700, gap: 0.75, mt: 0.5 }}>
+                  {signupLoading ? <CircularProgress size={18} color="inherit" /> : <>Start earning now <ArrowRight size={16} /></>}
+                </Button>
+              </Box>
+              <Divider sx={{ borderColor: colors.divider, my: 2, fontSize: "0.75rem", color: colors.textSecondary }}>OR</Divider>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+                <Button onClick={handleGoogleSignup} fullWidth sx={{ height: 44, textTransform: "none", fontWeight: 600, borderRadius: "8px", bgcolor: "#fff", color: "#333", fontSize: "0.875rem", gap: 1.25, border: `1px solid ${colors.divider}`, "&:hover": { bgcolor: "#f5f5f5" } }}>
+                  <svg width="18" height="18" viewBox="0 0 18 18">
+                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+                    <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+                    <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                    <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 2.58 9 2.58z" fill="#EA4335"/>
+                  </svg>
+                  Sign Up with Google
+                </Button>
+              </Box>
+              <Typography sx={{ mt: 2, fontSize: "0.8rem", color: colors.textSecondary, textAlign: "center" }}>
+                Already have an account?{" "}
+                <Box component="span" onClick={() => setAuthModalMode("login")} sx={{ color: colors.green, cursor: "pointer", fontWeight: 600 }}>Sign In</Box>
+              </Typography>
+            </>
+          ) : authModalMode === "forgotPassword" ? (
+            <>
+              <Typography variant="h5" isBold sx={{ mb: 0.5, textAlign: "center", fontSize: "1.3rem" }}>
+                Reset Password
+              </Typography>
+              {forgotSent ? (
+                <Box sx={{ textAlign: "center", py: 2 }}>
+                  <Typography sx={{ color: colors.green, fontWeight: 600, mb: 1 }}>Reset email sent successfully!</Typography>
+                  <Typography sx={{ fontSize: "0.85rem", color: colors.textSecondary }}>Check your inbox for the password reset link.</Typography>
+                  <Button onClick={() => { setAuthModalMode("login"); setForgotSent(false); }} fullWidth sx={{ mt: 3, ...sxGradientBtn, height: 44, fontSize: "0.9rem", fontWeight: 600 }}>Back to Sign In</Button>
+                </Box>
+              ) : (
+                <>
+                  <Typography sx={{ fontSize: "0.85rem", color: colors.textSecondary, textAlign: "center", mb: 2 }}>Enter your email and we'll send you a reset link.</Typography>
+                  <Box component="form" onSubmit={handleForgotPassword} sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                    <TextField
+                      type="email" required placeholder="Email address"
+                      value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} size="small"
+                      slotProps={{ input: { startAdornment: <InputAdornment position="start"><Mail size={16} color={colors.textSecondary} /></InputAdornment> } }}
+                      sx={{ "& .MuiOutlinedInput-root": { height: 44, fontSize: "0.875rem", bgcolor: colors.bgInput, borderRadius: "8px" } }}
+                    />
+                    {forgotError && <Alert severity="error" sx={{ fontSize: "0.8rem", py: 0.5 }}>{forgotError}</Alert>}
+                    <Button type="submit" fullWidth disabled={forgotLoading} sx={{ ...sxGradientBtn, height: 46, fontSize: "0.95rem", fontWeight: 700, gap: 0.75 }}>
+                      {forgotLoading ? <CircularProgress size={18} color="inherit" /> : <>Send Reset Link <ArrowRight size={16} /></>}
+                    </Button>
+                  </Box>
+                  <Box sx={{ textAlign: "center", mt: 2 }}>
+                    <Box component="span" onClick={() => { setAuthModalMode("login"); setForgotSent(false); }} sx={{ color: colors.green, cursor: "pointer", fontSize: "0.85rem", fontWeight: 600 }}>Back to Sign In</Box>
+                  </Box>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <Typography variant="h5" isBold sx={{ mb: 0.5, textAlign: "center", fontSize: "1.3rem" }}>
+                Sign In
+              </Typography>
+              <Box component="form" onSubmit={handleLogin} sx={{ display: "flex", flexDirection: "column", gap: 1.5, mt: 2 }}>
+                <TextField
+                  type="email" required placeholder="Email address"
+                  value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} size="small"
+                  slotProps={{ input: { startAdornment: <InputAdornment position="start"><Mail size={16} color={colors.textSecondary} /></InputAdornment> } }}
+                  sx={{ "& .MuiOutlinedInput-root": { height: 44, fontSize: "0.875rem", bgcolor: colors.bgInput, borderRadius: "8px" } }}
+                />
+                <TextField
+                  type="password" required placeholder="Password"
+                  value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} size="small"
+                  slotProps={{ input: { startAdornment: <InputAdornment position="start"><Lock size={16} color={colors.textSecondary} /></InputAdornment> } }}
+                  sx={{ "& .MuiOutlinedInput-root": { height: 44, fontSize: "0.875rem", bgcolor: colors.bgInput, borderRadius: "8px" } }}
+                />
+                {loginError && <Alert severity="error" sx={{ fontSize: "0.8rem", py: 0.5 }}>{loginError}</Alert>}
+                <Button type="submit" fullWidth disabled={loginLoading} sx={{ ...sxGradientBtn, height: 46, fontSize: "0.95rem", fontWeight: 700, gap: 0.75 }}>
+                  {loginLoading ? <CircularProgress size={18} color="inherit" /> : <>Sign In <ArrowRight size={16} /></>}
+                </Button>
+              </Box>
+              <Box sx={{ textAlign: "center", mt: 1.5 }}>
+                <Box component="span" onClick={() => { setAuthModalMode("forgotPassword"); setForgotEmail(loginEmail); }} sx={{ color: colors.green, cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}>Forgot password?</Box>
+              </Box>
+              <Divider sx={{ borderColor: colors.divider, my: 2, fontSize: "0.75rem", color: colors.textSecondary }}>OR</Divider>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+                <Button onClick={handleGoogleSignup} fullWidth sx={{ height: 44, textTransform: "none", fontWeight: 600, borderRadius: "8px", bgcolor: "#fff", color: "#333", fontSize: "0.875rem", gap: 1.25, border: `1px solid ${colors.divider}`, "&:hover": { bgcolor: "#f5f5f5" } }}>
+                  <svg width="18" height="18" viewBox="0 0 18 18">
+                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+                    <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+                    <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                    <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 2.58 9 2.58z" fill="#EA4335"/>
+                  </svg>
+                  Sign In with Google
+                </Button>
+              </Box>
+              <Typography sx={{ mt: 2, fontSize: "0.8rem", color: colors.textSecondary, textAlign: "center" }}>
+                Don't have an account?{" "}
+                <Box component="span" onClick={() => setAuthModalMode("signup")} sx={{ color: colors.green, cursor: "pointer", fontWeight: 600 }}>Sign Up</Box>
+              </Typography>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
     </Box>)
   );
 }
