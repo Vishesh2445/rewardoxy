@@ -18,7 +18,7 @@ type EarnContentProps = {
   userEmail: string;
 };
 
-type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd" | "TheoremReach" | "Revtoo";
+type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd" | "TheoremReach" | "Revtoo" | "Klink";
 type DeviceOS = "android" | "ios" | "windows";
 
 interface NotikOffer {
@@ -626,10 +626,11 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       setLoading(true);
       const primaryOS = deviceOS.length > 0 ? deviceOS[0] : 'android';
       
-      // Fetch from Gemiad, Notik, Vortex, Revtoo, and Taskwall APIs in parallel
-      const [gemiadResponse, notikResponse, vortexResponse, revtooResponse, taskwallResponse] = await Promise.all([
+      // Fetch from Gemiad, Notik, Klink, Vortex, Revtoo, and Taskwall APIs in parallel
+      const [gemiadResponse, notikResponse, klinkResponse, vortexResponse, revtooResponse, taskwallResponse] = await Promise.all([
         fetch(`/api/gemiad-offers?user_id=${userId}`),
         fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
+        fetch(`/api/klink-offers?user_id=${userId}`),
         fetch(`/api/vortex-offers?user_id=${userId}`),
         fetch(`/api/revtoo-offers?user_id=${userId}`),
         fetch(`/api/taskwall-offers?user_id=${userId}&os=${primaryOS}`)
@@ -637,6 +638,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       
       let gemiadOffers: NotikOffer[] = [];
       let notikOffers: NotikOffer[] = [];
+      let klinkOffers: NotikOffer[] = [];
       let vortexOffers: NotikOffer[] = [];
       let revtooOffers: NotikOffer[] = [];
       let taskwallOffers: NotikOffer[] = [];
@@ -665,7 +667,16 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         }
       }
       
-      // Process Vortex offers (Priority 3)
+      // Process Klink offers (Priority 3)
+      if (klinkResponse.ok) {
+        const klinkData = await klinkResponse.json();
+        if (klinkData.success && klinkData.offers && Array.isArray(klinkData.offers)) {
+          klinkOffers = klinkData.offers;
+          console.log(`Klink offers loaded: ${klinkOffers.length}`);
+        }
+      }
+      
+      // Process Vortex offers (Priority 4)
       if (vortexResponse.ok) {
         const vortexData = await vortexResponse.json();
         if (vortexData.success && vortexData.offers && Array.isArray(vortexData.offers)) {
@@ -674,7 +685,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         }
       }
       
-      // Process Revtoo offers (Priority 4)
+      // Process Revtoo offers (Priority 5)
       if (revtooResponse.ok) {
         const revtooData = await revtooResponse.json();
         if (revtooData.success && revtooData.offers && Array.isArray(revtooData.offers)) {
@@ -683,7 +694,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         }
       }
       
-      // Process Taskwall offers (Priority 5)
+      // Process Taskwall offers (Priority 6)
       if (taskwallResponse.ok) {
         const taskwallData = await taskwallResponse.json();
         if (taskwallData.success && taskwallData.offers && Array.isArray(taskwallData.offers)) {
@@ -692,14 +703,15 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         }
       }
       
-      // Combine offers with priority: Gemiad > Notik > Vortex > Revtoo > Taskwall
+      // Combine offers with priority: Gemiad > Notik > Klink > Vortex > Revtoo > Taskwall
       // Mix them in a round-robin fashion for better distribution
       const combinedOffers: NotikOffer[] = [];
-      const maxProviderLength = Math.max(gemiadOffers.length, notikOffers.length, vortexOffers.length, revtooOffers.length, taskwallOffers.length);
+      const maxProviderLength = Math.max(gemiadOffers.length, notikOffers.length, klinkOffers.length, vortexOffers.length, revtooOffers.length, taskwallOffers.length);
       
       for (let i = 0; i < maxProviderLength; i++) {
         if (i < gemiadOffers.length) combinedOffers.push(gemiadOffers[i]);
         if (i < notikOffers.length) combinedOffers.push(notikOffers[i]);
+        if (i < klinkOffers.length) combinedOffers.push(klinkOffers[i]);
         if (i < vortexOffers.length) combinedOffers.push(vortexOffers[i]);
         if (i < revtooOffers.length) combinedOffers.push(revtooOffers[i]);
         if (i < taskwallOffers.length) combinedOffers.push(taskwallOffers[i]);
@@ -1382,6 +1394,10 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       // Revtoo offerwall URL format
       return `https://revtoo.com/offerwall/${apiKey}/${userId}`;
     }
+    if (activeWall === "Klink") {
+      const pubId = "d317e5b6-8977-4e79-9df3-66ff86e77645";
+      return `https://offerwall.klinkfinance.com/wall?pub_id=${pubId}&user_id=${userId}`;
+    }
     return "";
   };
 
@@ -1444,7 +1460,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2, 
               p: { xs: 1.5, sm: 2 }, 
               cursor: "pointer",
-              background: "linear-gradient(180deg, #0F1219 0%, #3d2f1f 40%, rgba(217, 119, 6, 0.3) 100%)",
+              background: "linear-gradient(180deg, rgba(217, 119, 6, 0.3) 0%, rgba(217, 119, 6, 0.15) 50%, rgba(217, 119, 6, 0.08) 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1452,7 +1468,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": { 
-                background: "linear-gradient(180deg, #0F1219 0%, #3d2f1f 40%, rgba(217, 119, 6, 0.4) 100%)",
+                background: "linear-gradient(180deg, rgba(217, 119, 6, 0.45) 0%, rgba(217, 119, 6, 0.25) 50%, rgba(217, 119, 6, 0.15) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1531,6 +1547,106 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Box>
           </Paper>
 
+          {/* Klink card */}
+          <Paper
+            onClick={() => handleOpenWall("Klink")}
+            elevation={0}
+            sx={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderRadius: 2,
+              p: { xs: 1.5, sm: 2 },
+              cursor: "pointer",
+              background: "linear-gradient(180deg, rgba(253, 224, 71, 0.35) 0%, rgba(253, 224, 71, 0.18) 50%, rgba(253, 224, 71, 0.06) 100%)",
+              transition: "all 0.2s ease",
+              minWidth: { xs: "auto", sm: 160 },
+              maxWidth: { xs: "none", sm: 160 },
+              width: { xs: "100%", sm: "auto" },
+              flexShrink: 0,
+              overflow: "hidden",
+              "&:hover": {
+                background: "linear-gradient(180deg, rgba(253, 224, 71, 0.5) 0%, rgba(253, 224, 71, 0.28) 50%, rgba(253, 224, 71, 0.12) 100%)",
+                "& .wall-logo": {
+                  filter: "blur(8px)",
+                },
+                "& .wall-rating": {
+                  filter: "blur(8px)",
+                },
+                "& .hover-play-button": {
+                  opacity: 1,
+                },
+              },
+            }}
+          >
+            {/* Hover Play Button */}
+            <Box
+              className="hover-play-button"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                zIndex: 1000,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "opacity 0.2s ease",
+              }}
+            >
+              <Box
+                sx={{
+                  backgroundColor: colors.background.secondary,
+                  borderRadius: 10,
+                  padding: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <Box
+                  component="img"
+                  src="https://freecash.com/public/img/play-offer.svg"
+                  alt="play-button"
+                  sx={{ objectFit: "contain", objectPosition: "center" }}
+                />
+              </Box>
+            </Box>
+
+            {/* Logo */}
+            <Box
+              component="img"
+              src="/klink-icon.png"
+              alt="Klink"
+              className="wall-logo"
+              sx={{
+                width: { xs: 70, sm: 100 },
+                height: { xs: 70, sm: 100 },
+                borderRadius: 1,
+                objectFit: "contain",
+                mb: { xs: 1, sm: 2 },
+                transition: "filter 0.2s ease",
+              }}
+            />
+
+            {/* Name */}
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
+              Klink
+            </Typography>
+
+            {/* Star Rating */}
+            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
+                  ★
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+
           {/* Taskwall card */}
           <Paper
             onClick={() => handleOpenWall("Taskwall")}
@@ -1544,7 +1660,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, #0F1219 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.3) 100%)",
+              background: "linear-gradient(180deg, rgba(34, 197, 94, 0.3) 0%, rgba(34, 197, 94, 0.15) 50%, rgba(34, 197, 94, 0.08) 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1552,7 +1668,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #0F1219 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.4) 100%)",
+                background: "linear-gradient(180deg, rgba(34, 197, 94, 0.45) 0%, rgba(34, 197, 94, 0.25) 50%, rgba(34, 197, 94, 0.15) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1644,7 +1760,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, #0F1219 0%, #2d1f3d 40%, rgba(124, 58, 237, 0.3) 100%)",
+              background: "linear-gradient(180deg, rgba(124, 58, 237, 0.3) 0%, rgba(124, 58, 237, 0.15) 50%, rgba(124, 58, 237, 0.08) 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1652,7 +1768,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #0F1219 0%, #2d1f3d 40%, rgba(124, 58, 237, 0.4) 100%)",
+                background: "linear-gradient(180deg, rgba(124, 58, 237, 0.45) 0%, rgba(124, 58, 237, 0.25) 50%, rgba(124, 58, 237, 0.15) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1845,7 +1961,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, #0F1219 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.3) 100%)",
+              background: "linear-gradient(180deg, rgba(34, 197, 94, 0.3) 0%, rgba(34, 197, 94, 0.15) 50%, rgba(34, 197, 94, 0.08) 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1853,7 +1969,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #0F1219 0%, #1f3d2f 40%, rgba(34, 197, 94, 0.4) 100%)",
+                background: "linear-gradient(180deg, rgba(34, 197, 94, 0.45) 0%, rgba(34, 197, 94, 0.25) 50%, rgba(34, 197, 94, 0.15) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1945,7 +2061,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2, 
               p: { xs: 1.5, sm: 2 }, 
               cursor: "pointer",
-              background: "linear-gradient(180deg, #0F1219 0%, #2d3748 40%, rgba(59, 130, 246, 0.3) 100%)",
+              background: "linear-gradient(180deg, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(59, 130, 246, 0.08) 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1953,7 +2069,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": { 
-                background: "linear-gradient(180deg, #0F1219 0%, #2d3748 40%, rgba(59, 130, 246, 0.4) 100%)",
+                background: "linear-gradient(180deg, rgba(59, 130, 246, 0.45) 0%, rgba(59, 130, 246, 0.25) 50%, rgba(59, 130, 246, 0.15) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2079,7 +2195,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, #0F1219 0%, #1f3d3d 40%, rgba(20, 184, 166, 0.3) 100%)",
+              background: "linear-gradient(180deg, rgba(20, 184, 166, 0.3) 0%, rgba(20, 184, 166, 0.15) 50%, rgba(20, 184, 166, 0.08) 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2087,7 +2203,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #0F1219 0%, #1f3d3d 40%, rgba(20, 184, 166, 0.4) 100%)",
+                background: "linear-gradient(180deg, rgba(20, 184, 166, 0.45) 0%, rgba(20, 184, 166, 0.25) 50%, rgba(20, 184, 166, 0.15) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2179,7 +2295,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, #0F1219 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.3) 100%)",
+              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.3) 0%, rgba(16, 185, 129, 0.15) 50%, rgba(16, 185, 129, 0.08) 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2187,7 +2303,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, #0F1219 0%, #2d3a3d 40%, rgba(16, 185, 129, 0.4) 100%)",
+                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.45) 0%, rgba(16, 185, 129, 0.25) 50%, rgba(16, 185, 129, 0.15) 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },

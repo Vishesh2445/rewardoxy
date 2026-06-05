@@ -750,10 +750,11 @@ export default function AllOffersClient({ userId }: { userId: string }) {
       
       const primaryOS = selectedPlatforms.length > 0 ? selectedPlatforms[0] : 'android';
       
-      // Fetch from Gemiad, Notik, Vortex, Revtoo, and Taskwall APIs in parallel (Priority order)
-      const [gemiadResponse, notikResponse, vortexResponse, revtooResponse, taskwallResponse] = await Promise.all([
+      // Fetch from Gemiad, Notik, Klink, Vortex, Revtoo, and Taskwall APIs in parallel (Priority order)
+      const [gemiadResponse, notikResponse, klinkResponse, vortexResponse, revtooResponse, taskwallResponse] = await Promise.all([
         fetch(`/api/gemiad-offers?user_id=${userId}`),
         fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
+        fetch(`/api/klink-offers?user_id=${userId}`),
         fetch(`/api/vortex-offers?user_id=${userId}`),
         fetch(`/api/revtoo-offers?user_id=${userId}`),
         fetch(`/api/taskwall-offers?user_id=${userId}&os=${primaryOS}`)
@@ -761,6 +762,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
       
       let gemiadOffers: any[] = [];
       let notikOffers: any[] = [];
+      let klinkOffers: any[] = [];
       let vortexOffers: any[] = [];
       let revtooOffers: any[] = [];
       let taskwallOffers: any[] = [];
@@ -783,7 +785,16 @@ export default function AllOffersClient({ userId }: { userId: string }) {
         }
       }
       
-      // Process Vortex offers (Priority 3)
+      // Process Klink offers (Priority 3)
+      if (klinkResponse.ok) {
+        const klinkData = await klinkResponse.json();
+        if (klinkData.success && klinkData.offers && Array.isArray(klinkData.offers)) {
+          klinkOffers = klinkData.offers;
+          console.log(`All Offers - Klink: ${klinkOffers.length}`);
+        }
+      }
+      
+      // Process Vortex offers (Priority 4)
       if (vortexResponse.ok) {
         const vortexData = await vortexResponse.json();
         if (vortexData.success && vortexData.offers && Array.isArray(vortexData.offers)) {
@@ -792,7 +803,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
         }
       }
       
-      // Process Revtoo offers (Priority 4)
+      // Process Revtoo offers (Priority 5)
       if (revtooResponse.ok) {
         const revtooData = await revtooResponse.json();
         if (revtooData.success && revtooData.offers && Array.isArray(revtooData.offers)) {
@@ -801,7 +812,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
         }
       }
       
-      // Process Taskwall offers (Priority 5)
+      // Process Taskwall offers (Priority 6)
       if (taskwallResponse.ok) {
         const taskwallData = await taskwallResponse.json();
         if (taskwallData.success && taskwallData.offers && Array.isArray(taskwallData.offers)) {
@@ -810,14 +821,15 @@ export default function AllOffersClient({ userId }: { userId: string }) {
         }
       }
       
-      // Combine offers with priority: Gemiad > Notik > Vortex > Revtoo > Taskwall
+      // Combine offers with priority: Gemiad > Notik > Klink > Vortex > Revtoo > Taskwall
       // Mix them in a round-robin fashion for better distribution
       const allOffersData: any[] = [];
-      const maxLength = Math.max(gemiadOffers.length, notikOffers.length, vortexOffers.length, revtooOffers.length, taskwallOffers.length);
+      const maxLength = Math.max(gemiadOffers.length, notikOffers.length, klinkOffers.length, vortexOffers.length, revtooOffers.length, taskwallOffers.length);
       
       for (let i = 0; i < maxLength; i++) {
         if (i < gemiadOffers.length) allOffersData.push(gemiadOffers[i]);
         if (i < notikOffers.length) allOffersData.push(notikOffers[i]);
+        if (i < klinkOffers.length) allOffersData.push(klinkOffers[i]);
         if (i < vortexOffers.length) allOffersData.push(vortexOffers[i]);
         if (i < revtooOffers.length) allOffersData.push(revtooOffers[i]);
         if (i < taskwallOffers.length) allOffersData.push(taskwallOffers[i]);
