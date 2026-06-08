@@ -286,7 +286,7 @@ export async function GET(request: NextRequest) {
           description2: offer.description2,
           description3: offer.description3,
           image_url: offer.image_url || offer.image,
-          payout: typeof offer.payout === 'string' ? parseFloat(offer.payout) || 0 : (offer.payout || 0),
+          payout: Math.round(((typeof offer.payout === 'string' ? parseFloat(offer.payout) || 0 : (offer.payout || 0)) / 1000) * 100) / 100,
           click_url: offer.click_url,
           categories: offer.categories || [],
           provider: 'Notik',
@@ -295,7 +295,7 @@ export async function GET(request: NextRequest) {
           events: offer.events?.map((event: any) => ({
             id: event.id,
             name: event.name,
-            payout: typeof event.payout === 'string' ? parseFloat(event.payout) || 0 : (event.payout || 0),
+            payout: Math.round(((typeof event.payout === 'string' ? parseFloat(event.payout) || 0 : (event.payout || 0)) / 1000) * 100) / 100,
           })),
         };
 
