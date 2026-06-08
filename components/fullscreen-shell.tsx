@@ -35,7 +35,7 @@ import {
   Menu as MenuIcon,
   X,
   Mail,
-  ShoppingBag,
+  Gamepad2,
   Target,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -49,7 +49,7 @@ import colors from "@/theme/colors";
 const NAV_ITEMS = [
   { label: "Earn", href: "/earn", Icon: Gift },
   { label: "My Offers", href: "/my-offers", Icon: Target },
-  { label: "Offers", href: "/offers/all", Icon: ShoppingBag },
+  { label: "Offers", href: "/offers/all", Icon: Gamepad2 },
   { label: "Cashout", href: "/cashout", Icon: Wallet },
   { label: "Rewards", href: "/daily-bonus", Icon: CalendarCheck },
 ];

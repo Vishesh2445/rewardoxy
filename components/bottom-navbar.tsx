@@ -3,13 +3,13 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Box, Paper } from "@mui/material";
-import { Gift, Wallet, ShoppingBag, Target } from "lucide-react";
+import { Gift, Wallet, Gamepad2, Target } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 
 const NAV_ITEMS = [
   { label: "Earn", href: "/earn", Icon: Gift },
-  { label: "Offers", href: "/offers/all", Icon: ShoppingBag },
+  { label: "Offers", href: "/offers/all", Icon: Gamepad2 },
   { label: "My Offers", href: "/my-offers", Icon: Target },
   { label: "Cashout", href: "/cashout", Icon: Wallet },
 ];

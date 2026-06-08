@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { AppBar, Box, Drawer, Toolbar, IconButton, Button, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Avatar } from "@mui/material";
-import { Gift, Trophy, Users, Wallet, User, History, CalendarCheck, LogOut, Menu as MenuIcon, X, Mail, ChevronDown, ShoppingBag, Target } from "lucide-react";
+import { Gift, Trophy, Users, Wallet, User, History, CalendarCheck, LogOut, Menu as MenuIcon, X, Mail, ChevronDown, Gamepad2, Target } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Icons from "@/components/icons";
 import Typography from "@/components/ui/Typography";
@@ -17,7 +17,7 @@ import colors from "@/theme/colors";
 const NAV_ITEMS = [
   { label: "Earn", href: "/earn", Icon: Gift },
   { label: "My Offers", href: "/my-offers", Icon: Target },
-  { label: "Offers", href: "/offers/all", Icon: ShoppingBag },
+  { label: "Offers", href: "/offers/all", Icon: Gamepad2 },
   { label: "Cashout", href: "/cashout", Icon: Wallet },
   { label: "Rewards", href: "/daily-bonus", Icon: CalendarCheck },
 ];

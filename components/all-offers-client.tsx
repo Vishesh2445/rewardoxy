@@ -821,9 +821,9 @@ export default function AllOffersClient({ userId }: { userId: string }) {
         }
       }
       
-      // Pin Taskwall infinity offers (payout === -1) to the top
-      const pinnedOffers = taskwallOffers.filter(o => o.payout === -1);
-      const nonPinnedTaskwall = taskwallOffers.filter(o => !(o.payout === -1));
+      // Pin Taskwall lootably offer to the top
+      const pinnedOffers = taskwallOffers.filter(o => o.name?.toLowerCase().includes('lootably'));
+      const nonPinnedTaskwall = taskwallOffers.filter(o => !o.name?.toLowerCase().includes('lootably'));
       
       // Klink offers come after pinned offers
       // Round-robin the rest: Gemiad > Notik > Vortex > Revtoo > Taskwall

@@ -704,9 +704,9 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         }
       }
       
-      // Pin Taskwall infinity offers (payout === -1) to the top
-      const pinnedOffers = taskwallOffers.filter((o: NotikOffer) => o.payout === -1);
-      const nonPinnedTaskwall = taskwallOffers.filter((o: NotikOffer) => !(o.payout === -1));
+      // Pin Taskwall lootably offer to the top
+      const pinnedOffers = taskwallOffers.filter((o: NotikOffer) => o.name?.toLowerCase().includes('lootably'));
+      const nonPinnedTaskwall = taskwallOffers.filter((o: NotikOffer) => !o.name?.toLowerCase().includes('lootably'));
       
       // Round-robin merge the rest: Gemiad > Notik > Vortex > Revtoo > Taskwall
       const mergedRest: NotikOffer[] = [];
