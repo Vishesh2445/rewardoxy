@@ -102,7 +102,6 @@ export default function MyOffersClient({ userId }: MyOffersClientProps) {
       cpx: '#3b82f6',
       'cpx research': '#3b82f6',
       notik: '#a855f7',
-      vortex: '#f97316',
       gemiad: '#10b981',
       theoremreach: '#69ec48ff'
     };

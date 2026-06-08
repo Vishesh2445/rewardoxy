@@ -750,12 +750,11 @@ export default function AllOffersClient({ userId }: { userId: string }) {
       
       const primaryOS = selectedPlatforms.length > 0 ? selectedPlatforms[0] : 'android';
       
-      // Fetch from Gemiad, Notik, Klink, Vortex, Revtoo, and Taskwall APIs in parallel (Priority order)
-      const [gemiadResponse, notikResponse, klinkResponse, vortexResponse, revtooResponse, taskwallResponse] = await Promise.all([
+      // Fetch from Gemiad, Notik, Klink, Revtoo, and Taskwall APIs in parallel (Priority order)
+      const [gemiadResponse, notikResponse, klinkResponse, revtooResponse, taskwallResponse] = await Promise.all([
         fetch(`/api/gemiad-offers?user_id=${userId}`),
         fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
         fetch(`/api/klink-offers?user_id=${userId}`),
-        fetch(`/api/vortex-offers?user_id=${userId}`),
         fetch(`/api/revtoo-offers?user_id=${userId}`),
         fetch(`/api/taskwall-offers?user_id=${userId}&os=${primaryOS}`)
       ]);
@@ -763,7 +762,6 @@ export default function AllOffersClient({ userId }: { userId: string }) {
       let gemiadOffers: any[] = [];
       let notikOffers: any[] = [];
       let klinkOffers: any[] = [];
-      let vortexOffers: any[] = [];
       let revtooOffers: any[] = [];
       let taskwallOffers: any[] = [];
       
@@ -794,16 +792,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
         }
       }
       
-      // Process Vortex offers (Priority 4)
-      if (vortexResponse.ok) {
-        const vortexData = await vortexResponse.json();
-        if (vortexData.success && vortexData.offers && Array.isArray(vortexData.offers)) {
-          vortexOffers = vortexData.offers;
-          console.log(`All Offers - Vortex: ${vortexOffers.length}`);
-        }
-      }
-      
-      // Process Revtoo offers (Priority 5)
+      // Process Revtoo offers (Priority 4)
       if (revtooResponse.ok) {
         const revtooData = await revtooResponse.json();
         if (revtooData.success && revtooData.offers && Array.isArray(revtooData.offers)) {
@@ -812,7 +801,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
         }
       }
       
-      // Process Taskwall offers (Priority 6)
+      // Process Taskwall offers (Priority 5)
       if (taskwallResponse.ok) {
         const taskwallData = await taskwallResponse.json();
         if (taskwallData.success && taskwallData.offers && Array.isArray(taskwallData.offers)) {
@@ -826,14 +815,13 @@ export default function AllOffersClient({ userId }: { userId: string }) {
       const nonPinnedTaskwall = taskwallOffers.filter(o => !o.name?.toLowerCase().includes('lootably'));
       
       // Klink offers come after pinned offers
-      // Round-robin the rest: Gemiad > Notik > Vortex > Revtoo > Taskwall
+      // Round-robin the rest: Gemiad > Notik > Revtoo > Taskwall
       const restOffers: any[] = [];
-      const maxRestLength = Math.max(gemiadOffers.length, notikOffers.length, vortexOffers.length, revtooOffers.length, nonPinnedTaskwall.length);
+      const maxRestLength = Math.max(gemiadOffers.length, notikOffers.length, revtooOffers.length, nonPinnedTaskwall.length);
       
       for (let i = 0; i < maxRestLength; i++) {
         if (i < gemiadOffers.length) restOffers.push(gemiadOffers[i]);
         if (i < notikOffers.length) restOffers.push(notikOffers[i]);
-        if (i < vortexOffers.length) restOffers.push(vortexOffers[i]);
         if (i < revtooOffers.length) restOffers.push(revtooOffers[i]);
         if (i < nonPinnedTaskwall.length) restOffers.push(nonPinnedTaskwall[i]);
       }

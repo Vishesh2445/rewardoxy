@@ -38,7 +38,7 @@ interface NotikOffer {
     name: string;
     payout: number;
   }[];
-  provider?: string; // Add provider field (Notik, Vortex, Gemiad)
+  provider?: string; // Add provider field (Notik, Gemiad)
   trackingType?: string; // Add tracking type (CPI, CPE, CPA, CPC, CPL)
 }
 
@@ -627,12 +627,11 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       setLoading(true);
       const primaryOS = deviceOS.length > 0 ? deviceOS[0] : 'android';
       
-      // Fetch from Gemiad, Notik, Klink, Vortex, Revtoo, and Taskwall APIs in parallel
-      const [gemiadResponse, notikResponse, klinkResponse, vortexResponse, revtooResponse, taskwallResponse] = await Promise.all([
+      // Fetch from Gemiad, Notik, Klink, Revtoo, and Taskwall APIs in parallel
+      const [gemiadResponse, notikResponse, klinkResponse, revtooResponse, taskwallResponse] = await Promise.all([
         fetch(`/api/gemiad-offers?user_id=${userId}`),
         fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
         fetch(`/api/klink-offers?user_id=${userId}&category=GAMING`),
-        fetch(`/api/vortex-offers?user_id=${userId}`),
         fetch(`/api/revtoo-offers?user_id=${userId}`),
         fetch(`/api/taskwall-offers?user_id=${userId}&os=${primaryOS}`)
       ]);
@@ -640,7 +639,6 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       let gemiadOffers: NotikOffer[] = [];
       let notikOffers: NotikOffer[] = [];
       let klinkOffers: NotikOffer[] = [];
-      let vortexOffers: NotikOffer[] = [];
       let revtooOffers: NotikOffer[] = [];
       let taskwallOffers: NotikOffer[] = [];
       
@@ -677,16 +675,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         }
       }
       
-      // Process Vortex offers (Priority 4)
-      if (vortexResponse.ok) {
-        const vortexData = await vortexResponse.json();
-        if (vortexData.success && vortexData.offers && Array.isArray(vortexData.offers)) {
-          vortexOffers = vortexData.offers;
-          console.log(`Vortex offers loaded: ${vortexOffers.length}`);
-        }
-      }
-      
-      // Process Revtoo offers (Priority 5)
+      // Process Revtoo offers (Priority 4)
       if (revtooResponse.ok) {
         const revtooData = await revtooResponse.json();
         if (revtooData.success && revtooData.offers && Array.isArray(revtooData.offers)) {
@@ -695,7 +684,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         }
       }
       
-      // Process Taskwall offers (Priority 6)
+      // Process Taskwall offers (Priority 5)
       if (taskwallResponse.ok) {
         const taskwallData = await taskwallResponse.json();
         if (taskwallData.success && taskwallData.offers && Array.isArray(taskwallData.offers)) {
@@ -708,14 +697,13 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       const pinnedOffers = taskwallOffers.filter((o: NotikOffer) => o.name?.toLowerCase().includes('lootably'));
       const nonPinnedTaskwall = taskwallOffers.filter((o: NotikOffer) => !o.name?.toLowerCase().includes('lootably'));
       
-      // Round-robin merge the rest: Gemiad > Notik > Vortex > Revtoo > Taskwall
+      // Round-robin merge the rest: Gemiad > Notik > Revtoo > Taskwall
       const mergedRest: NotikOffer[] = [];
-      const maxRestLength = Math.max(gemiadOffers.length, notikOffers.length, vortexOffers.length, revtooOffers.length, nonPinnedTaskwall.length);
+      const maxRestLength = Math.max(gemiadOffers.length, notikOffers.length, revtooOffers.length, nonPinnedTaskwall.length);
       
       for (let i = 0; i < maxRestLength; i++) {
         if (i < gemiadOffers.length) mergedRest.push(gemiadOffers[i]);
         if (i < notikOffers.length) mergedRest.push(notikOffers[i]);
-        if (i < vortexOffers.length) mergedRest.push(vortexOffers[i]);
         if (i < revtooOffers.length) mergedRest.push(revtooOffers[i]);
         if (i < nonPinnedTaskwall.length) mergedRest.push(nonPinnedTaskwall[i]);
       }
