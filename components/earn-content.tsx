@@ -6,6 +6,7 @@ import { Box, Dialog, DialogTitle, DialogContent, IconButton, Paper, CircularPro
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
+import OpenInNew from "@mui/icons-material/OpenInNew";
 import { ChevronRight, ChevronLeft, Smartphone } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
@@ -2430,18 +2431,33 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
           <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#fff" }}>
             {activeWall === "CPX Research" ? activeWall : `${activeWall} Offer Wall`}
           </Typography>
-          <IconButton
-            onClick={() => setOpen(false)}
-            size="small"
-            sx={{
-              background: colors.background.glass,
-              backdropFilter: colors.glass.backdrop,
-              borderRadius: 1, color: colors.text.secondary, width: 32, height: 32,
-              "&:hover": { borderColor: colors.glass.borderHover, color: colors.primary },
-            }}
-          >
-            <CloseIcon sx={{ fontSize: 16 }} />
-          </IconButton>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <IconButton
+              onClick={() => window.open(iframeSrc, '_blank', 'noopener,noreferrer')}
+              size="small"
+              title="Open in new tab"
+              sx={{
+                background: colors.background.glass,
+                backdropFilter: colors.glass.backdrop,
+                borderRadius: 1, color: colors.text.secondary, width: 32, height: 32,
+                "&:hover": { borderColor: colors.glass.borderHover, color: colors.primary },
+              }}
+            >
+              <OpenInNew sx={{ fontSize: 16 }} />
+            </IconButton>
+            <IconButton
+              onClick={() => setOpen(false)}
+              size="small"
+              sx={{
+                background: colors.background.glass,
+                backdropFilter: colors.glass.backdrop,
+                borderRadius: 1, color: colors.text.secondary, width: 32, height: 32,
+                "&:hover": { borderColor: colors.glass.borderHover, color: colors.primary },
+              }}
+            >
+              <CloseIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Box>
         </DialogTitle>
         <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden", position: "relative", bgcolor: colors.background.default }}>
           
