@@ -8,8 +8,10 @@ const LOGOS = [
   { src: "/mobivortex-icon.png", alt: "Vortex" },
   { src: "/taskwall.svg", alt: "Taskwall" },
   { src: "/notik.webp", alt: "Notik" },
-  { src: "https://cdn.gemiad.com/logos/Asset_2.png", alt: "Gemiad" },
+  { src: "/gemiad-logo.png", alt: "Gemiad" },
   { src: "/revtoo.svg", alt: "Revtoo" },
+  { src: "/klink-icon.png", alt: "Klink" },
+  { src: "/theoremreach.svg", alt: "TheoremReach" },
 ];
 
 const colors = {

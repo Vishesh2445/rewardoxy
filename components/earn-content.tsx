@@ -631,7 +631,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       const [gemiadResponse, notikResponse, klinkResponse, vortexResponse, revtooResponse, taskwallResponse] = await Promise.all([
         fetch(`/api/gemiad-offers?user_id=${userId}`),
         fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
-        fetch(`/api/klink-offers?user_id=${userId}`),
+        fetch(`/api/klink-offers?user_id=${userId}&category=GAMING`),
         fetch(`/api/vortex-offers?user_id=${userId}`),
         fetch(`/api/revtoo-offers?user_id=${userId}`),
         fetch(`/api/taskwall-offers?user_id=${userId}&os=${primaryOS}`)
@@ -1921,7 +1921,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             {/* Logo */}
             <Box
               component="img"
-              src="https://cdn.gemiad.com/logos/Asset_2.png"
+              src="/gemiad-logo.png"
               alt="GemiAd"
               className="wall-logo"
               sx={{

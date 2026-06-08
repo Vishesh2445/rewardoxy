@@ -15,8 +15,9 @@ export async function GET(request: NextRequest) {
     const country = searchParams.get('country_code') || request.headers.get('cf-ipcountry') || request.headers.get('x-vercel-ip-country') || '';
     const platform = searchParams.get('platform') || 'web';
     const deviceName = searchParams.get('device_name') || 'desktop';
+    const categoryFilter = searchParams.get('category');
 
-    const categories = ['GAMING', 'TASKS', 'CRYPTO'];
+    const categories = categoryFilter ? [categoryFilter] : ['GAMING', 'TASKS', 'CRYPTO'];
 
     const fetchCategory = async (category: string) => {
       const apiUrl = new URL('https://klink-quest.klink.finance/api/v1/publisher/offers');
