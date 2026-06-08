@@ -116,7 +116,19 @@ export async function POST() {
     return sum + (t.is_reversal ? -Math.abs(amount) : amount);
   }, 0) || 0;
 
-  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad + todayCoinsFromTheoremreach;
+  // Check Klink earnings today
+  const { data: todayKlink } = await supabase
+    .from("klink_transactions")
+    .select("coins_awarded, event_type")
+    .eq("user_id", user.id)
+    .gte("created_at", todayStart.toISOString());
+
+  const todayCoinsFromKlink = todayKlink?.reduce((sum, k) => {
+    const amount = Math.round(Number(k.coins_awarded || 0));
+    return sum + (k.event_type === 'chargeback' ? -Math.abs(amount) : amount);
+  }, 0) || 0;
+
+  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad + todayCoinsFromTheoremreach + todayCoinsFromKlink;
 
   if (todayCoinsEarned < 1000) {
     return NextResponse.json(

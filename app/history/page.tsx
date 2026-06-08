@@ -18,7 +18,7 @@ export default async function HistoryPage() {
     redirect("/auth/login");
   }
 
-  const [userResult, completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, revtooResult, taskwallResult] = await Promise.all([
+  const [userResult, completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, revtooResult, taskwallResult, klinkResult] = await Promise.all([
     supabase
       .from("users")
       .select("coins_balance, display_name")
@@ -93,6 +93,16 @@ export default async function HistoryPage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .range(0, PAGE_SIZE - 1),
+
+    // Fetch Klink transactions
+    supabase
+      .from("klink_transactions")
+      .select("id, conversion_id, coins_awarded, offer_name, event_type, event_name, created_at", {
+        count: "exact",
+      })
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .range(0, PAGE_SIZE - 1),
   ]);
 
   const coins = userResult.data?.coins_balance ?? 0;
@@ -158,9 +168,17 @@ export default async function HistoryPage() {
       created_at: tw.created_at,
       source: 'taskwall',
     })),
+    ...(klinkResult.data ?? []).map((klink) => ({
+      id: klink.id,
+      program_id: klink.event_name ? `Klink - ${klink.event_name}` : klink.offer_name || 'Klink Offer',
+      payout_decimal: Math.abs(Number(klink.coins_awarded)) / 700,
+      coins_awarded: klink.event_type === 'chargeback' ? -Math.abs(Math.round(Number(klink.coins_awarded))) : Math.round(Number(klink.coins_awarded)),
+      created_at: klink.created_at,
+      source: 'klink',
+    })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0) + (revtooResult.count ?? 0) + (taskwallResult.count ?? 0);
+  const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0) + (revtooResult.count ?? 0) + (taskwallResult.count ?? 0) + (klinkResult.count ?? 0);
 
   return (
     <AppShell 

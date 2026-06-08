@@ -821,19 +821,38 @@ export default function AllOffersClient({ userId }: { userId: string }) {
         }
       }
       
-      // Combine offers with priority: Gemiad > Notik > Klink > Vortex > Revtoo > Taskwall
-      // Mix them in a round-robin fashion for better distribution
-      const allOffersData: any[] = [];
-      const maxLength = Math.max(gemiadOffers.length, notikOffers.length, klinkOffers.length, vortexOffers.length, revtooOffers.length, taskwallOffers.length);
+      // Pin offers with payout === -1 (infinity) from any provider to the top
+      const pinnedOffers = [
+        ...gemiadOffers.filter(o => o.payout === -1),
+        ...notikOffers.filter(o => o.payout === -1),
+        ...klinkOffers.filter(o => o.payout === -1),
+        ...vortexOffers.filter(o => o.payout === -1),
+        ...revtooOffers.filter(o => o.payout === -1),
+        ...taskwallOffers.filter(o => o.payout === -1),
+      ];
       
-      for (let i = 0; i < maxLength; i++) {
-        if (i < gemiadOffers.length) allOffersData.push(gemiadOffers[i]);
-        if (i < notikOffers.length) allOffersData.push(notikOffers[i]);
-        if (i < klinkOffers.length) allOffersData.push(klinkOffers[i]);
-        if (i < vortexOffers.length) allOffersData.push(vortexOffers[i]);
-        if (i < revtooOffers.length) allOffersData.push(revtooOffers[i]);
-        if (i < taskwallOffers.length) allOffersData.push(taskwallOffers[i]);
+      // Remove pinned offers from their source arrays, keep Klink separate for priority
+      const nonPinnedGemiad = gemiadOffers.filter(o => !(o.payout === -1));
+      const nonPinnedNotik = notikOffers.filter(o => !(o.payout === -1));
+      const nonPinnedKlink = klinkOffers.filter(o => !(o.payout === -1));
+      const nonPinnedVortex = vortexOffers.filter(o => !(o.payout === -1));
+      const nonPinnedRevtoo = revtooOffers.filter(o => !(o.payout === -1));
+      const nonPinnedTaskwall = taskwallOffers.filter(o => !(o.payout === -1));
+      
+      // Klink offers come after pinned offers
+      // Round-robin the rest: Gemiad > Notik > Vortex > Revtoo > Taskwall
+      const restOffers: any[] = [];
+      const maxRestLength = Math.max(nonPinnedGemiad.length, nonPinnedNotik.length, nonPinnedVortex.length, nonPinnedRevtoo.length, nonPinnedTaskwall.length);
+      
+      for (let i = 0; i < maxRestLength; i++) {
+        if (i < nonPinnedGemiad.length) restOffers.push(nonPinnedGemiad[i]);
+        if (i < nonPinnedNotik.length) restOffers.push(nonPinnedNotik[i]);
+        if (i < nonPinnedVortex.length) restOffers.push(nonPinnedVortex[i]);
+        if (i < nonPinnedRevtoo.length) restOffers.push(nonPinnedRevtoo[i]);
+        if (i < nonPinnedTaskwall.length) restOffers.push(nonPinnedTaskwall[i]);
       }
+      
+      const allOffersData = [...pinnedOffers, ...nonPinnedKlink, ...restOffers];
       
       console.log(`All Offers - Total combined: ${allOffersData.length}`);
       

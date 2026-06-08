@@ -704,24 +704,40 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         }
       }
       
-      // Combine offers with priority: Gemiad > Notik > Klink > Vortex > Revtoo > Taskwall
-      // Mix them in a round-robin fashion for better distribution
-      const combinedOffers: NotikOffer[] = [];
-      const maxProviderLength = Math.max(gemiadOffers.length, notikOffers.length, klinkOffers.length, vortexOffers.length, revtooOffers.length, taskwallOffers.length);
+      // Pin offers with payout === -1 (infinity) from any provider to the top
+      const pinnedOffers = [
+        ...gemiadOffers.filter((o: NotikOffer) => o.payout === -1),
+        ...notikOffers.filter((o: NotikOffer) => o.payout === -1),
+        ...klinkOffers.filter((o: NotikOffer) => o.payout === -1),
+        ...vortexOffers.filter((o: NotikOffer) => o.payout === -1),
+        ...revtooOffers.filter((o: NotikOffer) => o.payout === -1),
+        ...taskwallOffers.filter((o: NotikOffer) => o.payout === -1),
+      ];
       
-      for (let i = 0; i < maxProviderLength; i++) {
-        if (i < gemiadOffers.length) combinedOffers.push(gemiadOffers[i]);
-        if (i < notikOffers.length) combinedOffers.push(notikOffers[i]);
-        if (i < klinkOffers.length) combinedOffers.push(klinkOffers[i]);
-        if (i < vortexOffers.length) combinedOffers.push(vortexOffers[i]);
-        if (i < revtooOffers.length) combinedOffers.push(revtooOffers[i]);
-        if (i < taskwallOffers.length) combinedOffers.push(taskwallOffers[i]);
+      // Remove pinned offers from source arrays, keep Klink separate for priority
+      const nonPinnedGemiad = gemiadOffers.filter((o: NotikOffer) => !(o.payout === -1));
+      const nonPinnedNotik = notikOffers.filter((o: NotikOffer) => !(o.payout === -1));
+      const nonPinnedKlink = klinkOffers.filter((o: NotikOffer) => !(o.payout === -1));
+      const nonPinnedVortex = vortexOffers.filter((o: NotikOffer) => !(o.payout === -1));
+      const nonPinnedRevtoo = revtooOffers.filter((o: NotikOffer) => !(o.payout === -1));
+      const nonPinnedTaskwall = taskwallOffers.filter((o: NotikOffer) => !(o.payout === -1));
+      
+      // Round-robin merge the rest: Gemiad > Notik > Vortex > Revtoo > Taskwall
+      const mergedRest: NotikOffer[] = [];
+      const maxRestLength = Math.max(nonPinnedGemiad.length, nonPinnedNotik.length, nonPinnedVortex.length, nonPinnedRevtoo.length, nonPinnedTaskwall.length);
+      
+      for (let i = 0; i < maxRestLength; i++) {
+        if (i < nonPinnedGemiad.length) mergedRest.push(nonPinnedGemiad[i]);
+        if (i < nonPinnedNotik.length) mergedRest.push(nonPinnedNotik[i]);
+        if (i < nonPinnedVortex.length) mergedRest.push(nonPinnedVortex[i]);
+        if (i < nonPinnedRevtoo.length) mergedRest.push(nonPinnedRevtoo[i]);
+        if (i < nonPinnedTaskwall.length) mergedRest.push(nonPinnedTaskwall[i]);
       }
       
-      console.log(`Total combined offers: ${combinedOffers.length}`);
+      console.log(`Total merged rest offers: ${mergedRest.length}`);
       
       // Filter for non-gaming offers
-      const gamingOffers = combinedOffers
+      const gamingOffers = mergedRest
         .filter((offer: NotikOffer) => {
           const name = offer.name?.toLowerCase() || '';
           const desc1 = offer.description1?.toLowerCase() || '';
@@ -764,10 +780,8 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       
       console.log(`Sorted gaming offers: ${sortedOffers.length}`);
       
-      // Pin Taskwall infinity offers (payout === -1) to the top
-      const infinityOffers = sortedOffers.filter(o => o.payout === -1 && o.provider === 'Taskwall');
-      const regularOffers = sortedOffers.filter(o => !(o.payout === -1 && o.provider === 'Taskwall'));
-      const finalOffers = [...infinityOffers, ...regularOffers];
+      // Final order: pinned offers > Klink offers > sorted rest
+      const finalOffers = [...pinnedOffers, ...nonPinnedKlink, ...sortedOffers];
       
       // Store all offers
       setAllOffers(finalOffers);

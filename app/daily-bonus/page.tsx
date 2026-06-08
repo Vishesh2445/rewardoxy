@@ -78,6 +78,13 @@ export default async function DailyBonusPage() {
     .eq("user_id", user.id)
     .gte("created_at", todayStart.toISOString());
 
+  // Get today's Klink earnings
+  const { data: todayKlink } = await supabase
+    .from("klink_transactions")
+    .select("coins_awarded, event_type")
+    .eq("user_id", user.id)
+    .gte("created_at", todayStart.toISOString());
+
   const todayCoinsFromCompletions = todayCompletions?.reduce(
     (sum, c) => sum + (c.coins_awarded || 0),
     0
@@ -108,7 +115,12 @@ export default async function DailyBonusPage() {
     return sum + (r.status === 1 ? amount : -Math.abs(amount)); // Status 2 is reversal
   }, 0) || 0;
 
-  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad + todayCoinsFromTheoremreach + todayCoinsFromRevtoo;
+  const todayCoinsFromKlink = todayKlink?.reduce((sum, k) => {
+    const amount = Math.round(Number(k.coins_awarded || 0));
+    return sum + (k.event_type === 'chargeback' ? -Math.abs(amount) : amount);
+  }, 0) || 0;
+
+  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad + todayCoinsFromTheoremreach + todayCoinsFromRevtoo + todayCoinsFromKlink;
 
   return (
     <AppShell 
