@@ -1,14 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Convert coins to dollars (1000 coins = 1 dollar)
-function convertToUSD(amount: number | string | undefined): number {
-  if (!amount) return 0;
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(num)) return 0;
-  // Round to 2 decimal places
-  return Math.round((num / 1000) * 100) / 100;
-}
-
 // Parse user agent to extract browser and OS details
 function parseUserAgent(userAgent: string) {
   let browserName = 'unknown';
@@ -295,8 +286,7 @@ export async function GET(request: NextRequest) {
           description2: offer.description2,
           description3: offer.description3,
           image_url: offer.image_url || offer.image,
-          payout: convertToUSD(offer.payout),
-          coins: typeof offer.payout === 'string' ? parseFloat(offer.payout) || 0 : (offer.payout || 0),
+          payout: typeof offer.payout === 'string' ? parseFloat(offer.payout) || 0 : (offer.payout || 0),
           click_url: offer.click_url,
           categories: offer.categories || [],
           provider: 'Notik',
@@ -305,8 +295,7 @@ export async function GET(request: NextRequest) {
           events: offer.events?.map((event: any) => ({
             id: event.id,
             name: event.name,
-            payout: convertToUSD(event.payout),
-            coins: typeof event.payout === 'string' ? parseFloat(event.payout) || 0 : (event.payout || 0),
+            payout: typeof event.payout === 'string' ? parseFloat(event.payout) || 0 : (event.payout || 0),
           })),
         };
 

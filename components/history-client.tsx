@@ -170,7 +170,7 @@ export default function HistoryClient({
       ...(gemiadResult.data ?? []).map((gemiad) => ({
         id: gemiad.id,
         program_id: gemiad.event_name ? `GemiAd - ${gemiad.event_name}` : gemiad.offer_name || 'GemiAd Offer',
-        payout_decimal: gemiad.reward / 700, // Convert coins back to USD for display
+        payout_decimal: gemiad.reward,
         coins_awarded: gemiad.reward,
         created_at: gemiad.created_at,
         source: 'gemiad',
@@ -187,7 +187,7 @@ export default function HistoryClient({
         return {
           id: tr.id,
           program_id: programName,
-          payout_decimal: Math.abs(tr.reward) / 700, // Convert coins to USD for display
+          payout_decimal: Math.abs(tr.reward),
           coins_awarded: tr.reward,
           created_at: tr.created_at,
           source: 'theoremreach',
@@ -196,7 +196,7 @@ export default function HistoryClient({
       ...(revtooResult.data ?? []).map((revtoo) => ({
         id: revtoo.id,
         program_id: revtoo.offer_name || 'Revtoo Offer',
-        payout_decimal: Math.abs(revtoo.reward) / 1000, // Convert coins to USD for display (1000 coins = $1)
+        payout_decimal: Math.abs(revtoo.reward),
         coins_awarded: revtoo.status === 2 ? -Math.abs(revtoo.reward) : revtoo.reward,
         created_at: revtoo.created_at,
         source: 'revtoo',
@@ -204,7 +204,7 @@ export default function HistoryClient({
       ...(taskwallResult.data ?? []).map((tw) => ({
         id: tw.id,
         program_id: tw.offer_name || 'Taskwall Offer',
-        payout_decimal: tw.amount / 1000,
+        payout_decimal: tw.amount,
         coins_awarded: tw.amount,
         created_at: tw.created_at,
         source: 'taskwall',

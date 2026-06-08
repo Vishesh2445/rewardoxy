@@ -1,25 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Convert coins to dollars (1000 coins = 1 dollar)
-function convertToUSD(amount: number | string | undefined): number {
-  if (!amount) return 0;
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(num)) return 0;
-  // Round to 2 decimal places
-  return Math.round((num / 1000) * 100) / 100;
-}
-
-// Parse Revtoo amount - Revtoo returns amounts in coins, need to convert to USD
-// 1000 coins = 1 USD (same as other providers)
-function parseRevtooAmount(amount: number | string | undefined): number {
-  if (!amount) return 0;
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(num)) return 0;
-  if (num === -1) return -1; // Variable reward marker
-  // Convert coins to USD: divide by 1000 and round to 2 decimal places
-  return Math.round((num / 1000) * 100) / 100;
-}
-
 // Extracts client IP from various headers
 function getClientIp(request: NextRequest): string {
   const cfConnectingIp = request.headers.get('cf-connecting-ip');
@@ -199,8 +179,7 @@ export async function GET(request: NextRequest) {
           description2: offer.description2 || '',
           description3: offer.description3 || '',
           image_url: imageUrl,
-          payout: parseRevtooAmount(payoutValue),
-          coins: offer.reward && offer.reward !== '*' ? offer.reward : (typeof payoutValue === 'string' ? parseFloat(payoutValue) || 0 : (payoutValue || 0)),
+          payout: typeof payoutValue === 'string' ? parseFloat(payoutValue) || 0 : (payoutValue || 0),
           click_url: offer.url || offer.click_url || `https://revtoo.com/offerwall/${REVTOO_API_KEY}/${user_id}`,
           categories: offer.categories || offer.category || [],
           provider: 'Revtoo',
@@ -209,8 +188,7 @@ export async function GET(request: NextRequest) {
           events: offer.events?.map((event: any) => ({
             id: event.event_id || event.id,
             name: event.event_title || event.event_description || event.name || event.title || 'Complete action',
-            payout: parseRevtooAmount(event.event_reward || event.reward || event.payout || 0),
-            coins: event.event_reward || event.reward || 0,
+            payout: parseFloat(event.event_reward || event.reward || event.payout || 0) || 0,
           })) || [],
         };
 

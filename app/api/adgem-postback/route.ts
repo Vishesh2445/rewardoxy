@@ -35,9 +35,6 @@ function ok(message: string) {
   return new NextResponse(message, { status: 200 });
 }
 
-// AdGem coin exchange rate: 1 USD = 700 coins (same as GemiAd)
-const ADGEM_EXCHANGE_RATE = parseInt(process.env.ADGEM_EXCHANGE_RATE || '700', 10);
-
 async function handleAdgemPostback(request: NextRequest) {
   const logs: string[] = [];
   const log = (msg: string) => { logs.push(msg); console.log('[adgem-postback]', msg); };
@@ -110,10 +107,10 @@ async function handleAdgemPostback(request: NextRequest) {
     const payoutNum = parseFloat(payout || '0');
     const amountNum = parseFloat(amount || '0');
 
-    // Calculate coins: use payout (USD) * exchange rate, or fall back to amount
+    // Postback already has calculated amount, use raw value
     let coinsToCredit = 0;
     if (payoutNum > 0) {
-      coinsToCredit = Math.round(payoutNum * ADGEM_EXCHANGE_RATE);
+      coinsToCredit = Math.round(payoutNum);
     } else if (amountNum > 0) {
       coinsToCredit = Math.round(amountNum);
     }

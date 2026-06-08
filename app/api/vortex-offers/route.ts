@@ -75,7 +75,6 @@ export async function GET(request: NextRequest) {
               id: event.eventId,
               name: event.action?.en || "Complete action",
               payout: event.payout,
-              coins: Math.round((event.payout || 0) * 1000),
             }))
         : [];
 
@@ -87,7 +86,6 @@ export async function GET(request: NextRequest) {
         description3: "",
         image_url: offer.icon || "",
         payout: totalPayout.toFixed(2),
-        coins: Math.round(totalPayout * 1000),
         click_url: clickUrl,
         categories: offer.category || "app",
         events: events,

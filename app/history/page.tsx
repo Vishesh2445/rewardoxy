@@ -129,7 +129,7 @@ export default async function HistoryPage() {
     ...(gemiadResult.data ?? []).map((gemiad) => ({
       id: gemiad.id,
       program_id: gemiad.event_name ? `GemiAd - ${gemiad.event_name}` : gemiad.offer_name || 'GemiAd Offer',
-      payout_decimal: gemiad.reward / 700, // Convert coins back to USD for display
+        payout_decimal: gemiad.reward,
       coins_awarded: gemiad.reward,
       created_at: gemiad.created_at,
       source: 'gemiad',
@@ -146,7 +146,7 @@ export default async function HistoryPage() {
       return {
         id: tr.id,
         program_id: programName,
-        payout_decimal: Math.abs(tr.reward) / 700, // Convert coins to USD for display
+        payout_decimal: Math.abs(tr.reward),
         coins_awarded: tr.reward,
         created_at: tr.created_at,
         source: 'theoremreach',
@@ -155,7 +155,7 @@ export default async function HistoryPage() {
     ...(revtooResult.data ?? []).map((revtoo) => ({
       id: revtoo.id,
       program_id: revtoo.offer_name ? `Revtoo - ${revtoo.offer_name}` : 'Revtoo Offer',
-      payout_decimal: Math.abs(revtoo.reward) / 1000, // Convert coins back to USD for display
+        payout_decimal: Math.abs(revtoo.reward),
       coins_awarded: revtoo.status === 1 ? Math.round(Number(revtoo.reward)) : -Math.round(Number(revtoo.reward)),
       created_at: revtoo.created_at,
       source: 'revtoo',
@@ -171,7 +171,7 @@ export default async function HistoryPage() {
     ...(klinkResult.data ?? []).map((klink) => ({
       id: klink.id,
       program_id: klink.event_name ? `Klink - ${klink.event_name}` : klink.offer_name || 'Klink Offer',
-      payout_decimal: Math.abs(Number(klink.coins_awarded)) / 700,
+        payout_decimal: Math.abs(Number(klink.coins_awarded)),
       coins_awarded: klink.event_type === 'chargeback' ? -Math.abs(Math.round(Number(klink.coins_awarded))) : Math.round(Number(klink.coins_awarded)),
       created_at: klink.created_at,
       source: 'klink',

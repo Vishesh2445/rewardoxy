@@ -97,8 +97,7 @@ async function handleKlinkPostback(request: NextRequest) {
     // ── 5. Parse payout ─────────────────────────────────────────────────
     const payoutRaw = parseFloat(payoutStr || '0');
     const payoutAbs = Math.abs(payoutRaw);
-    const KLINK_EXCHANGE_RATE = parseInt(process.env.KLINK_EXCHANGE_RATE || '700', 10);
-    const coinsToCredit = Math.round(payoutAbs * KLINK_EXCHANGE_RATE);
+    const coinsToCredit = Math.round(payoutAbs);
     const isConversion = eventType === 'conversion';
 
     log(`Payout: $${payoutRaw}, Coins: ${coinsToCredit}, Type: ${eventType}`);

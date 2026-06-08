@@ -45,7 +45,6 @@ export async function GET(request: NextRequest) {
       description1: offer.description || offer.conversion,
       image_url: offer.icon,
       payout: (parseFloat(offer.payout) || 0) === 0 ? -1 : parseFloat(offer.payout),
-      coins: Math.round((offer.user_amount || 0)),
       click_url: offer.link,
       categories: [],
       provider: 'Taskwall',

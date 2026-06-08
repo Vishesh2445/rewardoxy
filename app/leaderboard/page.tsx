@@ -121,7 +121,7 @@ export default async function LeaderboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [leaderboardResult, userResult] = await Promise.all([
+  const [leaderboardResult, userResult, adminResult] = await Promise.all([
     supabase
       .from("leaderboard_cache")
       .select("rank, user_id, display_name, monthly_earnings")
@@ -133,9 +133,11 @@ export default async function LeaderboardPage() {
           .eq("id", user.id)
           .single()
       : Promise.resolve({ data: null }),
+    supabase.from("users").select("id").eq("role", "admin"),
   ]);
 
-  const leaderboard = leaderboardResult.data ?? [];
+  const adminIds = new Set(adminResult.data?.map((u) => u.id) ?? []);
+  const leaderboard = (leaderboardResult.data ?? []).filter((r) => !adminIds.has(r.user_id));
   const coins = userResult.data?.coins_balance ?? 0;
   const top3 = leaderboard.filter((r) => r.rank <= 3);
   const rest = leaderboard.filter((r) => r.rank > 3);
