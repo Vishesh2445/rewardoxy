@@ -16,55 +16,67 @@ export async function GET(request: NextRequest) {
     const platform = searchParams.get('platform') || 'web';
     const deviceName = searchParams.get('device_name') || 'desktop';
 
-    const apiUrl = new URL('https://klink-quest.klink.finance/api/v1/publisher/offers');
-    if (country) apiUrl.searchParams.append('country', country);
-    apiUrl.searchParams.append('platform', platform);
-    apiUrl.searchParams.append('device_name', deviceName);
-    apiUrl.searchParams.append('sort_by', 'epc');
-    apiUrl.searchParams.append('page', '1');
-    apiUrl.searchParams.append('limit', '100');
+    const categories = ['GAMING', 'TASKS', 'CRYPTO'];
 
-    const response = await fetch(apiUrl.toString(), {
-      headers: {
-        'Authorization': `Bearer ${KLINK_PUB_ID}:${KLINK_API_KEY}`,
-        'Accept': 'application/json',
-      },
-      signal: AbortSignal.timeout(15000),
-    });
+    const fetchCategory = async (category: string) => {
+      const apiUrl = new URL('https://klink-quest.klink.finance/api/v1/publisher/offers');
+      if (country) apiUrl.searchParams.append('country', country);
+      apiUrl.searchParams.append('platform', platform);
+      apiUrl.searchParams.append('device_name', deviceName);
+      apiUrl.searchParams.append('sort_by', 'epc');
+      apiUrl.searchParams.append('category', category);
+      apiUrl.searchParams.append('page', '1');
+      apiUrl.searchParams.append('limit', '100');
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[klink-offers] API returned ${response.status}: ${errorText}`);
-      return NextResponse.json({ success: true, offers: [], total: 0 });
+      const response = await fetch(apiUrl.toString(), {
+        headers: {
+          'Authorization': `Bearer ${KLINK_PUB_ID}:${KLINK_API_KEY}`,
+          'Accept': 'application/json',
+        },
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (!response.ok) {
+        console.error(`[klink-offers] ${category} API returned ${response.status}`);
+        return [];
+      }
+
+      const data = await response.json();
+      return Array.isArray(data.data) ? data.data : [];
+    };
+
+    const results = await Promise.all(categories.map(fetchCategory));
+
+    const seen = new Set<string>();
+    const offers: any[] = [];
+
+    for (const items of results) {
+      for (const offer of items) {
+        if (offer.isActive === false) continue;
+        if (seen.has(offer.offerId)) continue;
+        seen.add(offer.offerId);
+
+        offers.push({
+          offer_id: offer.offerId,
+          name: offer.name?.en || offer.offerId,
+          description1: offer.description?.en || '',
+          image_url: offer.images?.logo || '',
+          payout: parseFloat(offer.totalPayout) || 0,
+          categories: Array.isArray(offer.categories) ? offer.categories : [],
+          provider: 'Klink',
+          device: offer.deviceName ? [offer.deviceName] : [deviceName],
+          trackingType: offer.activities?.length > 1 ? 'CPE' : 'CPA',
+          events: Array.isArray(offer.activities) && offer.activities.length > 0
+            ? offer.activities.map((a: any) => ({
+                id: a.eventId,
+                name: a.name,
+                payout: parseFloat(a.payout) || 0,
+              }))
+            : undefined,
+          click_url: `https://offerwall.klinkfinance.com/wall?pub_id=${KLINK_PUB_ID}&user_id=${user_id}`,
+        });
+      }
     }
-
-    const data = await response.json();
-
-    if (!data.success || !Array.isArray(data.data)) {
-      return NextResponse.json({ success: true, offers: [], total: 0 });
-    }
-
-    const offers = data.data
-      .filter((offer: any) => offer.isActive !== false)
-      .map((offer: any) => ({
-        offer_id: offer.offerId,
-        name: offer.name?.en || offer.offerId,
-        description1: offer.description?.en || '',
-        image_url: offer.images?.logo || '',
-        payout: parseFloat(offer.totalPayout) || 0,
-        categories: Array.isArray(offer.categories) ? offer.categories : [],
-        provider: 'Klink',
-        device: offer.deviceName ? [offer.deviceName] : [deviceName],
-        trackingType: offer.activities?.length > 1 ? 'CPE' : 'CPA',
-        events: Array.isArray(offer.activities) && offer.activities.length > 0
-          ? offer.activities.map((a: any) => ({
-              id: a.eventId,
-              name: a.name,
-              payout: parseFloat(a.payout) || 0,
-            }))
-          : undefined,
-        click_url: `https://offerwall.klinkfinance.com/wall?pub_id=${KLINK_PUB_ID}&user_id=${user_id}`,
-      }));
 
     return NextResponse.json({ success: true, offers, total: offers.length });
   } catch (error) {
