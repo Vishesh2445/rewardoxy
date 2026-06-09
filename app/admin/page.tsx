@@ -10,7 +10,7 @@ export default async function AdminDashboardPage() {
   const [usersResult, coinsResult, pendingResult, completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, bannedResult] =
     await Promise.all([
       adminSupabase.from("users").select("id", { count: "exact", head: true }),
-      adminSupabase.from("users").select("total_earned"),
+      adminSupabase.from("users").select("total_earned").neq("role", "admin"),
       adminSupabase
         .from("withdrawals")
         .select("id", { count: "exact", head: true })

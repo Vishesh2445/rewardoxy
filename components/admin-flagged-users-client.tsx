@@ -185,85 +185,147 @@ export default function AdminFlaggedUsersClient() {
           <Typography variant="body2" color="textSecondary">No flagged users at the moment.</Typography>
         </Paper>
       ) : (
-        <TableContainer component={Paper} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: "transparent" }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                {["Email", "Signup Country", "Last Seen", "Fraud Status", "Risk Score", "Actions"].map((h) => (
-                  <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.background.secondary, whiteSpace: "nowrap" }}>
-                    {h}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {users.map((u) => {
-                const countryMismatch = u.signup_country && u.last_seen_country && u.signup_country !== u.last_seen_country;
-                
-                return (
-                  <TableRow key={u.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
-                    <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontSize: "0.85rem" }}>
-                      <Box sx={{ display: "flex", flexDirection: "column" }}>
-                        <span>{u.email}</span>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: colors.text.secondary, mt: 0.5 }}>
-                          <Typography sx={{ fontSize: "0.65rem", fontFamily: "monospace" }}>{u.id}</Typography>
-                          <IconButton size="small" onClick={() => copyUid(u.id)} sx={{ p: 0.25 }}><Copy size={10} /></IconButton>
+        <>
+          {/* Mobile cards */}
+          <Box sx={{ display: { xs: "flex", md: "none" }, flexDirection: "column", gap: 1 }}>
+            {users.map((u) => {
+              const countryMismatch = u.signup_country && u.last_seen_country && u.signup_country !== u.last_seen_country;
+              return (
+                <Paper key={u.id} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.8rem" }} truncate>{u.email}</Typography>
+                    <Box sx={{ borderRadius: 50, px: 1, py: 0.25, fontSize: "10px", fontWeight: 600,
+                      bgcolor: u.fraud_status === "suspended" ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)",
+                      color: u.fraud_status === "suspended" ? "#f87171" : "#f59e0b",
+                      border: `1px solid ${u.fraud_status === "suspended" ? "rgba(239,68,68,0.25)" : "rgba(245,158,11,0.25)"}`,
+                      textTransform: "capitalize" }}>
+                      {u.fraud_status.replace("_", " ")}
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
+                    <Typography sx={{ fontSize: "0.65rem", color: colors.text.secondary, fontFamily: "monospace" }}>
+                      {u.id.slice(0, 8)}...{u.id.slice(-4)}
+                    </Typography>
+                    <IconButton size="small" onClick={() => copyUid(u.id)} sx={{ p: 0.5 }}><Copy size={10} color={colors.text.secondary} /></IconButton>
+                  </Box>
+                  <Box sx={{ display: "flex", gap: 2, fontSize: "0.75rem", color: colors.text.secondary, mb: 0.5, flexWrap: "wrap" }}>
+                    <span>Signup: {countryFlag(u.signup_country)} {u.signup_country || "—"}</span>
+                    <span style={{ color: countryMismatch ? "#f87171" : undefined }}>
+                      Last: {countryFlag(u.last_seen_country)} {u.last_seen_country || "—"} {countryMismatch ? "⚠️" : ""}
+                    </span>
+                  </Box>
+                  <Box sx={{ display: "flex", gap: 1.5, fontSize: "0.75rem", mb: 1.5, flexWrap: "wrap" }}>
+                    {(u.vpn_detected_count || 0) > 0 && (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#f59e0b", fontSize: "0.75rem" }}>
+                        <Shield size={14} /> {u.vpn_detected_count} VPN hits
+                      </Box>
+                    )}
+                    {(u.mismatch_count || 0) > 0 && (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#f87171", fontSize: "0.75rem" }}>
+                        <AlertTriangle size={14} /> {u.mismatch_count} mismatches
+                      </Box>
+                    )}
+                  </Box>
+                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                    <Button size="small" onClick={() => openLogsDialog(u)}
+                      sx={{ textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: colors.text.secondary, bgcolor: "rgba(169,169,202,0.1)", borderRadius: 2, flex: 1, minWidth: 0, "&:hover": { bgcolor: "rgba(169,169,202,0.2)" } }}>
+                      View Logs
+                    </Button>
+                    <Button size="small" onClick={() => handleResolve(u.id)} disabled={actionLoading === `resolve-${u.id}`}
+                      sx={{ textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#10B981", bgcolor: "rgba(16,185,129,0.1)", borderRadius: 2, flex: 1, minWidth: 0, "&:hover": { bgcolor: "rgba(16,185,129,0.2)" } }}>
+                      {actionLoading === `resolve-${u.id}` ? <CircularProgress size={14} color="inherit" /> : "Resolve"}
+                    </Button>
+                    <Button size="small" onClick={() => handleSuspend(u.id)} disabled={actionLoading === `suspend-${u.id}` || u.fraud_status === "suspended"}
+                      sx={{ textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#f87171", bgcolor: "rgba(239,68,68,0.1)", borderRadius: 2, flex: 1, minWidth: 0, "&:hover": { bgcolor: "rgba(239,68,68,0.2)" }, "&.Mui-disabled": { opacity: 0.3 } }}>
+                      {actionLoading === `suspend-${u.id}` ? <CircularProgress size={14} color="inherit" /> : "Suspend"}
+                    </Button>
+                  </Box>
+                </Paper>
+              );
+            })}
+          </Box>
+
+          {/* Desktop table */}
+          <TableContainer component={Paper} sx={{ display: { xs: "none", md: "block" }, borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: "transparent", overflowX: "auto" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  {["Email", "Signup Country", "Last Seen", "Fraud Status", "Risk Score", "Actions"].map((h) => (
+                    <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.background.secondary }}>
+                      {h}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {users.map((u) => {
+                  const countryMismatch = u.signup_country && u.last_seen_country && u.signup_country !== u.last_seen_country;
+                  
+                  return (
+                    <TableRow key={u.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
+                      <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontSize: "0.85rem" }}>
+                        <Box sx={{ display: "flex", flexDirection: "column" }}>
+                          <span>{u.email}</span>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: colors.text.secondary, mt: 0.5 }}>
+                            <Typography sx={{ fontSize: "0.65rem", fontFamily: "monospace" }}>{u.id}</Typography>
+                            <IconButton size="small" onClick={() => copyUid(u.id)} sx={{ p: 0.5 }}><Copy size={10} /></IconButton>
+                          </Box>
                         </Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell sx={{ borderColor: colors.divider, fontSize: "0.85rem", whiteSpace: "nowrap" }}>
-                      {countryFlag(u.signup_country)} {u.signup_country || "—"}
-                    </TableCell>
-                    <TableCell sx={{ borderColor: colors.divider, fontSize: "0.85rem", whiteSpace: "nowrap", color: countryMismatch ? "#f87171" : undefined }}>
-                      {countryFlag(u.last_seen_country)} {u.last_seen_country || "—"} {countryMismatch ? "⚠️" : ""}
-                    </TableCell>
-                    <TableCell sx={{ borderColor: colors.divider }}>
-                      <Box sx={{ display: "inline-block", borderRadius: 50, px: 1.25, py: 0.25, fontSize: "0.7rem", fontWeight: 600, 
-                        bgcolor: u.fraud_status === "suspended" ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)", 
-                        color: u.fraud_status === "suspended" ? "#f87171" : "#f59e0b",
-                        border: `1px solid ${u.fraud_status === "suspended" ? "rgba(239,68,68,0.25)" : "rgba(245,158,11,0.25)"}`, 
-                        textTransform: "capitalize" }}>
-                        {u.fraud_status.replace("_", " ")}
-                      </Box>
-                    </TableCell>
-                    <TableCell sx={{ borderColor: colors.divider, fontSize: "0.85rem", whiteSpace: "nowrap" }}>
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                        {(u.vpn_detected_count || 0) > 0 && (
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#f59e0b", fontSize: "0.75rem" }}>
-                            <Shield size={14} /> {u.vpn_detected_count} VPN hits
-                          </Box>
-                        )}
-                        {(u.mismatch_count || 0) > 0 && (
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#f87171", fontSize: "0.75rem" }}>
-                            <AlertTriangle size={14} /> {u.mismatch_count} mismatches
-                          </Box>
-                        )}
-                      </Box>
-                    </TableCell>
-                    <TableCell sx={{ borderColor: colors.divider }}>
-                      <Box sx={{ display: "flex", gap: 1 }}>
-                        <Button size="small" onClick={() => openLogsDialog(u)}
-                          sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: colors.text.secondary, bgcolor: "rgba(169,169,202,0.1)", borderRadius: 2, "&:hover": { bgcolor: "rgba(169,169,202,0.2)" } }}>
-                          View Logs
-                        </Button>
-                        <Button size="small" onClick={() => handleResolve(u.id)} disabled={actionLoading === `resolve-${u.id}`}
-                          startIcon={<Undo2 size={14} />}
-                          sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: "#10B981", bgcolor: "rgba(16,185,129,0.1)", borderRadius: 2, "&:hover": { bgcolor: "rgba(16,185,129,0.2)" } }}>
-                          {actionLoading === `resolve-${u.id}` ? <CircularProgress size={14} color="inherit" /> : "Resolve & Reset"}
-                        </Button>
-                        <Button size="small" onClick={() => handleSuspend(u.id)} disabled={actionLoading === `suspend-${u.id}` || u.fraud_status === "suspended"}
-                          startIcon={<ShieldX size={14} />}
-                          sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: "#f87171", bgcolor: "rgba(239,68,68,0.1)", borderRadius: 2, "&:hover": { bgcolor: "rgba(239,68,68,0.2)" }, "&.Mui-disabled": { opacity: 0.3 } }}>
-                          {actionLoading === `suspend-${u.id}` ? <CircularProgress size={14} color="inherit" /> : "Suspend"}
-                        </Button>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                      </TableCell>
+                      <TableCell sx={{ borderColor: colors.divider, fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                        {countryFlag(u.signup_country)} {u.signup_country || "—"}
+                      </TableCell>
+                      <TableCell sx={{ borderColor: colors.divider, fontSize: "0.85rem", whiteSpace: "nowrap", color: countryMismatch ? "#f87171" : undefined }}>
+                        {countryFlag(u.last_seen_country)} {u.last_seen_country || "—"} {countryMismatch ? "⚠️" : ""}
+                      </TableCell>
+                      <TableCell sx={{ borderColor: colors.divider }}>
+                        <Box sx={{ display: "inline-block", borderRadius: 50, px: 1.25, py: 0.25, fontSize: "0.7rem", fontWeight: 600, 
+                          bgcolor: u.fraud_status === "suspended" ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)", 
+                          color: u.fraud_status === "suspended" ? "#f87171" : "#f59e0b",
+                          border: `1px solid ${u.fraud_status === "suspended" ? "rgba(239,68,68,0.25)" : "rgba(245,158,11,0.25)"}`, 
+                          textTransform: "capitalize" }}>
+                          {u.fraud_status.replace("_", " ")}
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ borderColor: colors.divider, fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                          {(u.vpn_detected_count || 0) > 0 && (
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#f59e0b", fontSize: "0.75rem" }}>
+                              <Shield size={14} /> {u.vpn_detected_count} VPN hits
+                            </Box>
+                          )}
+                          {(u.mismatch_count || 0) > 0 && (
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#f87171", fontSize: "0.75rem" }}>
+                              <AlertTriangle size={14} /> {u.mismatch_count} mismatches
+                            </Box>
+                          )}
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ borderColor: colors.divider }}>
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          <Button size="small" onClick={() => openLogsDialog(u)}
+                            sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: colors.text.secondary, bgcolor: "rgba(169,169,202,0.1)", borderRadius: 2, "&:hover": { bgcolor: "rgba(169,169,202,0.2)" } }}>
+                            View Logs
+                          </Button>
+                          <Button size="small" onClick={() => handleResolve(u.id)} disabled={actionLoading === `resolve-${u.id}`}
+                            startIcon={<Undo2 size={14} />}
+                            sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: "#10B981", bgcolor: "rgba(16,185,129,0.1)", borderRadius: 2, "&:hover": { bgcolor: "rgba(16,185,129,0.2)" } }}>
+                            {actionLoading === `resolve-${u.id}` ? <CircularProgress size={14} color="inherit" /> : "Resolve & Reset"}
+                          </Button>
+                          <Button size="small" onClick={() => handleSuspend(u.id)} disabled={actionLoading === `suspend-${u.id}` || u.fraud_status === "suspended"}
+                            startIcon={<ShieldX size={14} />}
+                            sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: "#f87171", bgcolor: "rgba(239,68,68,0.1)", borderRadius: 2, "&:hover": { bgcolor: "rgba(239,68,68,0.2)" }, "&.Mui-disabled": { opacity: 0.3 } }}>
+                            {actionLoading === `suspend-${u.id}` ? <CircularProgress size={14} color="inherit" /> : "Suspend"}
+                          </Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
       )}
 
       {totalPages > 1 && (

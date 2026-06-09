@@ -113,6 +113,8 @@ export default function AdminSettingsClient() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 2,
                 transition: "all 0.2s",
                 "&:hover": {
                   borderColor: "rgba(16,185,129,0.3)",

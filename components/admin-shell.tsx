@@ -237,7 +237,7 @@ export default function AdminShell({ children }: AdminShellProps) {
           display: "flex",
           flexDirection: "column",
           width: "100%",
-          overflow: "hidden",
+          minWidth: 0,
         }}
       >
         <Toolbar />

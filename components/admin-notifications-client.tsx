@@ -182,6 +182,7 @@ export default function AdminNotificationsClient({
             borderRadius: 2,
             px: 3,
             py: 1,
+            width: { xs: "100%", sm: "auto" },
           }}
         >
           {sending ? "Sending..." : "Send Notification"}

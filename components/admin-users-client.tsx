@@ -238,7 +238,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal, source = 
           </Typography>
           <Typography variant="body2" color="textSecondary">{total} total users</Typography>
         </Box>
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap", width: { xs: "100%", sm: "auto" } }}>
           <Button
             component={Link}
             href="/admin/users/flagged"
@@ -258,7 +258,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal, source = 
           >
             Flagged Users
           </Button>
-          <Box component="form" onSubmit={handleSearch} sx={{ display: "flex", gap: 1 }}>
+          <Box component="form" onSubmit={handleSearch} sx={{ display: "flex", gap: 1, flex: { xs: "1 1 100%", sm: "none" } }}>
             <TextField
               size="small"
               placeholder="Search by email..."
@@ -273,13 +273,13 @@ export default function AdminUsersClient({ initialUsers, initialTotal, source = 
                   ),
                 },
               }}
-              sx={{ minWidth: 240 }}
+              sx={{ flex: 1, minWidth: 0 }}
             />
             <Button
               type="submit"
               variant="contained"
               disabled={loading}
-              sx={{ background: colors.background.gradient, textTransform: "none", fontWeight: 600, borderRadius: 2, px: 3 }}
+              sx={{ background: colors.background.gradient, textTransform: "none", fontWeight: 600, borderRadius: 2, px: 3, flexShrink: 0 }}
             >
               {loading ? <CircularProgress size={18} color="inherit" /> : "Search"}
             </Button>
@@ -309,7 +309,7 @@ export default function AdminUsersClient({ initialUsers, initialTotal, source = 
                 <Typography sx={{ fontSize: "0.65rem", color: colors.text.secondary, fontFamily: "monospace" }}>
                   {u.id.slice(0, 8)}...{u.id.slice(-4)}
                 </Typography>
-                <IconButton size="small" onClick={() => copyUid(u.id)} sx={{ p: 0.25 }}><Copy size={10} color={colors.text.secondary} /></IconButton>
+                <IconButton size="small" onClick={() => copyUid(u.id)} sx={{ p: 0.5 }}><Copy size={10} color={colors.text.secondary} /></IconButton>
               </Box>
               <Box sx={{ display: "flex", gap: 2, fontSize: "0.75rem", color: colors.text.secondary, mb: 0.5, flexWrap: "wrap" }}>
                 <span>Balance: {u.coins_balance.toLocaleString()}</span>

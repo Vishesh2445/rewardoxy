@@ -191,7 +191,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
                 <Typography sx={{ fontSize: "0.6rem", color: colors.text.secondary, fontFamily: "monospace" }}>
                   {w.user_id.slice(0, 8)}...{w.user_id.slice(-4)}
                 </Typography>
-                <IconButton size="small" onClick={() => copyText(w.user_id, "User ID")} sx={{ p: 0.25, bgcolor: "transparent" }}>
+                <IconButton size="small" onClick={() => copyText(w.user_id, "User ID")} sx={{ p: 0.5, bgcolor: "transparent" }}>
                   <Copy size={10} color={colors.text.secondary} />
                 </IconButton>
               </Box>
@@ -203,7 +203,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
               <Typography variant="body2" sx={{ fontWeight: 600 }}>{w.coins.toLocaleString()} coins (${w.amount_usd.toFixed(2)})</Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
                 <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, fontFamily: "monospace" }}>LTC: {w.crypto_address.slice(0, 6)}...{w.crypto_address.slice(-4)}</Typography>
-                <IconButton size="small" onClick={() => copyText(w.crypto_address, "Address")} sx={{ p: 0.25 }}>
+                <IconButton size="small" onClick={() => copyText(w.crypto_address, "Address")} sx={{ p: 0.5 }}>
                   <Copy size={12} color={colors.text.secondary} />
                 </IconButton>
               </Box>
@@ -320,12 +320,15 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
       <Dialog
         open={!!approveDialog}
         onClose={() => setApproveDialog(null)}
+        fullWidth
+        maxWidth="xs"
         PaperProps={{
           sx: {
             bgcolor: colors.background.default,
             border: `1px solid ${colors.divider}`,
             borderRadius: 4,
-            minWidth: 400,
+            m: { xs: 2 },
+            width: { xs: "calc(100% - 32px)", sm: 400 },
           },
         }}
       >
