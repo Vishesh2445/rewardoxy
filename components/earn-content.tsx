@@ -7,7 +7,7 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInNew from "@mui/icons-material/OpenInNew";
-import { ChevronRight, ChevronLeft, Smartphone } from "lucide-react";
+import { ChevronRight, ChevronLeft, Smartphone, Gamepad2 } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 import CheckIcon from "@mui/icons-material/Check";
@@ -857,17 +857,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
     >
       <Box sx={{ p: { xs: 1.5, sm: 2 }, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Box sx={{ 
-            width: 20, 
-            height: 24, 
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center" 
-          }}>
-            <svg viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%', color: '#10B981' }}>
-              <path d="M8 0C8 0 8 5.45455 3.63636 9.09091C-0.727273 12.7273 -0.727273 20 8 20C16.7273 20 16.7273 12.7273 12.3636 9.09091C8 5.45455 8 0 8 0Z" fill="currentColor"/>
-            </svg>
-          </Box>
+          <Gamepad2 size={20} color="#10B981" />
           <Typography variant="h6" isBold sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }}>
             Gaming Offers
           </Typography>
@@ -986,9 +976,14 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
                   backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
-          bgcolor: "#141523",
+                  bgcolor: "#141523",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
+              >
+                {!offer.image_url && <Gamepad2 size={32} color="#10B981" opacity={0.5} />}
+              </Box>
               <Typography
                 variant="h6"
                 isBold

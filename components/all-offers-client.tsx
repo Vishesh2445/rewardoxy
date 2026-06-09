@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Box, Dialog, IconButton } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
-import { Monitor, Smartphone } from "lucide-react";
+import { Monitor, Smartphone, Gamepad2 } from "lucide-react";
 import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -931,8 +931,13 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                         bgcolor: "#0F1219",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
-                    />
+                    >
+                      {!offer.image_url && <Gamepad2 size={32} color="#10B981" opacity={0.5} />}
+                    </Box>
                     <Typography
                       variant="h6"
                       isBold
