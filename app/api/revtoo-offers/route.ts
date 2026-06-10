@@ -179,7 +179,7 @@ export async function GET(request: NextRequest) {
           description2: offer.description2 || '',
           description3: offer.description3 || '',
           image_url: imageUrl,
-          payout: typeof payoutValue === 'string' ? parseFloat(payoutValue) || 0 : (payoutValue || 0),
+          payout: (typeof payoutValue === 'string' ? parseFloat(payoutValue) || 0 : (payoutValue || 0)) / 1000,
           click_url: offer.url || offer.click_url || `https://revtoo.com/offerwall/${REVTOO_API_KEY}/${user_id}`,
           categories: offer.categories || offer.category || [],
           provider: 'Revtoo',
@@ -188,7 +188,7 @@ export async function GET(request: NextRequest) {
           events: offer.events?.map((event: any) => ({
             id: event.event_id || event.id,
             name: event.event_title || event.event_description || event.name || event.title || 'Complete action',
-            payout: parseFloat(event.event_reward || event.reward || event.payout || 0) || 0,
+            payout: (parseFloat(event.event_reward || event.reward || event.payout || 0) || 0) / 1000,
           })) || [],
         };
 
