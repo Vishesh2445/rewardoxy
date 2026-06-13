@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Box, Dialog, DialogTitle, DialogContent, IconButton, Paper, CircularProgress, Button } from "@mui/material";
+import { Box, Dialog, DialogTitle, DialogContent, IconButton, Paper, CircularProgress, Button, Rating } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInNew from "@mui/icons-material/OpenInNew";
+import StarIcon from "@mui/icons-material/Star";
 import { ChevronRight, ChevronLeft, Smartphone, Gamepad2 } from "lucide-react";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
@@ -1444,7 +1445,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2, 
               p: { xs: 1.5, sm: 2 }, 
               cursor: "pointer",
-              background: "linear-gradient(180deg, rgba(217, 119, 6, 0.3) 0%, rgba(217, 119, 6, 0.15) 50%, rgba(217, 119, 6, 0.08) 100%)",
+              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.5) 0%, transparent 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1452,7 +1453,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": { 
-                background: "linear-gradient(180deg, rgba(217, 119, 6, 0.45) 0%, rgba(217, 119, 6, 0.25) 50%, rgba(217, 119, 6, 0.15) 100%)",
+                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.65) 0%, transparent 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1522,16 +1523,18 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Typography>
 
             {/* Star Rating */}
-            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 3 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
-                  ★
-                </Box>
-              ))}
-            </Box>
+            <Rating
+              className="wall-rating"
+              defaultValue={3}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#fbbf24" }, transition: "filter 0.2s ease" }}
+            />
           </Paper>
 
-          {/* Klink card */}
+          {/* Klink card - Premium */}
           <Paper
             onClick={() => handleOpenWall("Klink")}
             elevation={0}
@@ -1544,15 +1547,19 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, rgba(253, 224, 71, 0.35) 0%, rgba(253, 224, 71, 0.18) 50%, rgba(253, 224, 71, 0.06) 100%)",
+              background: "linear-gradient(180deg, rgba(245, 158, 11, 0.3) 0%, rgba(16, 185, 129, 0.15) 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
               width: { xs: "100%", sm: "auto" },
               flexShrink: 0,
               overflow: "hidden",
+              border: "1px solid rgba(245, 158, 11, 0.4)",
+              boxShadow: "0 0 20px rgba(245, 158, 11, 0.15), inset 0 0 20px rgba(245, 158, 11, 0.05)",
               "&:hover": {
-                background: "linear-gradient(180deg, rgba(253, 224, 71, 0.5) 0%, rgba(253, 224, 71, 0.28) 50%, rgba(253, 224, 71, 0.12) 100%)",
+                background: "linear-gradient(180deg, rgba(245, 158, 11, 0.4) 0%, rgba(16, 185, 129, 0.25) 100%)",
+                border: "1px solid rgba(245, 158, 11, 0.6)",
+                boxShadow: "0 0 30px rgba(245, 158, 11, 0.25), inset 0 0 20px rgba(245, 158, 11, 0.08)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1565,6 +1572,27 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               },
             }}
           >
+            {/* Premium Badge */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: 6,
+                right: 6,
+                zIndex: 10,
+                background: "linear-gradient(135deg, #F59E0B, #D97706)",
+                borderRadius: "0 8px 0 8px",
+                px: 1,
+                py: 0.3,
+                display: "flex",
+                alignItems: "center",
+                gap: 0.3,
+              }}
+            >
+              <Typography sx={{ fontSize: "0.55rem", fontWeight: 700, color: "#000", lineHeight: 1.2, letterSpacing: "0.5px" }}>
+                BEST
+              </Typography>
+            </Box>
+
             {/* Hover Play Button */}
             <Box
               className="hover-play-button"
@@ -1581,7 +1609,8 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             >
               <Box
                 sx={{
-                  backgroundColor: colors.background.secondary,
+                  backgroundColor: "rgba(0,0,0,0.7)",
+                  backdropFilter: "blur(4px)",
                   borderRadius: 10,
                   padding: 2,
                   display: "flex",
@@ -1589,6 +1618,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
                   alignItems: "center",
                   width: 40,
                   height: 40,
+                  border: "1px solid rgba(245, 158, 11, 0.5)",
                 }}
               >
                 <Box
@@ -1617,18 +1647,25 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             />
 
             {/* Name */}
-            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
+            <Typography variant="subtitle2" isBold sx={{
+              color: "#FBBF24",
+              mb: { xs: 0.5, sm: 1 },
+              textAlign: "center",
+              textShadow: "0 0 10px rgba(251, 191, 36, 0.3)",
+            }}>
               Klink
             </Typography>
 
             {/* Star Rating */}
-            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
-                  ★
-                </Box>
-              ))}
-            </Box>
+            <Rating
+              className="wall-rating"
+              defaultValue={5}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#FBBF24" }, transition: "filter 0.2s ease" }}
+            />
           </Paper>
 
           {/* Taskwall card */}
@@ -1644,7 +1681,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, rgba(34, 197, 94, 0.3) 0%, rgba(34, 197, 94, 0.15) 50%, rgba(34, 197, 94, 0.08) 100%)",
+              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.5) 0%, transparent 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1652,7 +1689,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, rgba(34, 197, 94, 0.45) 0%, rgba(34, 197, 94, 0.25) 50%, rgba(34, 197, 94, 0.15) 100%)",
+                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.65) 0%, transparent 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1722,13 +1759,15 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Typography>
 
             {/* Star Rating */}
-            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
-                  ★
-                </Box>
-              ))}
-            </Box>
+            <Rating
+              className="wall-rating"
+              defaultValue={4}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#fbbf24" }, transition: "filter 0.2s ease" }}
+            />
           </Paper>
 
           {/* Notik card */}
@@ -1744,7 +1783,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, rgba(124, 58, 237, 0.3) 0%, rgba(124, 58, 237, 0.15) 50%, rgba(124, 58, 237, 0.08) 100%)",
+              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.5) 0%, transparent 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1752,7 +1791,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, rgba(124, 58, 237, 0.45) 0%, rgba(124, 58, 237, 0.25) 50%, rgba(124, 58, 237, 0.15) 100%)",
+                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.65) 0%, transparent 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1822,13 +1861,15 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Typography>
 
             {/* Star Rating */}
-            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 3 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
-                  ★
-                </Box>
-              ))}
-            </Box>
+            <Rating
+              className="wall-rating"
+              defaultValue={3}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#fbbf24" }, transition: "filter 0.2s ease" }}
+            />
           </Paper>
 
           {/* GemiAd card */}
@@ -1844,7 +1885,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, rgba(168, 85, 247, 0.25) 0%, rgba(147, 51, 234, 0.2) 50%, rgba(126, 34, 206, 0.3) 100%)",
+              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.5) 0%, transparent 100%)",
               border: "none",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
@@ -1853,7 +1894,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, rgba(168, 85, 247, 0.4) 0%, rgba(147, 51, 234, 0.35) 50%, rgba(126, 34, 206, 0.5) 100%)",
+                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.65) 0%, transparent 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1923,13 +1964,15 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Typography>
 
             {/* Star Rating */}
-            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 5 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
-                  ★
-                </Box>
-              ))}
-            </Box>
+            <Rating
+              className="wall-rating"
+              defaultValue={4}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#fbbf24" }, transition: "filter 0.2s ease" }}
+            />
           </Paper>
 
           {/* Revtoo card */}
@@ -1945,7 +1988,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, rgba(34, 197, 94, 0.3) 0%, rgba(34, 197, 94, 0.15) 50%, rgba(34, 197, 94, 0.08) 100%)",
+              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.5) 0%, transparent 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -1953,7 +1996,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, rgba(34, 197, 94, 0.45) 0%, rgba(34, 197, 94, 0.25) 50%, rgba(34, 197, 94, 0.15) 100%)",
+                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.65) 0%, transparent 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2023,13 +2066,15 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Typography>
 
             {/* Star Rating */}
-            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
-                  ★
-                </Box>
-              ))}
-            </Box>
+            <Rating
+              className="wall-rating"
+              defaultValue={4}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#fbbf24" }, transition: "filter 0.2s ease" }}
+            />
           </Paper>
 
           {/* MyLead card */}
@@ -2045,7 +2090,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2, 
               p: { xs: 1.5, sm: 2 }, 
               cursor: "pointer",
-              background: "linear-gradient(180deg, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(59, 130, 246, 0.08) 100%)",
+              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.5) 0%, transparent 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2053,7 +2098,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": { 
-                background: "linear-gradient(180deg, rgba(59, 130, 246, 0.45) 0%, rgba(59, 130, 246, 0.25) 50%, rgba(59, 130, 246, 0.15) 100%)",
+                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.65) 0%, transparent 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2123,13 +2168,15 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Typography>
 
             {/* Star Rating */}
-            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 3 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
-                  ★
-                </Box>
-              ))}
-            </Box>
+            <Rating
+              className="wall-rating"
+              defaultValue={3}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#fbbf24" }, transition: "filter 0.2s ease" }}
+            />
           </Paper>
         </Box>
       </Box>
@@ -2179,7 +2226,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, rgba(20, 184, 166, 0.3) 0%, rgba(20, 184, 166, 0.15) 50%, rgba(20, 184, 166, 0.08) 100%)",
+              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.5) 0%, transparent 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2187,7 +2234,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, rgba(20, 184, 166, 0.45) 0%, rgba(20, 184, 166, 0.25) 50%, rgba(20, 184, 166, 0.15) 100%)",
+                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.65) 0%, transparent 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2257,13 +2304,15 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Typography>
 
             {/* Star Rating */}
-            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
-                  ★
-                </Box>
-              ))}
-            </Box>
+            <Rating
+              className="wall-rating"
+              defaultValue={4}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#fbbf24" }, transition: "filter 0.2s ease" }}
+            />
           </Paper>
 
           {/* TheoremReach card */}
@@ -2279,7 +2328,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               borderRadius: 2,
               p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.3) 0%, rgba(16, 185, 129, 0.15) 50%, rgba(16, 185, 129, 0.08) 100%)",
+              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.5) 0%, transparent 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
@@ -2287,7 +2336,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               flexShrink: 0,
               overflow: "hidden",
               "&:hover": {
-                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.45) 0%, rgba(16, 185, 129, 0.25) 50%, rgba(16, 185, 129, 0.15) 100%)",
+                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.65) 0%, transparent 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -2357,13 +2406,15 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </Typography>
 
             {/* Star Rating */}
-            <Box className="wall-rating" sx={{ display: "flex", gap: 0.25, transition: "filter 0.2s ease" }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Box key={star} sx={{ color: star <= 4 ? "#fbbf24" : "rgba(255,255,255,0.2)", fontSize: { xs: "0.65rem", sm: "0.875rem" } }}>
-                  ★
-                </Box>
-              ))}
-            </Box>
+            <Rating
+              className="wall-rating"
+              defaultValue={4}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#fbbf24" }, transition: "filter 0.2s ease" }}
+            />
           </Paper>
         </Box>
       </Box>
