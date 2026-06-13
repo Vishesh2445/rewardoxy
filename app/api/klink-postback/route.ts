@@ -189,6 +189,20 @@ async function handleKlinkPostback(request: NextRequest) {
         } catch (e: unknown) {
           log(`Enqueue commissions error: ${e instanceof Error ? e.message : 'Unknown'}`);
         }
+
+        // Record in completions table for dashboard visibility
+        try {
+          await supabase.from('completions').insert({
+            player_id: userId,
+            program_id: offerName || 'Klink Offer',
+            payout_decimal: payoutAbs,
+            coins_awarded: coinsToCredit,
+            source: 'klink',
+          });
+          log('Completion recorded in completions table');
+        } catch (e: unknown) {
+          log(`Completions insert error: ${e instanceof Error ? e.message : 'Unknown'}`);
+        }
       } else {
         log(`Coins to credit is 0, skipping credit`);
       }

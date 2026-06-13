@@ -236,14 +236,12 @@ export default function DashboardClient({
           borderRadius: 2,
           background: colors.background.glass,
           backdropFilter: colors.glass.backdrop,
-          border: `1px solid ${colors.glass.border}`,
           p: { xs: 3, sm: 4 },
           position: "relative",
           overflow: "hidden",
           transition: "all 0.3s ease",
           "&:hover": {
             background: colors.background.glassHover,
-            borderColor: colors.glass.borderHover,
             boxShadow: `0 8px 32px rgba(99, 102, 241, 0.1)`,
           },
         }}
@@ -345,11 +343,10 @@ export default function DashboardClient({
                 borderRadius: 2,
                 background: colors.background.glass,
                 backdropFilter: colors.glass.backdrop,
-                border: `1px solid ${colors.glass.border}`,
                 p: { xs: 2, sm: 2.5 },
                 height: "100%",
                 transition: "all 0.3s ease",
-                "&:hover": { borderColor: colors.glass.borderHover, background: colors.background.glassHover, boxShadow: `0 8px 24px rgba(99, 102, 241, 0.1)` },
+                "&:hover": { background: colors.background.glassHover, boxShadow: `0 8px 24px rgba(99, 102, 241, 0.1)` },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
@@ -362,7 +359,6 @@ export default function DashboardClient({
                     height: 42,
                     borderRadius: 2,
                     background: s.glow ? `rgba(99, 102, 241, 0.12)` : colors.background.secondary,
-                    border: `1px solid ${s.glow ? colors.glass.borderHover : colors.glass.border}`,
                     flexShrink: 0,
                   }}
                 >
@@ -408,14 +404,13 @@ export default function DashboardClient({
           borderRadius: 2,
           background: colors.background.glass,
           backdropFilter: colors.glass.backdrop,
-          border: `1px solid ${colors.glass.borderHover}`,
           p: { xs: 2.5, sm: 3 },
           textDecoration: "none",
           color: "inherit",
           transition: "all 0.3s ease",
           position: "relative",
           overflow: "hidden",
-          "&:hover": { borderColor: colors.primary, background: colors.background.glassHover, boxShadow: `0 8px 32px rgba(99, 102, 241, 0.15)` },
+          "&:hover": { background: colors.background.glassHover, boxShadow: `0 8px 32px rgba(99, 102, 241, 0.15)` },
         }}
       >
         <Box
@@ -480,13 +475,11 @@ export default function DashboardClient({
                 borderRadius: 2,
                 background: colors.background.glass,
                 backdropFilter: colors.glass.backdrop,
-                border: `1px solid ${a.primary ? colors.glass.borderHover : colors.glass.border}`,
                 p: 2.5,
                 textDecoration: "none",
                 color: "inherit",
                 transition: "all 0.3s ease",
                 "&:hover": {
-                  borderColor: colors.primary,
                   background: colors.background.glassHover,
                   boxShadow: `0 8px 24px rgba(99, 102, 241, 0.12)`,
                   transform: "translateY(-2px)",

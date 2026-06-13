@@ -195,7 +195,6 @@ export default function CashoutClient({
             borderRadius: 2,
             background: `rgba(245, 158, 11, 0.08)`,
             backdropFilter: colors.glass.backdrop,
-            border: `1px solid rgba(245, 158, 11, 0.3)`,
             p: { xs: 2.5, sm: 3 },
             position: "relative",
             transition: "all 0.3s ease",
@@ -280,14 +279,12 @@ export default function CashoutClient({
           borderRadius: 2,
           background: colors.background.glass,
           backdropFilter: colors.glass.backdrop,
-          border: `1px solid ${colors.glass.border}`,
           p: { xs: 3, sm: 4 },
           position: "relative",
           overflow: "hidden",
           transition: "all 0.3s ease",
           "&:hover": {
             background: colors.background.glassHover,
-            borderColor: colors.glass.borderHover,
             boxShadow: `0 8px 32px rgba(99, 102, 241, 0.1)`,
           },
         }}
@@ -342,7 +339,6 @@ export default function CashoutClient({
           sx={{
             mb: 4,
             borderRadius: 4,
-            border: "1px solid rgba(239,68,68,0.3)",
             bgcolor: "rgba(239,68,68,0.08)",
             p: { xs: 3, sm: 4 },
             textAlign: "center",
@@ -361,7 +357,6 @@ export default function CashoutClient({
           sx={{
             mb: 4,
             borderRadius: 4,
-            border: "1px solid rgba(245,158,11,0.3)",
             bgcolor: "rgba(245,158,11,0.08)",
             p: { xs: 3, sm: 4 },
             textAlign: "center",
@@ -380,11 +375,10 @@ export default function CashoutClient({
           <Paper
             elevation={0}
             sx={{
-              mb: 4,
-              borderRadius: 4,
-              border: `1px solid ${colors.divider}`,
-              bgcolor: colors.background.secondary,
-              p: { xs: 3, sm: 4 },
+            mb: 4,
+            borderRadius: 4,
+            bgcolor: colors.background.secondary,
+            p: { xs: 3, sm: 4 },
             }}
           >
             <Typography variant="subtitle1" isBold sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
@@ -474,10 +468,9 @@ export default function CashoutClient({
               {/* Summary box */}
               <Box
                 sx={{
-                  borderRadius: 3,
-                  bgcolor: colors.background.ternary,
-                  border: `1px solid ${colors.divider}`,
-                  p: 2.5,
+          borderRadius: 3,
+          bgcolor: colors.background.ternary,
+          p: 2.5,
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
@@ -509,7 +502,8 @@ export default function CashoutClient({
                     ⚠ You need at least {MIN_COINS.toLocaleString()} coins (${(MIN_COINS / COINS_PER_USD).toFixed(2)}) to withdraw
                   </Box>
                 ) : (typeof amountCoins === "number" && amountCoins > coins) ? (
-                  <Box sx={{ mt: 1.5, borderRadius: 2, bgcolor: "rgba(255, 68, 68, 0.08)", border: "1px solid rgba(255, 68, 68, 0.2)", px: 2, py: 1, fontSize: "0.75rem", color: colors.status.error }}>
+                  <Box sx={{ mt: 1.5,             borderRadius: 2, bgcolor: "rgba(255, 68, 68, 0.08)",
+            px: 2, py: 1, fontSize: "0.75rem", color: colors.status.error }}>
                     ⚠ You do not have enough coins
                   </Box>
                 ) : null}
@@ -521,7 +515,8 @@ export default function CashoutClient({
                 </Box>
               )}
               {success && (
-                <Box sx={{ borderRadius: 2, bgcolor: "rgba(0, 208, 132, 0.1)", border: "1px solid rgba(0, 208, 132, 0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: colors.primary }}>
+                <Box sx={{             borderRadius: 2, bgcolor: "rgba(0, 208, 132, 0.1)",
+            px: 2, py: 1.25, fontSize: "0.875rem", color: colors.primary }}>
                   ✓ {success}
                 </Box>
               )}
@@ -562,7 +557,8 @@ export default function CashoutClient({
         </Box>
 
         {withdrawals.length === 0 ? (
-          <Paper elevation={0} sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, p: 5, textAlign: "center" }}>
+          <Paper elevation={0} sx={{           borderRadius: 4,
+          bgcolor: colors.background.secondary, p: 5, textAlign: "center" }}>
             <Wallet size={36} color="rgba(169,169,202,0.3)" style={{ margin: "0 auto" }} />
             <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
               No withdrawals yet. Earn coins and cash out!
@@ -575,7 +571,8 @@ export default function CashoutClient({
               {withdrawals.map((w) => {
                 const st = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
                 return (
-                  <Paper key={w.id} elevation={0} sx={{ borderRadius: 4, border: `1px solid ${colors.divider}`, bgcolor: colors.background.secondary, p: 2.5 }}>
+                  <Paper key={w.id} elevation={0} sx={{           borderRadius: 4,
+          bgcolor: colors.background.secondary, p: 2.5 }}>
                     <Box sx={{ mb: 1.5, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
                         {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}

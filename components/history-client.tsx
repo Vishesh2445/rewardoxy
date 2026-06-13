@@ -66,12 +66,17 @@ function offerIcon(name: string, source?: string) {
   
   // Notik-specific icons
   if (source === 'notik') {
-    return Gift; // Use Gift icon for Notik offers
+    return Gift;
   }
   
   // Revtoo-specific icons
   if (source === 'revtoo') {
-    return Gift; // Use Gift icon for Revtoo offers
+    return Gift;
+  }
+  
+  // Klink-specific icons
+  if (source === 'klink') {
+    return Gift;
   }
   
   // Regular offer icons
@@ -96,8 +101,8 @@ export default function HistoryClient({
     const from = newPage * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
     
-    // Fetch completions, CPX transactions, Notik transactions, GemiAd transactions, TheoremReach transactions, Revtoo transactions, and Taskwall transactions
-    const [completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, revtooResult, taskwallResult] = await Promise.all([
+    // Fetch completions, CPX transactions, Notik transactions, GemiAd transactions, TheoremReach transactions, Revtoo transactions, Taskwall transactions, and Klink transactions
+    const [completionsResult, cpxResult, notikResult, gemiadResult, theoremreachResult, revtooResult, taskwallResult, klinkResult] = await Promise.all([
       supabase
         .from("completions")
         .select("id, program_id, payout_decimal, coins_awarded, created_at, source", { count: "exact" })
@@ -143,6 +148,13 @@ export default function HistoryClient({
       supabase
         .from("taskwall_transactions")
         .select("id, txn_key, amount, offer_name, created_at", { count: "exact" })
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .range(from, to),
+
+      supabase
+        .from("klink_transactions")
+        .select("id, conversion_id, coins_awarded, offer_name, event_type, event_name, created_at", { count: "exact" })
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .range(from, to),
@@ -209,9 +221,17 @@ export default function HistoryClient({
         created_at: tw.created_at,
         source: 'taskwall',
       })),
+      ...(klinkResult.data ?? []).map((klink) => ({
+        id: klink.id,
+        program_id: klink.event_name ? `Klink - ${klink.event_name}` : klink.offer_name || 'Klink Offer',
+        payout_decimal: Math.abs(Number(klink.coins_awarded)),
+        coins_awarded: klink.event_type === 'chargeback' ? -Math.abs(Math.round(Number(klink.coins_awarded))) : Math.round(Number(klink.coins_awarded)),
+        created_at: klink.created_at,
+        source: 'klink',
+      })),
     ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0) + (revtooResult.count ?? 0) + (taskwallResult.count ?? 0);
+    const totalCount = (completionsResult.count ?? 0) + (cpxResult.count ?? 0) + (notikResult.count ?? 0) + (gemiadResult.count ?? 0) + (theoremreachResult.count ?? 0) + (revtooResult.count ?? 0) + (taskwallResult.count ?? 0) + (klinkResult.count ?? 0);
 
     if (merged) setCompletions(merged.slice(0, PAGE_SIZE));
     if (totalCount !== null) setTotal(totalCount);
@@ -247,13 +267,12 @@ export default function HistoryClient({
           elevation={0}
           sx={{
             borderRadius: 4,
-            border: `1px solid ${colors.divider}`,
             bgcolor: colors.background.secondary,
             p: 6,
             textAlign: "center",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 64, height: 64, borderRadius: 4, bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}`, mx: "auto", mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 64, height: 64, borderRadius: 4, bgcolor: colors.background.ternary, mx: "auto", mb: 2 }}>
             <Coins size={30} color="rgba(169,169,202,0.35)" />
           </Box>
           <Typography variant="body1" isBold sx={{ mb: 1 }}>No completions yet</Typography>
@@ -281,12 +300,11 @@ export default function HistoryClient({
                     alignItems: "center",
                     gap: 2,
                     borderRadius: 3,
-                    border: `1px solid ${colors.divider}`,
                     bgcolor: colors.background.secondary,
                     px: 2,
                     py: 1.75,
                     transition: "all 0.2s",
-                    "&:hover": { borderColor: "rgba(0, 208, 132, 0.25)" },
+                    "&:hover": { bgcolor: "rgba(0, 208, 132, 0.05)" },
                   }}
                 >
                   <Box
@@ -354,7 +372,6 @@ export default function HistoryClient({
             sx={{
               display: { xs: "none", sm: "block" },
               borderRadius: 4,
-              border: `1px solid ${colors.divider}`,
               bgcolor: "transparent",
               overflow: "hidden",
             }}
