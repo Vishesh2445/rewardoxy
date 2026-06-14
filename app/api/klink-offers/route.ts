@@ -67,22 +67,21 @@ export async function GET(request: NextRequest) {
         description1: offer.description?.en || '',
         image_url: offer.images?.logo || '',
         payout: formatDisplayPayout((parseFloat(offer.totalPayout) || 0) * 0.70),
-          categories: Array.isArray(offer.categories) ? offer.categories : [],
-          provider: 'Klink',
-          device: offer.deviceName ? [offer.deviceName] : ['desktop'],
-          trackingType: offer.activities?.length > 1 ? 'CPE' : 'CPA',
-          events: Array.isArray(offer.activities) && offer.activities.length > 0
-            ? offer.activities.map((a: any) => ({
-                id: a.eventId,
-                name: a.name,
-                payout: formatDisplayPayout((parseFloat(a.payout) || 0) * 0.70),
-              }))
-            : undefined,
-          click_url: `https://offerwall.klinkfinance.com/wall?pub_id=${KLINK_PUB_ID}&user_id=${user_id}`,
-        });
-      }
+        categories: Array.isArray(offer.categories) ? offer.categories : [],
+        provider: 'Klink',
+        device: offer.deviceName ? [offer.deviceName] : ['desktop'],
+        trackingType: offer.activities?.length > 1 ? 'CPE' : 'CPA',
+        events: Array.isArray(offer.activities) && offer.activities.length > 0
+          ? offer.activities.map((a: any) => ({
+              id: a.eventId,
+              name: a.name,
+              payout: formatDisplayPayout((parseFloat(a.payout) || 0) * 0.70),
+            }))
+          : undefined,
+        click_url: `https://offerwall.klinkfinance.com/wall?pub_id=${KLINK_PUB_ID}&user_id=${user_id}`,
+      });
     }
-
+    
     return NextResponse.json({ success: true, offers, total: offers.length });
   } catch (error) {
     console.error('[klink-offers] Error:', error);
