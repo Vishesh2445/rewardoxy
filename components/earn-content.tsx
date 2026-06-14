@@ -671,7 +671,15 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       if (klinkResponse.ok) {
         const klinkData = await klinkResponse.json();
         if (klinkData.success && klinkData.offers && Array.isArray(klinkData.offers)) {
-          klinkOffers = klinkData.offers;
+          const seenKlink = new Set<string>();
+          klinkOffers = klinkData.offers.filter((o: NotikOffer) => {
+            const cats = Array.isArray(o.categories) ? o.categories : [];
+            const isGaming = cats.some(c => String(c).toLowerCase() === 'gaming');
+            if (!isGaming) return false;
+            if (seenKlink.has(o.offer_id)) return false;
+            seenKlink.add(o.offer_id);
+            return true;
+          });
           console.log(`Klink offers loaded: ${klinkOffers.length}`);
         }
       }

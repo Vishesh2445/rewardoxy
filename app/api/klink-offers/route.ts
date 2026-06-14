@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
               payout: formatDisplayPayout((parseFloat(a.payout) || 0) * 0.70),
             }))
           : undefined,
-        click_url: `https://offerwall.klinkfinance.com/wall?pub_id=${KLINK_PUB_ID}&user_id=${user_id}`,
+        click_url: `https://klink-quest.klink.finance/redirect?pubId=${KLINK_PUB_ID}&offerId=${offer.offerId}&userId=${user_id}`,
       });
     }
     
