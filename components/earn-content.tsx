@@ -632,7 +632,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       const [gemiadResponse, notikResponse, klinkResponse, revtooResponse, taskwallResponse] = await Promise.all([
         fetch(`/api/gemiad-offers?user_id=${userId}`),
         fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
-        fetch(`/api/klink-offers?user_id=${userId}&category=Gaming`),
+        fetch(`/api/klink-offers?user_id=${userId}`),
         fetch(`/api/revtoo-offers?user_id=${userId}`),
         fetch(`/api/taskwall-offers?user_id=${userId}&os=${primaryOS}`)
       ]);
@@ -760,8 +760,8 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
         if (o.payout === -1) return true;
         const p = typeof o.payout === 'number' ? o.payout : parseFloat(String(o.payout || '0'));
         if (p > 0) return true;
-        if (o.offer_id === '1677' || o.offer_id === 1677) return true;
-        if (o.offer_id === '56443' || o.offer_id === 56443) return true;
+        if (o.offer_id === '1677') return true;
+        if (o.offer_id === '56443') return true;
         return false;
       });
       

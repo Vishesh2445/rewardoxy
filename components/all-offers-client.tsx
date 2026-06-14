@@ -847,8 +847,8 @@ export default function AllOffersClient({ userId }: { userId: string }) {
         if (o.payout === -1) return true;
         const p = typeof o.payout === 'number' ? o.payout : parseFloat(String(o.payout || '0'));
         if (p > 0) return true;
-        if (o.offer_id === '1677' || o.offer_id === 1677) return true;
-        if (o.offer_id === '56443' || o.offer_id === 56443) return true;
+        if (o.offer_id === '1677') return true;
+        if (o.offer_id === '56443') return true;
         return false;
       });
       

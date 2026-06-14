@@ -25,32 +25,25 @@ export async function GET(request: NextRequest) {
     }
 
     const country = searchParams.get('country_code') || request.headers.get('cf-ipcountry') || request.headers.get('x-vercel-ip-country') || '';
-    const platform = searchParams.get('platform') || 'web';
-    const deviceName = searchParams.get('device_name') || 'desktop';
     const categoryFilter = searchParams.get('category');
 
-    const categories = categoryFilter ? [categoryFilter] : ['Other', 'Casino', 'Crypto', 'App', 'Gaming', 'Surveys', 'Tasks'];
-
-    const fetchCategory = async (category: string) => {
+    const fetchOffers = async () => {
       const apiUrl = new URL('https://klink-quest.klink.finance/api/v1/publisher/offers');
       if (country) apiUrl.searchParams.append('country', country);
-      apiUrl.searchParams.append('platform', platform);
-      apiUrl.searchParams.append('device_name', deviceName);
       apiUrl.searchParams.append('sort_by', 'epc');
-      apiUrl.searchParams.append('category', category);
       apiUrl.searchParams.append('page', '1');
-      apiUrl.searchParams.append('limit', '100');
+      apiUrl.searchParams.append('limit', '2000');
 
       const response = await fetch(apiUrl.toString(), {
         headers: {
           'Authorization': `Bearer ${KLINK_PUB_ID}:${KLINK_API_KEY}`,
           'Accept': 'application/json',
         },
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(30000),
       });
 
       if (!response.ok) {
-        console.error(`[klink-offers] ${category} API returned ${response.status}`);
+        console.error(`[klink-offers] API returned ${response.status}`);
         return [];
       }
 
@@ -58,26 +51,25 @@ export async function GET(request: NextRequest) {
       return Array.isArray(data.data) ? data.data : [];
     };
 
-    const results = await Promise.all(categories.map(fetchCategory));
+    const items = await fetchOffers();
 
     const seen = new Set<string>();
     const offers: any[] = [];
 
-    for (const items of results) {
-      for (const offer of items) {
-        if (offer.isActive === false) continue;
-        if (seen.has(offer.offerId)) continue;
-        seen.add(offer.offerId);
+    for (const offer of items) {
+      if (offer.isActive === false) continue;
+      if (seen.has(offer.offerId)) continue;
+      seen.add(offer.offerId);
 
-        offers.push({
-          offer_id: offer.offerId,
-          name: offer.name?.en || offer.offerId,
-          description1: offer.description?.en || '',
-          image_url: offer.images?.logo || '',
-          payout: formatDisplayPayout((parseFloat(offer.totalPayout) || 0) * 0.70),
+      offers.push({
+        offer_id: offer.offerId,
+        name: offer.name?.en || offer.offerId,
+        description1: offer.description?.en || '',
+        image_url: offer.images?.logo || '',
+        payout: formatDisplayPayout((parseFloat(offer.totalPayout) || 0) * 0.70),
           categories: Array.isArray(offer.categories) ? offer.categories : [],
           provider: 'Klink',
-          device: offer.deviceName ? [offer.deviceName] : [deviceName],
+          device: offer.deviceName ? [offer.deviceName] : ['desktop'],
           trackingType: offer.activities?.length > 1 ? 'CPE' : 'CPA',
           events: Array.isArray(offer.activities) && offer.activities.length > 0
             ? offer.activities.map((a: any) => ({
