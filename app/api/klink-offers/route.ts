@@ -3,6 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 const KLINK_PUB_ID = 'd317e5b6-8977-4e79-9df3-66ff86e77645';
 const KLINK_API_KEY = '86fb70a41761b1ba2835da8f7ac9b481345363d8e8e123da0679ec63dadf9339';
 
+function formatDisplayPayout(value: number): number {
+  if (value <= 0) return 0;
+  if (value >= 0.01) return parseFloat(value.toFixed(2));
+  const str = value.toFixed(10);
+  const dec = str.split('.')[1] || '';
+  let firstNonZero = -1;
+  for (let i = 0; i < dec.length; i++) {
+    if (dec[i] !== '0') { firstNonZero = i + 1; break; }
+  }
+  return firstNonZero > 0 ? parseFloat(value.toFixed(firstNonZero)) : 0;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -62,7 +74,7 @@ export async function GET(request: NextRequest) {
           name: offer.name?.en || offer.offerId,
           description1: offer.description?.en || '',
           image_url: offer.images?.logo || '',
-          payout: parseFloat(offer.totalPayout) || 0,
+          payout: formatDisplayPayout((parseFloat(offer.totalPayout) || 0) * 0.70),
           categories: Array.isArray(offer.categories) ? offer.categories : [],
           provider: 'Klink',
           device: offer.deviceName ? [offer.deviceName] : [deviceName],
@@ -71,7 +83,7 @@ export async function GET(request: NextRequest) {
             ? offer.activities.map((a: any) => ({
                 id: a.eventId,
                 name: a.name,
-                payout: parseFloat(a.payout) || 0,
+                payout: formatDisplayPayout((parseFloat(a.payout) || 0) * 0.70),
               }))
             : undefined,
           click_url: `https://offerwall.klinkfinance.com/wall?pub_id=${KLINK_PUB_ID}&user_id=${user_id}`,
