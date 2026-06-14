@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const deviceName = searchParams.get('device_name') || 'desktop';
     const categoryFilter = searchParams.get('category');
 
-    const categories = categoryFilter ? [categoryFilter] : ['GAMING', 'TASKS', 'CRYPTO'];
+    const categories = categoryFilter ? [categoryFilter] : ['Other', 'Casino', 'Crypto', 'App', 'Gaming', 'Surveys', 'Tasks'];
 
     const fetchCategory = async (category: string) => {
       const apiUrl = new URL('https://klink-quest.klink.finance/api/v1/publisher/offers');

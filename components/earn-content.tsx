@@ -20,7 +20,7 @@ type EarnContentProps = {
   userEmail: string;
 };
 
-type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd" | "TheoremReach" | "Revtoo" | "Klink";
+type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd" | "TheoremReach" | "Revtoo" | "Klink" | "Revtoo Surveys";
 type DeviceOS = "android" | "ios" | "windows";
 
 interface NotikOffer {
@@ -632,7 +632,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       const [gemiadResponse, notikResponse, klinkResponse, revtooResponse, taskwallResponse] = await Promise.all([
         fetch(`/api/gemiad-offers?user_id=${userId}`),
         fetch(`/api/notik-offers?user_id=${userId}&device_type=mobile&device_os=${primaryOS}`),
-        fetch(`/api/klink-offers?user_id=${userId}&category=GAMING`),
+        fetch(`/api/klink-offers?user_id=${userId}&category=Gaming`),
         fetch(`/api/revtoo-offers?user_id=${userId}`),
         fetch(`/api/taskwall-offers?user_id=${userId}&os=${primaryOS}`)
       ]);
@@ -756,7 +756,14 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
       console.log(`Sorted gaming offers: ${sortedOffers.length}`);
       
       // Final order: pinned offers > Klink offers > sorted rest
-      const finalOffers = [...pinnedOffers, ...klinkOffers, ...sortedOffers];
+      const finalOffers = [...pinnedOffers, ...klinkOffers, ...sortedOffers].filter(o => {
+        if (o.payout === -1) return true;
+        const p = typeof o.payout === 'number' ? o.payout : parseFloat(String(o.payout || '0'));
+        if (p > 0) return true;
+        if (o.offer_id === '1677' || o.offer_id === 1677) return true;
+        if (o.offer_id === '56443' || o.offer_id === 56443) return true;
+        return false;
+      });
       
       // Store all offers
       setAllOffers(finalOffers);
@@ -1382,6 +1389,9 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
     if (activeWall === "Klink") {
       const pubId = "d317e5b6-8977-4e79-9df3-66ff86e77645";
       return `https://offerwall.klinkfinance.com/wall?pub_id=${pubId}&user_id=${userId}`;
+    }
+    if (activeWall === "Revtoo Surveys") {
+      return `https://revtoo.com/redirect/?api_key=4w5tzk5qb17ccumdzy41iadqi1rp6n&offer_id=56443&user_id=${userId}`;
     }
     return "";
   };
@@ -2403,6 +2413,108 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             {/* Name */}
             <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
               TheoremReach
+            </Typography>
+
+            {/* Star Rating */}
+            <Rating
+              className="wall-rating"
+              defaultValue={4}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#fbbf24" }, transition: "filter 0.2s ease" }}
+            />
+          </Paper>
+
+          {/* Revtoo Surveys card */}
+          <Paper
+            onClick={() => handleOpenWall("Revtoo Surveys")}
+            elevation={0}
+            sx={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderRadius: 2,
+              p: { xs: 1.5, sm: 2 },
+              cursor: "pointer",
+              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.5) 0%, transparent 100%)",
+              transition: "all 0.2s ease",
+              minWidth: { xs: "auto", sm: 160 },
+              maxWidth: { xs: "none", sm: 160 },
+              width: { xs: "100%", sm: "auto" },
+              flexShrink: 0,
+              overflow: "hidden",
+              "&:hover": {
+                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.65) 0%, transparent 100%)",
+                "& .wall-logo": {
+                  filter: "blur(8px)",
+                },
+                "& .wall-rating": {
+                  filter: "blur(8px)",
+                },
+                "& .hover-play-button": {
+                  opacity: 1,
+                },
+              },
+            }}
+          >
+            {/* Hover Play Button */}
+            <Box
+              className="hover-play-button"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                zIndex: 1000,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "opacity 0.2s ease",
+              }}
+            >
+              <Box
+                sx={{
+                  backgroundColor: colors.background.secondary,
+                  borderRadius: 10,
+                  padding: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <Box
+                  component="img"
+                  src="https://freecash.com/public/img/play-offer.svg"
+                  alt="play-button"
+                  sx={{ objectFit: "contain", objectPosition: "center" }}
+                />
+              </Box>
+            </Box>
+
+            {/* Logo */}
+            <Box
+              component="img"
+              src="/revtoo.svg"
+              alt="Revtoo Surveys"
+              className="wall-logo"
+              sx={{
+                width: { xs: 70, sm: 100 },
+                height: { xs: 70, sm: 100 },
+                borderRadius: 1,
+                objectFit: "contain",
+                mb: { xs: 1, sm: 2 },
+                transition: "filter 0.2s ease",
+              }}
+            />
+
+            {/* Name */}
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
+              Revtoo Surveys
             </Typography>
 
             {/* Star Rating */}

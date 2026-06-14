@@ -284,16 +284,33 @@ function OfferDetailsModal({
               flexShrink: 0,
             }}
           >
-            <Box
-              component="img"
-              src={offer.image_url}
-              alt={offer.name}
-              sx={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
-            />
+            {offer.image_url ? (
+              <Box
+                component="img"
+                src={offer.image_url}
+                alt={offer.name}
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: "rgba(255,255,255,0.05)",
+                  color: "#6b7280",
+                  fontSize: "0.75rem",
+                }}
+              >
+                No Image
+              </Box>
+            )}
           </Box>
 
           {/* Payout Info */}
@@ -826,7 +843,14 @@ export default function AllOffersClient({ userId }: { userId: string }) {
         if (i < nonPinnedTaskwall.length) restOffers.push(nonPinnedTaskwall[i]);
       }
       
-      const allOffersData = [...pinnedOffers, ...klinkOffers, ...restOffers];
+      const allOffersData = [...pinnedOffers, ...klinkOffers, ...restOffers].filter(o => {
+        if (o.payout === -1) return true;
+        const p = typeof o.payout === 'number' ? o.payout : parseFloat(String(o.payout || '0'));
+        if (p > 0) return true;
+        if (o.offer_id === '1677' || o.offer_id === 1677) return true;
+        if (o.offer_id === '56443' || o.offer_id === 56443) return true;
+        return false;
+      });
       
       console.log(`All Offers - Total combined: ${allOffersData.length}`);
       
