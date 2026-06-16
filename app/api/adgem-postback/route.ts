@@ -171,26 +171,11 @@ async function handleAdgemPostback(request: NextRequest) {
     const { error: insertError } = await supabase
       .from('completions')
       .insert({
-        user_id: player_id,
-        provider: 'adgem',
-        offer_id: campaign_id || 'unknown',
-        offer_name: offer_name ? decodeURIComponent(offer_name) : 'AdGem Offer',
-        coins_earned: coinsToCredit,
-        payout_usd: payoutNum,
-        transaction_id: transaction_id,
-        status: 'completed',
-        ip_address: ip || clientIp,
-        metadata: {
-          goal_id,
-          goal_name,
-          country,
-          platform,
-          tracking_type,
-          conversion_datetime,
-          all_goals_completed,
-          request_id,
-          amount: amountNum,
-        }
+        player_id,
+        program_id: transaction_id,
+        payout_decimal: payoutNum,
+        coins_awarded: coinsToCredit,
+        source: 'adgem',
       });
 
     if (insertError) {

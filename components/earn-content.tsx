@@ -20,7 +20,7 @@ type EarnContentProps = {
   userEmail: string;
 };
 
-type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd" | "TheoremReach" | "Revtoo" | "Klink" | "Revtoo Surveys";
+type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd" | "TheoremReach" | "Revtoo" | "Klink" | "Revtoo Surveys" | "TimeWall";
 type DeviceOS = "android" | "ios" | "windows";
 
 interface NotikOffer {
@@ -1401,6 +1401,10 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
     if (activeWall === "Revtoo Surveys") {
       return `https://revtoo.com/redirect/?api_key=4w5tzk5qb17ccumdzy41iadqi1rp6n&offer_id=56443&user_id=${userId}`;
     }
+    if (activeWall === "TimeWall") {
+      const placementId = process.env.NEXT_PUBLIC_TIMEWALL_PLACEMENT_ID || "";
+      return `https://wall.timewall.com/offerwall/${placementId}?user_id=${userId}`;
+    }
     return "";
   };
 
@@ -1450,28 +1454,28 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
           "&::-webkit-scrollbar": { display: "none" }, 
           scrollbarWidth: "none" 
         }}>
-          {/* Vortex card */}
+          {/* TimeWall card */}
           <Paper
-            onClick={() => handleOpenWall("Vortex")}
+            onClick={() => handleOpenWall("TimeWall")}
             elevation={0}
             sx={{
               position: "relative",
-              display: "flex", 
-              flexDirection: "column", 
-              alignItems: "center", 
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
               justifyContent: "space-between",
-              borderRadius: 2, 
-              p: { xs: 1.5, sm: 2 }, 
+              borderRadius: 2,
+              p: { xs: 1.5, sm: 2 },
               cursor: "pointer",
-              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.5) 0%, transparent 100%)",
+              background: "linear-gradient(180deg, rgba(59, 130, 246, 0.5) 0%, transparent 100%)",
               transition: "all 0.2s ease",
               minWidth: { xs: "auto", sm: 160 },
               maxWidth: { xs: "none", sm: 160 },
               width: { xs: "100%", sm: "auto" },
               flexShrink: 0,
               overflow: "hidden",
-              "&:hover": { 
-                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.65) 0%, transparent 100%)",
+              "&:hover": {
+                background: "linear-gradient(180deg, rgba(59, 130, 246, 0.65) 0%, transparent 100%)",
                 "& .wall-logo": {
                   filter: "blur(8px)",
                 },
@@ -1522,13 +1526,13 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             {/* Logo */}
             <Box
               component="img"
-              src="/mobivortex-icon.png"
-              alt="Vortex"
+              src="/timewall.webp"
+              alt="TimeWall"
               className="wall-logo"
-              sx={{ 
-                width: { xs: 70, sm: 100 }, 
-                height: { xs: 70, sm: 100 }, 
-                borderRadius: 1, 
+              sx={{
+                width: { xs: 70, sm: 100 },
+                height: { xs: 70, sm: 100 },
+                borderRadius: 1,
                 objectFit: "contain",
                 mb: { xs: 1, sm: 2 },
                 transition: "filter 0.2s ease",
@@ -1537,13 +1541,13 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
 
             {/* Name */}
             <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
-              Vortex
+              TimeWall
             </Typography>
 
             {/* Star Rating */}
             <Rating
               className="wall-rating"
-              defaultValue={3}
+              defaultValue={4}
               precision={0.5}
               readOnly
               emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
@@ -2183,6 +2187,108 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             {/* Name */}
             <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
               MyLead
+            </Typography>
+
+            {/* Star Rating */}
+            <Rating
+              className="wall-rating"
+              defaultValue={3}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#fbbf24" }, transition: "filter 0.2s ease" }}
+            />
+          </Paper>
+
+          {/* Vortex card */}
+          <Paper
+            onClick={() => handleOpenWall("Vortex")}
+            elevation={0}
+            sx={{
+              position: "relative",
+              display: "flex", 
+              flexDirection: "column", 
+              alignItems: "center", 
+              justifyContent: "space-between",
+              borderRadius: 2, 
+              p: { xs: 1.5, sm: 2 }, 
+              cursor: "pointer",
+              background: "linear-gradient(180deg, rgba(16, 185, 129, 0.5) 0%, transparent 100%)",
+              transition: "all 0.2s ease",
+              minWidth: { xs: "auto", sm: 160 },
+              maxWidth: { xs: "none", sm: 160 },
+              width: { xs: "100%", sm: "auto" },
+              flexShrink: 0,
+              overflow: "hidden",
+              "&:hover": { 
+                background: "linear-gradient(180deg, rgba(16, 185, 129, 0.65) 0%, transparent 100%)",
+                "& .wall-logo": {
+                  filter: "blur(8px)",
+                },
+                "& .wall-rating": {
+                  filter: "blur(8px)",
+                },
+                "& .hover-play-button": {
+                  opacity: 1,
+                },
+              },
+            }}
+          >
+            {/* Hover Play Button */}
+            <Box
+              className="hover-play-button"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                zIndex: 1000,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "opacity 0.2s ease",
+              }}
+            >
+              <Box
+                sx={{
+                  backgroundColor: colors.background.secondary,
+                  borderRadius: 10,
+                  padding: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <Box
+                  component="img"
+                  src="https://freecash.com/public/img/play-offer.svg"
+                  alt="play-button"
+                  sx={{ objectFit: "contain", objectPosition: "center" }}
+                />
+              </Box>
+            </Box>
+
+            {/* Logo */}
+            <Box
+              component="img"
+              src="/mobivortex-icon.png"
+              alt="Vortex"
+              className="wall-logo"
+              sx={{ 
+                width: { xs: 70, sm: 100 }, 
+                height: { xs: 70, sm: 100 }, 
+                borderRadius: 1, 
+                objectFit: "contain",
+                mb: { xs: 1, sm: 2 },
+                transition: "filter 0.2s ease",
+              }}
+            />
+
+            {/* Name */}
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
+              Vortex
             </Typography>
 
             {/* Star Rating */}
