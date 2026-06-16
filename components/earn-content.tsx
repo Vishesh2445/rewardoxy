@@ -1403,7 +1403,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
     }
     if (activeWall === "TimeWall") {
       const placementId = process.env.NEXT_PUBLIC_TIMEWALL_PLACEMENT_ID || "";
-      return `https://wall.timewall.com/offerwall/${placementId}?user_id=${userId}`;
+      return `https://timewall.io/users/login?oid=${placementId}&uid=${userId}`;
     }
     return "";
   };
