@@ -4,8 +4,8 @@ import Typography from "@/components/ui/Typography";
 import PublicFooter from "@/components/public-footer";
 
 const colors = {
-  bgPage: "#141523",
-  bgCard: "#1d1e30",
+  bgPage: "#0D0E12",
+  bgCard: "#232645",
   green: "#10B981",
   textPrimary: "#ffffff",
   textSecondary: "#a9a9ca",
@@ -22,7 +22,7 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
+    <Box className="glow-bg" sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
       {/* Nav */}
       <Box
         component="nav"

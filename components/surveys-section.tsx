@@ -227,7 +227,7 @@ export default function SurveysSection({ userId }: { userId: string }) {
                 flexDirection: "column",
                 gap: { xs: 0.75, md: 1 },
                 "&:hover": {
-                  bgcolor: "#1a1b2e",
+                  bgcolor: colors.background.secondary,
                   transform: "translateY(-2px)",
                   borderColor: "rgba(16, 185, 129, 0.3)",
                 },
@@ -245,7 +245,7 @@ export default function SurveysSection({ userId }: { userId: string }) {
                       aspectRatio: "1",
                       borderRadius: { xs: 1, md: 1.5 },
                       overflow: "hidden",
-                      bgcolor: "#1a1b2e",
+                      bgcolor: colors.background.secondary,
                       objectFit: "cover",
                     }}
                     onError={(e: any) => {

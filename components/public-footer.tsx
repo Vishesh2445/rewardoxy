@@ -6,7 +6,7 @@ import { Mail } from "lucide-react";
 import Icons from "@/components/icons";
 
 const colors = {
-  bgCard: "#1d1e30",
+  bgCard: "#232645",
   green: "#10B981",
   textPrimary: "#ffffff",
   textSecondary: "#a9a9ca",
