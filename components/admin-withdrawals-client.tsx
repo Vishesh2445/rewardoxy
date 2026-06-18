@@ -1,37 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Box,
-  Paper,
-  Button,
-  TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-  Tooltip,
-  IconButton,
-  Snackbar,
-  Alert,
-} from "@mui/material";
-import { Wallet, CheckCircle, XCircle, ChevronLeft, ChevronRight, Copy } from "lucide-react";
-import Typography from "@/components/ui/Typography";
-import colors from "@/theme/colors";
 
 interface Withdrawal {
   id: string;
   user_id: string;
   coins: number;
   amount_usd: number;
-
   crypto_address: string;
   status: string;
   tx_hash: string | null;
@@ -45,15 +20,14 @@ interface AdminWithdrawalsClientProps {
 }
 
 const PAGE_SIZE = 20;
+const TABS = ["all", "pending", "paid", "failed"] as const;
 
 const STATUS_COLORS: Record<string, { color: string; bg: string }> = {
-  pending: { color: "#facc15", bg: "rgba(250,204,21,0.15)" },
-  processing: { color: "#60a5fa", bg: "rgba(96,165,250,0.15)" },
-  paid: { color: "#10B981", bg: "rgba(16,185,129,0.15)" },
-  failed: { color: "#f87171", bg: "rgba(239,68,68,0.15)" },
+  pending: { color: "text-[#9a3412]", bg: "bg-[#fff7ed]" },
+  processing: { color: "text-blue-700", bg: "bg-blue-100" },
+  paid: { color: "text-[#047857]", bg: "bg-[#ecfdf5]" },
+  failed: { color: "text-rose-700", bg: "bg-rose-100" },
 };
-
-const TABS = ["all", "pending", "paid", "failed"] as const;
 
 export default function AdminWithdrawalsClient({ initialWithdrawals, initialTotal }: AdminWithdrawalsClientProps) {
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>(initialWithdrawals);
@@ -64,20 +38,8 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [approveDialog, setApproveDialog] = useState<string | null>(null);
   const [txHash, setTxHash] = useState("");
+
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
-  const [toast, setToast] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
-  const handleCloseToast = () => setToast((prev) => ({ ...prev, open: false }));
-
-  function copyText(text: string, label: string) {
-    navigator.clipboard.writeText(text);
-    setToast({ open: true, message: `${label} copied!`, severity: "success" });
-  }
 
   async function fetchWithdrawals(p: number, status: string) {
     setLoading(true);
@@ -108,13 +70,7 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
       body: JSON.stringify({ withdrawalId: approveDialog, txHash }),
     });
     if (res.ok) {
-      setWithdrawals((prev) =>
-        prev.map((w) => (w.id === approveDialog ? { ...w, status: "paid", tx_hash: txHash } : w))
-      );
-      setToast({ open: true, message: "Withdrawal approved successfully.", severity: "success" });
-    } else {
-      const data = await res.json();
-      setToast({ open: true, message: data.error || "Failed to approve withdrawal.", severity: "error" });
+      setWithdrawals((prev) => prev.map((w) => (w.id === approveDialog ? { ...w, status: "paid", tx_hash: txHash } : w)));
     }
     setApproveDialog(null);
     setTxHash("");
@@ -129,258 +85,216 @@ export default function AdminWithdrawalsClient({ initialWithdrawals, initialTota
       body: JSON.stringify({ withdrawalId: id }),
     });
     if (res.ok) {
-      setWithdrawals((prev) =>
-        prev.map((w) => (w.id === id ? { ...w, status: "failed" } : w))
-      );
-      setToast({ open: true, message: "Withdrawal rejected and coins refunded.", severity: "success" });
-    } else {
-      const data = await res.json();
-      setToast({ open: true, message: data.error || "Failed to reject withdrawal.", severity: "error" });
+      setWithdrawals((prev) => prev.map((w) => (w.id === id ? { ...w, status: "failed" } : w)));
     }
     setActionLoading(null);
   }
 
   return (
-    <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Wallet size={24} color="#10B981" />
-          Withdrawal Management
-        </Typography>
-        <Typography variant="body2" color="textSecondary">{total} total withdrawals</Typography>
-      </Box>
+    <>
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div>
+          <h2 className="font-display-lg text-display-lg text-on-surface">Withdrawal Management</h2>
+          <p className="text-on-surface-variant mt-1">Review and process payout requests. <span className="font-semibold text-on-tertiary-container">{total} total withdrawals</span> pending your attention.</p>
+        </div>
+        <div className="flex gap-3">
+          <button className="px-4 py-2 bg-surface border border-outline-variant text-primary font-semibold rounded-lg hover:bg-surface-container-low transition-all flex items-center gap-2">
+            <span className="material-symbols-outlined text-lg">filter_list</span>
+            Filter
+          </button>
+        </div>
+      </div>
 
-      {/* Filter tabs */}
-      <Box sx={{ display: "flex", gap: 1, mb: 3, flexWrap: "wrap" }}>
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white border border-outline-variant p-card-padding rounded-xl">
+          <p className="text-label-caps font-label-caps text-outline uppercase">Total Volume</p>
+          <p className="text-display-lg font-display-lg mt-2 text-primary">${withdrawals.reduce((sum, w) => sum + w.amount_usd, 0).toFixed(2)}</p>
+        </div>
+        <div className="bg-white border border-outline-variant p-card-padding rounded-xl">
+          <p className="text-label-caps font-label-caps text-outline uppercase">Pending Requests</p>
+          <p className="text-display-lg font-display-lg mt-2 text-primary">{withdrawals.filter(w => w.status === "pending").length}</p>
+          <p className="text-body-sm font-body-sm text-error flex items-center gap-1 mt-1">
+            <span className="material-symbols-outlined text-sm">schedule</span> Requires action
+          </p>
+        </div>
+        <div className="bg-white border border-outline-variant p-card-padding rounded-xl">
+          <p className="text-label-caps font-label-caps text-outline uppercase">Total Requests</p>
+          <p className="text-display-lg font-display-lg mt-2 text-primary">{total}</p>
+        </div>
+        <div className="bg-white border border-outline-variant p-card-padding rounded-xl">
+          <p className="text-label-caps font-label-caps text-outline uppercase">Success Rate</p>
+          <p className="text-display-lg font-display-lg mt-2 text-primary">
+            {total > 0 ? ((withdrawals.filter(w => w.status === "paid").length / total) * 100).toFixed(1) : "100"}%
+          </p>
+          <p className="text-body-sm font-body-sm text-secondary flex items-center gap-1 mt-1">
+            <span className="material-symbols-outlined text-sm">check_circle</span> Completed
+          </p>
+        </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex gap-2 mb-6">
         {TABS.map((tab) => (
-          <Button
+          <button
             key={tab}
             onClick={() => handleFilterChange(tab)}
-            sx={{
-              textTransform: "capitalize",
-              fontWeight: 600,
-              fontSize: "0.8rem",
-              borderRadius: 2,
-              px: 2,
-              py: 0.75,
-              color: filter === tab ? "#fff" : colors.text.secondary,
-              bgcolor: filter === tab ? colors.background.gradient : colors.primary,
-              background: filter === tab ? colors.background.gradient : undefined,
-              border: `1px solid ${filter === tab ? "transparent" : colors.divider}`,
-              "&:hover": { bgcolor: colors.background.ternary },
-            }}
+            className={`px-4 py-2 rounded-lg font-semibold text-body-sm capitalize transition-all ${
+              filter === tab
+                ? "bg-on-tertiary-container text-on-primary"
+                : "bg-white border border-outline-variant text-on-surface hover:bg-surface-container-low"
+            }`}
           >
             {tab}
-          </Button>
+          </button>
         ))}
-      </Box>
+      </div>
 
-      {/* Mobile cards */}
-      <Box sx={{ display: { xs: "flex", md: "none" }, flexDirection: "column", gap: 1 }}>
-        {withdrawals.map((w) => {
-          const sc = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
-          return (
-            <Paper key={w.id} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.8rem" }} truncate>{w.user_email}</Typography>
-                <Box sx={{ borderRadius: 50, px: 1.25, py: 0.25, fontSize: "10px", fontWeight: 600, bgcolor: sc.bg, color: sc.color, textTransform: "capitalize" }}>
-                  {w.status}
-                </Box>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
-                <Typography sx={{ fontSize: "0.6rem", color: colors.text.secondary, fontFamily: "monospace" }}>
-                  {w.user_id.slice(0, 8)}...{w.user_id.slice(-4)}
-                </Typography>
-                <IconButton size="small" onClick={() => copyText(w.user_id, "User ID")} sx={{ p: 0.5, bgcolor: "transparent" }}>
-                  <Copy size={10} color={colors.text.secondary} />
-                </IconButton>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-                <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary }}>
-                  {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                </Typography>
-              </Box>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>{w.coins.toLocaleString()} coins (${w.amount_usd.toFixed(2)})</Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, fontFamily: "monospace" }}>LTC: {w.crypto_address.slice(0, 6)}...{w.crypto_address.slice(-4)}</Typography>
-                <IconButton size="small" onClick={() => copyText(w.crypto_address, "Address")} sx={{ p: 0.5 }}>
-                  <Copy size={12} color={colors.text.secondary} />
-                </IconButton>
-              </Box>
-              {w.status === "pending" && (
-                <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
-                  <Button size="small" onClick={() => { setApproveDialog(w.id); setTxHash(""); }} disabled={actionLoading === w.id}
-                    startIcon={<CheckCircle size={14} />}
-                    sx={{ textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#10B981", bgcolor: "rgba(16,185,129,0.1)", borderRadius: 2, flex: 1 }}>
-                    Approve
-                  </Button>
-                  <Button size="small" onClick={() => handleReject(w.id)} disabled={actionLoading === w.id}
-                    startIcon={<XCircle size={14} />}
-                    sx={{ textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#f87171", bgcolor: "rgba(239,68,68,0.1)", borderRadius: 2, flex: 1 }}>
-                    Reject
-                  </Button>
-                </Box>
+      {/* Withdrawal Table */}
+      <div className="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead className="bg-surface-container-low border-b border-outline-variant">
+              <tr>
+                {["User", "Date", "Coins", "USD", "Address", "Status", "TX Hash", "Actions"].map((h) => (
+                  <th key={h} className="p-table-cell-padding text-left font-label-caps text-label-caps text-outline uppercase">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant/10">
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="p-8 text-center">
+                    <span className="material-symbols-outlined animate-spin text-on-tertiary-container">refresh</span>
+                  </td>
+                </tr>
+              ) : withdrawals.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="p-8 text-center text-on-surface-variant">No withdrawals found</td>
+                </tr>
+              ) : (
+                withdrawals.map((w) => {
+                  const sc = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
+                  return (
+                    <tr key={w.id} className="hover:bg-surface-container-low/50 transition-colors">
+                      <td className="p-table-cell-padding">
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-primary">{w.user_email}</span>
+                          <span className="text-xs text-outline font-data-mono">ID: {w.user_id.slice(0, 8)}...</span>
+                        </div>
+                      </td>
+                      <td className="p-table-cell-padding text-on-surface-variant">
+                        {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </td>
+                      <td className="p-table-cell-padding text-right font-data-mono font-bold">{w.coins.toLocaleString()}</td>
+                      <td className="p-table-cell-padding text-right font-data-mono text-on-surface-variant">${w.amount_usd.toFixed(2)}</td>
+                      <td className="p-table-cell-padding">
+                        <span className="text-on-surface-variant font-data-mono text-xs truncate max-w-[120px] block">
+                          {w.crypto_address.slice(0, 10)}...{w.crypto_address.slice(-6)}
+                        </span>
+                      </td>
+                      <td className="p-table-cell-padding">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${sc.bg} ${sc.color}`}>
+                          {w.status}
+                        </span>
+                      </td>
+                      <td className="p-table-cell-padding text-outline text-xs">
+                        {w.tx_hash ? (
+                          <span className="font-data-mono text-on-tertiary-container">{w.tx_hash.slice(0, 10)}...</span>
+                        ) : "—"}
+                      </td>
+                      <td className="p-table-cell-padding">
+                        {w.status === "pending" ? (
+                          <div className="flex justify-center gap-2">
+                            <button
+                              onClick={() => { setApproveDialog(w.id); setTxHash(""); }}
+                              disabled={actionLoading === w.id}
+                              className="p-1.5 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-all"
+                              title="Approve & Pay"
+                            >
+                              <span className="material-symbols-outlined text-lg">check_circle</span>
+                            </button>
+                            <button
+                              onClick={() => handleReject(w.id)}
+                              disabled={actionLoading === w.id}
+                              className="p-1.5 bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200 transition-all"
+                              title="Reject"
+                            >
+                              <span className="material-symbols-outlined text-lg">cancel</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <button className="p-1.5 text-outline hover:text-primary transition-all">
+                            <span className="material-symbols-outlined text-lg">more_vert</span>
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
-            </Paper>
-          );
-        })}
-      </Box>
+            </tbody>
+          </table>
+        </div>
 
-      {/* Desktop table */}
-      <TableContainer component={Paper} sx={{ display: { xs: "none", md: "block" }, borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: "transparent" }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              {["User", "Date", "Coins", "USD", "Address", "Status", "TX Hash", "Actions"].map((h) => (
-                <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.background.secondary }}>
-                  {h}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {withdrawals.map((w) => {
-              const sc = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
-              return (
-                <TableRow key={w.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
-                  <TableCell sx={{ borderColor: colors.divider, maxWidth: 160 }}>
-                    <Typography truncate sx={{ fontSize: "0.8rem", color: "#fff", fontWeight: 500 }}>{w.user_email}</Typography>
-                    <Tooltip title="Click to copy full UID" arrow>
-                      <Box
-                        onClick={() => copyText(w.user_id, "User ID")}
-                        sx={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 0.5, fontSize: "0.65rem", fontFamily: "monospace", color: colors.text.secondary, "&:hover": { color: "#10B981" } }}
-                      >
-                        {w.user_id.slice(0, 8)}...
-                        <Copy size={9} />
-                      </Box>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.8rem", whiteSpace: "nowrap" }}>
-                    {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                  </TableCell>
-                  <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontWeight: 600 }}>{w.coins.toLocaleString()}</TableCell>
-                  <TableCell sx={{ borderColor: colors.divider, color: "#10B981", fontWeight: 600 }}>${w.amount_usd.toFixed(2)}</TableCell>
-
-                  <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.75rem", maxWidth: 160 }}>
-                    <Tooltip title="Copy full address" arrow>
-                      <Box
-                        onClick={() => copyText(w.crypto_address, "Address")}
-                        sx={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 0.5, fontFamily: "monospace", "&:hover": { color: "#10B981" } }}
-                      >
-                        {w.crypto_address.slice(0, 10)}...{w.crypto_address.slice(-6)}
-                        <Copy size={11} />
-                      </Box>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell sx={{ borderColor: colors.divider }}>
-                    <Box sx={{ display: "inline-block", borderRadius: 50, px: 1.25, py: 0.25, fontSize: "0.7rem", fontWeight: 600, bgcolor: sc.bg, color: sc.color, textTransform: "capitalize" }}>
-                      {w.status}
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.75rem", maxWidth: 100 }}>
-                    <Typography truncate sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>{w.tx_hash || "—"}</Typography>
-                  </TableCell>
-                  <TableCell sx={{ borderColor: colors.divider }}>
-                    {w.status === "pending" && (
-                      <Box sx={{ display: "flex", gap: 0.5 }}>
-                        <Button size="small" onClick={() => { setApproveDialog(w.id); setTxHash(""); }} disabled={actionLoading === w.id}
-                          sx={{ minWidth: 0, textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#10B981", bgcolor: "rgba(16,185,129,0.1)", borderRadius: 2, px: 1.5 }}>
-                          {actionLoading === w.id ? <CircularProgress size={14} color="inherit" /> : "Approve"}
-                        </Button>
-                        <Button size="small" onClick={() => handleReject(w.id)} disabled={actionLoading === w.id}
-                          sx={{ minWidth: 0, textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#f87171", bgcolor: "rgba(239,68,68,0.1)", borderRadius: 2, px: 1.5 }}>
-                          Reject
-                        </Button>
-                      </Box>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <Box sx={{ mt: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Button size="small" onClick={() => fetchWithdrawals(page - 1, filter)} disabled={page === 0 || loading} startIcon={<ChevronLeft size={14} />}
-            sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none" }}>
-            Prev
-          </Button>
-          <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>Page {page + 1} of {totalPages}</Typography>
-          <Button size="small" onClick={() => fetchWithdrawals(page + 1, filter)} disabled={page >= totalPages - 1 || loading} endIcon={<ChevronRight size={14} />}
-            sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none" }}>
-            Next
-          </Button>
-        </Box>
-      )}
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="px-gutter py-4 bg-surface-container-low border-t border-outline-variant flex items-center justify-between">
+            <p className="text-body-sm text-on-surface-variant">Showing <span className="font-semibold">{page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, total)}</span> of <span className="font-semibold">{total}</span> withdrawals</p>
+            <div className="flex gap-2">
+              <button onClick={() => fetchWithdrawals(page - 1, filter)} disabled={page === 0 || loading} className="p-2 border border-outline-variant rounded-lg text-outline disabled:opacity-50">
+                <span className="material-symbols-outlined">chevron_left</span>
+              </button>
+              <button onClick={() => fetchWithdrawals(page + 1, filter)} disabled={page >= totalPages - 1 || loading} className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container transition-all">
+                <span className="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Approve Dialog */}
-      <Dialog
-        open={!!approveDialog}
-        onClose={() => setApproveDialog(null)}
-        fullWidth
-        maxWidth="xs"
-        PaperProps={{
-          sx: {
-            bgcolor: colors.background.default,
-            border: `1px solid ${colors.divider}`,
-            borderRadius: 4,
-            m: { xs: 2 },
-            width: { xs: "calc(100% - 32px)", sm: 400 },
-          },
-        }}
-      >
-        <DialogTitle sx={{ borderBottom: `1px solid ${colors.divider}`, py: 1.5 }}>
-          <Typography variant="subtitle1" isBold>Approve Withdrawal</Typography>
-        </DialogTitle>
-        <DialogContent sx={{ pt: "16px !important" }}>
-          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            Enter the blockchain transaction hash to mark this withdrawal as paid.
-          </Typography>
-          <TextField
-            fullWidth
-            placeholder="Transaction hash..."
-            value={txHash}
-            onChange={(e) => setTxHash(e.target.value)}
-            size="small"
-          />
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setApproveDialog(null)} sx={{ textTransform: "none", color: colors.text.secondary }}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleApprove}
-            disabled={txHash.trim().length < 5 || actionLoading !== null}
-            sx={{ textTransform: "none", fontWeight: 600, background: colors.background.gradient, color: "#fff", borderRadius: 2, px: 3 }}
-          >
-            {actionLoading ? <CircularProgress size={16} color="inherit" /> : "Confirm Approval"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {approveDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setApproveDialog(null)} />
+          <div className="relative bg-white border border-outline-variant rounded-xl w-full max-w-sm overflow-hidden">
+            <div className="p-4 border-b border-outline-variant">
+              <h3 className="font-title-sm text-title-sm text-on-surface">Approve Withdrawal</h3>
+            </div>
+            <div className="p-4">
+              <p className="text-body-sm text-on-surface-variant mb-3">Enter the blockchain transaction hash to mark this withdrawal as paid.</p>
+              <input
+                className="w-full px-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-on-tertiary-container/20 focus:border-on-tertiary-container outline-none transition-all"
+                placeholder="Transaction hash..."
+                value={txHash}
+                onChange={(e) => setTxHash(e.target.value)}
+              />
+            </div>
+            <div className="p-4 border-t border-outline-variant flex justify-end gap-2">
+              <button onClick={() => setApproveDialog(null)} className="px-4 py-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-all text-body-sm">
+                Cancel
+              </button>
+              <button
+                onClick={handleApprove}
+                disabled={txHash.trim().length < 5 || actionLoading !== null}
+                className="px-4 py-2 bg-on-tertiary-container text-on-primary font-semibold rounded-lg hover:opacity-90 transition-all disabled:opacity-50"
+              >
+                {actionLoading ? "Processing..." : "Confirm Approval"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Toast Feedback */}
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={4000}
-        onClose={handleCloseToast}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleCloseToast}
-          severity={toast.severity}
-          sx={{
-            bgcolor: toast.severity === "success" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)",
-            border: `1px solid ${toast.severity === "success" ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}`,
-            color: toast.severity === "success" ? "#10B981" : "#f87171",
-            "& .MuiAlert-icon": { color: toast.severity === "success" ? "#10B981" : "#f87171" },
-          }}
-        >
-          {toast.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+      {/* Footer Meta */}
+      <footer className="mt-8 flex justify-between items-center text-body-sm text-on-primary-container/60">
+        <p>© 2024 Rewardoxy Ecosystem Management. All rights reserved.</p>
+        <div className="flex gap-4">
+          <a className="hover:underline" href="#">Privacy Policy</a>
+          <a className="hover:underline" href="#">Audit Logs</a>
+        </div>
+      </footer>
+    </>
   );
 }

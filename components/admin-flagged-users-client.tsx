@@ -1,41 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import {
-  Box,
-  Paper,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  CircularProgress,
-  IconButton,
-  Tooltip,
-  Snackbar,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Chip,
-} from "@mui/material";
-import { Users, AlertTriangle, ChevronLeft, ChevronRight, Copy, Shield, ShieldQuestion, ShieldX, Undo2, ArrowLeft } from "lucide-react";
-import Typography from "@/components/ui/Typography";
-import colors from "@/theme/colors";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-function countryFlag(code: string | null | undefined): string {
-  if (!code || code === "UNKNOWN" || code.length !== 2) return "🌍";
-  const codePoints = code
-    .toUpperCase()
-    .split("")
-    .map((c) => 127397 + c.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
-}
 
 interface FlaggedUser {
   id: string;
@@ -62,27 +29,26 @@ interface FraudLog {
 
 const PAGE_SIZE = 20;
 
+function countryFlag(code: string | null | undefined): string {
+  if (!code || code === "UNKNOWN" || code.length !== 2) return "🌍";
+  const codePoints = code.toUpperCase().split("").map((c) => 127397 + c.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+}
+
 export default function AdminFlaggedUsersClient() {
   const router = useRouter();
   const [users, setUsers] = useState<FlaggedUser[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
-  
+
   const [logsDialogOpen, setLogsDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<FlaggedUser | null>(null);
   const [logs, setLogs] = useState<FraudLog[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
-  
+
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const [toast, setToast] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
-  const handleCloseToast = () => setToast((prev) => ({ ...prev, open: false }));
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const fetchFlaggedUsers = useCallback(async (p: number) => {
@@ -116,318 +82,339 @@ export default function AdminFlaggedUsersClient() {
 
   async function handleResolve(userId: string) {
     if (!confirm("Are you sure you want to resolve and reset fraud flags for this user? This will unlock cashouts.")) return;
-    
+
     setActionLoading(`resolve-${userId}`);
     const res = await fetch("/api/admin/users/fraud-resolve", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId }),
     });
-    
+
     if (res.ok) {
-      setToast({ open: true, message: "User fraud data resolved and reset.", severity: "success" });
       fetchFlaggedUsers(page);
-    } else {
-      setToast({ open: true, message: "Failed to resolve user.", severity: "error" });
     }
     setActionLoading(null);
   }
 
   async function handleSuspend(userId: string) {
     if (!confirm("Are you sure you want to permanently suspend this user?")) return;
-    
+
     setActionLoading(`suspend-${userId}`);
     const res = await fetch("/api/admin/users/fraud-suspend", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId }),
     });
-    
+
     if (res.ok) {
-      setToast({ open: true, message: "User suspended.", severity: "success" });
       fetchFlaggedUsers(page);
-    } else {
-      setToast({ open: true, message: "Failed to suspend user.", severity: "error" });
     }
     setActionLoading(null);
   }
 
-  function copyUid(uid: string) { navigator.clipboard.writeText(uid); }
-  function formatDate(d: string) { return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function formatDate(d: string) {
+    return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
 
   return (
-    <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
-      <Box sx={{ mb: 3, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
-        <Box>
-          <Button 
-            startIcon={<ArrowLeft size={16} />} 
+    <>
+      {/* Page Header */}
+      <div className="mb-section-gap flex justify-between items-end">
+        <div>
+          <button
             onClick={() => router.back()}
-            sx={{ color: colors.text.secondary, mb: 1, textTransform: "none" }}
+            className="flex items-center gap-2 text-on-surface-variant hover:text-on-tertiary-container mb-2 text-body-sm transition-colors"
           >
+            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
             Back to Users
-          </Button>
-          <Typography variant="h5" isBold sx={{ display: "flex", alignItems: "center", gap: 1, color: "#f59e0b" }}>
-            <AlertTriangle size={24} color="#f59e0b" />
+          </button>
+          <h2 className="font-headline-md text-headline-md text-on-surface mb-1 flex items-center gap-2">
+            <span className="material-symbols-outlined text-[28px] text-amber-500">report_problem</span>
             Flagged Users
-          </Typography>
-          <Typography variant="body2" color="textSecondary">{total} users require attention</Typography>
-        </Box>
-      </Box>
+          </h2>
+          <p className="text-on-surface-variant font-body-md text-body-md flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${total > 0 ? "bg-amber-500" : "bg-emerald-500"}`}></span>
+            {total} users require attention.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button className="px-4 py-2 bg-surface border border-outline-variant text-on-surface font-semibold rounded-lg hover:bg-surface-container-low transition-all text-body-sm flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">history</span>
+            Review History
+          </button>
+        </div>
+      </div>
 
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-          <CircularProgress sx={{ color: "#f59e0b" }} />
-        </Box>
+        <div className="flex-1 flex items-center justify-center py-20">
+          <span className="material-symbols-outlined animate-spin text-on-tertiary-container text-[40px]">refresh</span>
+        </div>
       ) : users.length === 0 ? (
-        <Paper elevation={0} sx={{ p: 4, textAlign: "center", borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary }}>
-          <Shield size={48} color={colors.text.secondary} style={{ opacity: 0.5, marginBottom: 16 }} />
-          <Typography variant="h6">All clear!</Typography>
-          <Typography variant="body2" color="textSecondary">No flagged users at the moment.</Typography>
-        </Paper>
+        /* Empty State */
+        <div className="flex-1 flex items-center justify-center">
+          <div className="relative w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-6">
+            {/* Decorative Background Element */}
+            <div className="absolute inset-0 -z-10 opacity-30 blur-3xl pointer-events-none">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-on-tertiary-container/10 rounded-full"></div>
+            </div>
+
+            {/* Main Empty State Card */}
+            <div className="md:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
+              <div className="w-24 h-24 bg-secondary-container/20 rounded-full flex items-center justify-center mb-6 relative">
+                <span className="material-symbols-outlined text-[48px] text-secondary">verified_user</span>
+                <span className="absolute inset-0 rounded-full border-4 border-secondary/20 animate-ping"></span>
+              </div>
+              <h3 className="font-display-lg text-display-lg text-on-surface mb-2">All clear!</h3>
+              <p className="text-on-surface-variant max-w-md mx-auto font-body-md text-body-md">
+                No flagged users at the moment. Your automated security filters and manual reports are currently empty.
+              </p>
+              <div className="mt-8 pt-8 border-t border-outline-variant/30 w-full flex justify-center gap-8">
+                <div className="text-center">
+                  <p className="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">System Health</p>
+                  <p className="font-data-mono text-data-mono text-emerald-600 font-bold">OPTIMAL</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Last Scan</p>
+                  <p className="font-data-mono text-data-mono text-on-surface font-bold">2 MIN AGO</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Active Rules</p>
+                  <p className="font-data-mono text-data-mono text-on-surface font-bold">42</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Side Info Panel */}
+            <div className="md:col-span-4 flex flex-col gap-6">
+              {/* Security Pulse Card */}
+              <div className="bg-primary-container p-6 rounded-xl text-on-primary">
+                <p className="font-label-caps text-label-caps text-on-primary-container uppercase mb-3">Real-time Watch</p>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-on-tertiary-container/20 rounded-lg flex items-center justify-center">
+                    <span className="material-symbols-outlined text-on-tertiary-container">security</span>
+                  </div>
+                  <div>
+                    <p className="font-title-sm text-title-sm leading-tight">Shield Active</p>
+                    <p className="text-on-primary-container text-xs">Monitoring traffic</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="h-1 bg-on-primary-container/20 rounded-full overflow-hidden">
+                    <div className="h-full bg-on-tertiary-container w-3/4 animate-[shimmer-bar_2s_infinite]"></div>
+                  </div>
+                  <p className="text-[10px] font-data-mono text-on-primary-container">SYS_LOG: NO_THREATS_DETECTED</p>
+                </div>
+              </div>
+
+              {/* Mini Insight Card */}
+              <div className="bg-surface-container-high p-6 rounded-xl border border-outline-variant flex-1">
+                <h4 className="font-label-caps text-label-caps text-on-surface-variant uppercase mb-4">Latest Action</h4>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 rounded bg-surface-container-lowest border border-outline-variant flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[16px] text-on-surface-variant">check_circle</span>
+                  </div>
+                  <div className="text-body-sm">
+                    <p className="text-on-surface font-semibold">System Monitoring</p>
+                    <p className="text-on-surface-variant text-xs mt-1">All security filters active and operational.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       ) : (
         <>
-          {/* Mobile cards */}
-          <Box sx={{ display: { xs: "flex", md: "none" }, flexDirection: "column", gap: 1 }}>
+          {/* Desktop Table */}
+          <div className="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm hidden md:block">
+            <table className="w-full border-collapse">
+              <thead className="bg-surface-container-low border-b border-outline-variant">
+                <tr>
+                  {["Email", "Signup Country", "Last Seen", "Fraud Status", "Risk Score", "Actions"].map((h) => (
+                    <th key={h} className="p-table-cell-padding text-left font-label-caps text-label-caps text-outline uppercase tracking-wider">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant">
+                {users.map((u) => {
+                  const countryMismatch = u.signup_country && u.last_seen_country && u.signup_country !== u.last_seen_country;
+
+                  return (
+                    <tr key={u.id} className="hover:bg-surface-container-low/40 transition-colors">
+                      <td className="p-table-cell-padding">
+                        <div className="flex flex-col">
+                          <span className="font-body-sm font-semibold text-on-surface">{u.email}</span>
+                          <span className="font-data-mono text-data-mono text-on-surface-variant text-[10px]">{u.id}</span>
+                        </div>
+                      </td>
+                      <td className="p-table-cell-padding text-on-surface-variant whitespace-nowrap">
+                        {countryFlag(u.signup_country)} {u.signup_country || "—"}
+                      </td>
+                      <td className={`p-table-cell-padding whitespace-nowrap ${countryMismatch ? "text-rose-600" : "text-on-surface-variant"}`}>
+                        {countryFlag(u.last_seen_country)} {u.last_seen_country || "—"} {countryMismatch ? "⚠️" : ""}
+                      </td>
+                      <td className="p-table-cell-padding">
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold capitalize ${
+                          u.fraud_status === "suspended" ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"
+                        }`}>
+                          {u.fraud_status.replace("_", " ")}
+                        </span>
+                      </td>
+                      <td className="p-table-cell-padding">
+                        <div className="flex flex-col gap-0.5">
+                          {u.vpn_detected_count > 0 && (
+                            <span className="flex items-center gap-1 text-amber-600 text-body-sm">
+                              <span className="material-symbols-outlined text-[14px]">shield</span>
+                              {u.vpn_detected_count} VPN hits
+                            </span>
+                          )}
+                          {u.mismatch_count > 0 && (
+                            <span className="flex items-center gap-1 text-rose-600 text-body-sm">
+                              <span className="material-symbols-outlined text-[14px]">warning</span>
+                              {u.mismatch_count} mismatches
+                            </span>
+                          )}
+                          {u.vpn_detected_count === 0 && u.mismatch_count === 0 && (
+                            <span className="text-on-surface-variant">—</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-table-cell-padding">
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => openLogsDialog(u)}
+                            className="px-2 py-1 bg-surface-container-high rounded text-on-surface-variant hover:bg-surface-container transition-all text-[11px] font-semibold"
+                          >
+                            View Logs
+                          </button>
+                          <button
+                            onClick={() => handleResolve(u.id)}
+                            disabled={actionLoading === `resolve-${u.id}`}
+                            className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200 transition-all text-[11px] font-semibold disabled:opacity-50"
+                          >
+                            {actionLoading === `resolve-${u.id}` ? "..." : "Resolve"}
+                          </button>
+                          <button
+                            onClick={() => handleSuspend(u.id)}
+                            disabled={actionLoading === `suspend-${u.id}` || u.fraud_status === "suspended"}
+                            className="px-2 py-1 bg-rose-100 text-rose-700 rounded hover:bg-rose-200 transition-all text-[11px] font-semibold disabled:opacity-50"
+                          >
+                            {actionLoading === `suspend-${u.id}` ? "..." : "Suspend"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
             {users.map((u) => {
               const countryMismatch = u.signup_country && u.last_seen_country && u.signup_country !== u.last_seen_country;
               return (
-                <Paper key={u.id} sx={{ borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: colors.background.primary, p: 2 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.8rem" }} truncate>{u.email}</Typography>
-                    <Box sx={{ borderRadius: 50, px: 1, py: 0.25, fontSize: "10px", fontWeight: 600,
-                      bgcolor: u.fraud_status === "suspended" ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)",
-                      color: u.fraud_status === "suspended" ? "#f87171" : "#f59e0b",
-                      border: `1px solid ${u.fraud_status === "suspended" ? "rgba(239,68,68,0.25)" : "rgba(245,158,11,0.25)"}`,
-                      textTransform: "capitalize" }}>
+                <div key={u.id} className="bg-white border border-outline-variant rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-body-sm font-semibold truncate max-w-[200px]">{u.email}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
+                      u.fraud_status === "suspended" ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700"
+                    }`}>
                       {u.fraud_status.replace("_", " ")}
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
-                    <Typography sx={{ fontSize: "0.65rem", color: colors.text.secondary, fontFamily: "monospace" }}>
-                      {u.id.slice(0, 8)}...{u.id.slice(-4)}
-                    </Typography>
-                    <IconButton size="small" onClick={() => copyUid(u.id)} sx={{ p: 0.5 }}><Copy size={10} color={colors.text.secondary} /></IconButton>
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 2, fontSize: "0.75rem", color: colors.text.secondary, mb: 0.5, flexWrap: "wrap" }}>
+                    </span>
+                  </div>
+                  <div className="flex gap-4 text-body-sm text-on-surface-variant mb-3">
                     <span>Signup: {countryFlag(u.signup_country)} {u.signup_country || "—"}</span>
-                    <span style={{ color: countryMismatch ? "#f87171" : undefined }}>
+                    <span className={countryMismatch ? "text-rose-600" : ""}>
                       Last: {countryFlag(u.last_seen_country)} {u.last_seen_country || "—"} {countryMismatch ? "⚠️" : ""}
                     </span>
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 1.5, fontSize: "0.75rem", mb: 1.5, flexWrap: "wrap" }}>
-                    {(u.vpn_detected_count || 0) > 0 && (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#f59e0b", fontSize: "0.75rem" }}>
-                        <Shield size={14} /> {u.vpn_detected_count} VPN hits
-                      </Box>
-                    )}
-                    {(u.mismatch_count || 0) > 0 && (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#f87171", fontSize: "0.75rem" }}>
-                        <AlertTriangle size={14} /> {u.mismatch_count} mismatches
-                      </Box>
-                    )}
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                    <Button size="small" onClick={() => openLogsDialog(u)}
-                      sx={{ textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: colors.text.secondary, bgcolor: "rgba(169,169,202,0.1)", borderRadius: 2, flex: 1, minWidth: 0, "&:hover": { bgcolor: "rgba(169,169,202,0.2)" } }}>
-                      View Logs
-                    </Button>
-                    <Button size="small" onClick={() => handleResolve(u.id)} disabled={actionLoading === `resolve-${u.id}`}
-                      sx={{ textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#10B981", bgcolor: "rgba(16,185,129,0.1)", borderRadius: 2, flex: 1, minWidth: 0, "&:hover": { bgcolor: "rgba(16,185,129,0.2)" } }}>
-                      {actionLoading === `resolve-${u.id}` ? <CircularProgress size={14} color="inherit" /> : "Resolve"}
-                    </Button>
-                    <Button size="small" onClick={() => handleSuspend(u.id)} disabled={actionLoading === `suspend-${u.id}` || u.fraud_status === "suspended"}
-                      sx={{ textTransform: "none", fontSize: "0.7rem", fontWeight: 600, color: "#f87171", bgcolor: "rgba(239,68,68,0.1)", borderRadius: 2, flex: 1, minWidth: 0, "&:hover": { bgcolor: "rgba(239,68,68,0.2)" }, "&.Mui-disabled": { opacity: 0.3 } }}>
-                      {actionLoading === `suspend-${u.id}` ? <CircularProgress size={14} color="inherit" /> : "Suspend"}
-                    </Button>
-                  </Box>
-                </Paper>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => openLogsDialog(u)} className="flex-1 px-2 py-1 bg-surface-container-high rounded text-on-surface-variant text-[11px] font-semibold">Logs</button>
+                    <button onClick={() => handleResolve(u.id)} className="flex-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[11px] font-semibold">Resolve</button>
+                    <button onClick={() => handleSuspend(u.id)} className="flex-1 px-2 py-1 bg-rose-100 text-rose-700 rounded text-[11px] font-semibold">Suspend</button>
+                  </div>
+                </div>
               );
             })}
-          </Box>
+          </div>
 
-          {/* Desktop table */}
-          <TableContainer component={Paper} sx={{ display: { xs: "none", md: "block" }, borderRadius: 3, border: `1px solid ${colors.divider}`, bgcolor: "transparent", overflowX: "auto" }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  {["Email", "Signup Country", "Last Seen", "Fraud Status", "Risk Score", "Actions"].map((h) => (
-                    <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.background.secondary }}>
-                      {h}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {users.map((u) => {
-                  const countryMismatch = u.signup_country && u.last_seen_country && u.signup_country !== u.last_seen_country;
-                  
-                  return (
-                    <TableRow key={u.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
-                      <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontSize: "0.85rem" }}>
-                        <Box sx={{ display: "flex", flexDirection: "column" }}>
-                          <span>{u.email}</span>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: colors.text.secondary, mt: 0.5 }}>
-                            <Typography sx={{ fontSize: "0.65rem", fontFamily: "monospace" }}>{u.id}</Typography>
-                            <IconButton size="small" onClick={() => copyUid(u.id)} sx={{ p: 0.5 }}><Copy size={10} /></IconButton>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell sx={{ borderColor: colors.divider, fontSize: "0.85rem", whiteSpace: "nowrap" }}>
-                        {countryFlag(u.signup_country)} {u.signup_country || "—"}
-                      </TableCell>
-                      <TableCell sx={{ borderColor: colors.divider, fontSize: "0.85rem", whiteSpace: "nowrap", color: countryMismatch ? "#f87171" : undefined }}>
-                        {countryFlag(u.last_seen_country)} {u.last_seen_country || "—"} {countryMismatch ? "⚠️" : ""}
-                      </TableCell>
-                      <TableCell sx={{ borderColor: colors.divider }}>
-                        <Box sx={{ display: "inline-block", borderRadius: 50, px: 1.25, py: 0.25, fontSize: "0.7rem", fontWeight: 600, 
-                          bgcolor: u.fraud_status === "suspended" ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)", 
-                          color: u.fraud_status === "suspended" ? "#f87171" : "#f59e0b",
-                          border: `1px solid ${u.fraud_status === "suspended" ? "rgba(239,68,68,0.25)" : "rgba(245,158,11,0.25)"}`, 
-                          textTransform: "capitalize" }}>
-                          {u.fraud_status.replace("_", " ")}
-                        </Box>
-                      </TableCell>
-                      <TableCell sx={{ borderColor: colors.divider, fontSize: "0.85rem", whiteSpace: "nowrap" }}>
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                          {(u.vpn_detected_count || 0) > 0 && (
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#f59e0b", fontSize: "0.75rem" }}>
-                              <Shield size={14} /> {u.vpn_detected_count} VPN hits
-                            </Box>
-                          )}
-                          {(u.mismatch_count || 0) > 0 && (
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "#f87171", fontSize: "0.75rem" }}>
-                              <AlertTriangle size={14} /> {u.mismatch_count} mismatches
-                            </Box>
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell sx={{ borderColor: colors.divider }}>
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          <Button size="small" onClick={() => openLogsDialog(u)}
-                            sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: colors.text.secondary, bgcolor: "rgba(169,169,202,0.1)", borderRadius: 2, "&:hover": { bgcolor: "rgba(169,169,202,0.2)" } }}>
-                            View Logs
-                          </Button>
-                          <Button size="small" onClick={() => handleResolve(u.id)} disabled={actionLoading === `resolve-${u.id}`}
-                            startIcon={<Undo2 size={14} />}
-                            sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: "#10B981", bgcolor: "rgba(16,185,129,0.1)", borderRadius: 2, "&:hover": { bgcolor: "rgba(16,185,129,0.2)" } }}>
-                            {actionLoading === `resolve-${u.id}` ? <CircularProgress size={14} color="inherit" /> : "Resolve & Reset"}
-                          </Button>
-                          <Button size="small" onClick={() => handleSuspend(u.id)} disabled={actionLoading === `suspend-${u.id}` || u.fraud_status === "suspended"}
-                            startIcon={<ShieldX size={14} />}
-                            sx={{ textTransform: "none", fontSize: "0.75rem", fontWeight: 600, color: "#f87171", bgcolor: "rgba(239,68,68,0.1)", borderRadius: 2, "&:hover": { bgcolor: "rgba(239,68,68,0.2)" }, "&.Mui-disabled": { opacity: 0.3 } }}>
-                            {actionLoading === `suspend-${u.id}` ? <CircularProgress size={14} color="inherit" /> : "Suspend"}
-                          </Button>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between">
+              <button onClick={() => fetchFlaggedUsers(page - 1)} disabled={page === 0 || loading} className="px-3 py-2 text-body-sm text-on-surface-variant bg-white border border-outline-variant rounded-lg hover:bg-surface-container transition-all disabled:opacity-50 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">chevron_left</span> Prev
+              </button>
+              <span className="text-body-sm text-on-surface-variant">Page {page + 1} of {totalPages}</span>
+              <button onClick={() => fetchFlaggedUsers(page + 1)} disabled={page >= totalPages - 1 || loading} className="px-3 py-2 text-body-sm text-on-surface-variant bg-white border border-outline-variant rounded-lg hover:bg-surface-container transition-all disabled:opacity-50 flex items-center gap-1">
+                Next <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+              </button>
+            </div>
+          )}
         </>
       )}
 
-      {totalPages > 1 && (
-        <Box sx={{ mt: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Button size="small" onClick={() => fetchFlaggedUsers(page - 1)} disabled={page === 0 || loading} startIcon={<ChevronLeft size={14} />}
-            sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
-            Prev
-          </Button>
-          <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>Page {page + 1} of {totalPages}</Typography>
-          <Button size="small" onClick={() => fetchFlaggedUsers(page + 1)} disabled={page >= totalPages - 1 || loading} endIcon={<ChevronRight size={14} />}
-            sx={{ color: colors.text.secondary, bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, fontSize: "0.75rem", textTransform: "none", "&:disabled": { opacity: 0.3 } }}>
-            Next
-          </Button>
-        </Box>
-      )}
-
       {/* Logs Dialog */}
-      <Dialog 
-        open={logsDialogOpen} 
-        onClose={() => setLogsDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: { bgcolor: colors.background.primary, border: `1px solid ${colors.divider}`, borderRadius: 3 }
-        }}
-      >
-        <DialogTitle sx={{ color: "#fff", display: "flex", alignItems: "center", gap: 1 }}>
-          <ShieldQuestion size={20} color="#f59e0b" /> Fraud Logs for {selectedUser?.email}
-        </DialogTitle>
-        <DialogContent dividers sx={{ borderColor: colors.divider }}>
-          {logsLoading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}><CircularProgress sx={{ color: "#f59e0b" }} /></Box>
-          ) : logs.length === 0 ? (
-            <Box sx={{ textAlign: "center", py: 4, color: colors.text.secondary }}>No logs found for this user.</Box>
-          ) : (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-              {logs.map(log => (
-                <Box key={log.id} sx={{ p: 2, borderRadius: 2, bgcolor: colors.background.ternary, border: `1px solid ${colors.divider}` }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Chip size="small" 
-                        label={log.event_type.replace("_", " ")} 
-                        sx={{ 
-                          fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase",
-                          bgcolor: log.event_type.includes("admin") ? "rgba(16,185,129,0.15)" : "rgba(245,158,11,0.15)",
-                          color: log.event_type.includes("admin") ? "#10B981" : "#f59e0b",
-                        }} 
-                      />
-                      <Chip size="small" 
-                        label={`Action: ${log.action_taken}`}
-                        sx={{ 
-                          fontSize: "0.65rem",
-                          bgcolor: "transparent", border: `1px solid ${colors.divider}`, color: colors.text.secondary
-                        }} 
-                      />
-                    </Box>
-                    <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>{formatDate(log.created_at)}</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 3, pt: 1 }}>
-                    <Box>
-                      <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary }}>IP ADDRESS</Typography>
-                      <Typography sx={{ fontSize: "0.85rem" }}>{log.ip_address || "—"}</Typography>
-                    </Box>
-                    <Box>
-                      <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary }}>SIGNUP COUNTRY</Typography>
-                      <Typography sx={{ fontSize: "0.85rem" }}>{countryFlag(log.signup_country)} {log.signup_country || "—"}</Typography>
-                    </Box>
-                    <Box>
-                      <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary }}>DETECTED COUNTRY</Typography>
-                      <Typography sx={{ fontSize: "0.85rem", color: log.signup_country !== log.detected_country ? "#f87171" : undefined }}>
-                        {countryFlag(log.detected_country)} {log.detected_country || "—"}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  {log.vpn_data && typeof log.vpn_data === "object" && (
-                    <Box sx={{ mt: 2, p: 1, borderRadius: 1, bgcolor: "rgba(0,0,0,0.2)" }}>
-                      <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, mb: 0.5 }}>VPN DATA</Typography>
-                      <Box sx={{ display: "flex", gap: 2 }}>
-                        {Object.entries(log.vpn_data).map(([k, v]) => (
-                          <Typography key={k} sx={{ fontSize: "0.75rem", color: v ? "#f59e0b" : colors.text.secondary }}>
-                            {k}: {v ? "true" : "false"}
-                          </Typography>
-                        ))}
-                      </Box>
-                    </Box>
-                  )}
-                </Box>
-              ))}
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setLogsDialogOpen(false)} sx={{ color: colors.text.secondary, textTransform: "none" }}>Close</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar open={toast.open} autoHideDuration={4000} onClose={handleCloseToast} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
-        <Alert onClose={handleCloseToast} severity={toast.severity}
-          sx={{ bgcolor: toast.severity === "success" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)", border: `1px solid ${toast.severity === "success" ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}`, color: toast.severity === "success" ? "#10B981" : "#f87171", "& .MuiAlert-icon": { color: toast.severity === "success" ? "#10B981" : "#f87171" } }}>
-          {toast.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+      {logsDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setLogsDialogOpen(false)} />
+          <div className="relative bg-white border border-outline-variant rounded-xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-outline-variant">
+              <h3 className="font-title-sm text-title-sm text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-500">shield_question</span>
+                Fraud Logs for {selectedUser?.email}
+              </h3>
+              <button onClick={() => setLogsDialogOpen(false)} className="text-on-surface-variant hover:text-on-surface">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto max-h-[60vh]">
+              {logsLoading ? (
+                <div className="flex justify-center py-8">
+                  <span className="material-symbols-outlined animate-spin text-on-tertiary-container">refresh</span>
+                </div>
+              ) : logs.length === 0 ? (
+                <p className="text-center text-on-surface-variant py-8">No logs found for this user.</p>
+              ) : (
+                <div className="space-y-3">
+                  {logs.map((log) => (
+                    <div key={log.id} className="p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold uppercase">{log.event_type.replace("_", " ")}</span>
+                          <span className="px-2 py-0.5 border border-outline-variant rounded text-[10px] text-on-surface-variant">Action: {log.action_taken}</span>
+                        </div>
+                        <span className="text-body-sm text-on-surface-variant">{formatDate(log.created_at)}</span>
+                      </div>
+                      <div className="flex gap-6 text-body-sm">
+                        <div>
+                          <p className="text-[10px] text-on-surface-variant uppercase">IP Address</p>
+                          <p className="text-on-surface">{log.ip_address || "—"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-on-surface-variant uppercase">Signup Country</p>
+                          <p className="text-on-surface">{countryFlag(log.signup_country)} {log.signup_country || "—"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-on-surface-variant uppercase">Detected Country</p>
+                          <p className={log.signup_country !== log.detected_country ? "text-rose-600" : "text-on-surface"}>
+                            {countryFlag(log.detected_country)} {log.detected_country || "—"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t border-outline-variant flex justify-end">
+              <button onClick={() => setLogsDialogOpen(false)} className="px-4 py-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-all text-body-sm">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

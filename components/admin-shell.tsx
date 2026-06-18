@@ -3,47 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import {
-  AppBar,
-  Box,
-  Drawer,
-  Toolbar,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-} from "@mui/material";
-import {
-  LayoutDashboard,
-  Users,
-  Wallet,
-  Bell,
-  LogOut,
-  Menu,
-  X,
-  ArrowLeft,
-  Settings,
-  ShieldAlert,
-} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import Icons from "@/components/icons";
-import Typography from "@/components/ui/Typography";
-import colors from "@/theme/colors";
-
-const drawerWidth = 220;
 
 const ADMIN_NAV_ITEMS = [
-  { label: "Dashboard", href: "/admin", Icon: LayoutDashboard },
-  { label: "Users (All)", href: "/admin/users", Icon: Users },
-  { label: "Users (Web)", href: "/admin/users?source=web", Icon: Users },
-  { label: "Users (App)", href: "/admin/users?source=app", Icon: Users },
-  { label: "Flagged Users", href: "/admin/users/flagged", Icon: ShieldAlert },
-  { label: "Withdrawals", href: "/admin/withdrawals", Icon: Wallet },
-  { label: "Notifications", href: "/admin/notifications", Icon: Bell },
-  { label: "Settings", href: "/admin/settings", Icon: Settings },
+  { label: "Dashboard", href: "/admin", icon: "dashboard" },
+  { label: "User Management", href: "/admin/users", icon: "group" },
+  { label: "Flagged Users", href: "/admin/users/flagged", icon: "report_problem" },
+  { label: "Withdrawals", href: "/admin/withdrawals", icon: "payments" },
+  { label: "Notifications", href: "/admin/notifications", icon: "notifications_active" },
+  { label: "Settings", href: "/admin/settings", icon: "settings" },
 ];
 
 interface AdminShellProps {
@@ -69,185 +37,119 @@ export default function AdminShell({ children }: AdminShellProps) {
     window.location.href = "/";
   }
 
-  const navList = (onClickItem?: () => void) => (
-    <List sx={{ mt: 1 }}>
-      {ADMIN_NAV_ITEMS.map(({ label, href, Icon }) => (
-        <ListItem key={href} sx={{ px: 1.5, py: 0.25 }}>
-          <ListItemButton
-            LinkComponent={Link}
-            href={href}
-            selected={isSelected(href)}
-            onClick={onClickItem}
-          >
-            <ListItemIcon>
-              <Icon size={18} />
-            </ListItemIcon>
-            <ListItemText primary={label} />
-          </ListItemButton>
-        </ListItem>
-      ))}
-    </List>
-  );
-
-  const backToSite = (
-    <Box sx={{ p: 1.5 }}>
-      <ListItemButton
-        LinkComponent={Link}
-        href="/profile"
-        sx={{
-          "&:hover": {
-            bgcolor: "rgba(16, 185, 129, 0.1) !important",
-            color: "#10B981 !important",
-            "& svg": { color: "#10B981" },
-          },
-        }}
-      >
-        <ListItemIcon>
-          <ArrowLeft size={18} />
-        </ListItemIcon>
-        <ListItemText primary="Back to Site" />
-      </ListItemButton>
-    </Box>
-  );
-
-  const logoutButton = (
-    <Box sx={{ p: 1.5 }}>
-      <ListItemButton
-        onClick={handleLogout}
-        sx={{
-          "&:hover": {
-            bgcolor: "rgba(239, 68, 68, 0.1) !important",
-            color: "#f87171 !important",
-            "& svg": { color: "#f87171" },
-          },
-        }}
-      >
-        <ListItemIcon>
-          <LogOut size={18} />
-        </ListItemIcon>
-        <ListItemText primary="Log Out" />
-      </ListItemButton>
-    </Box>
-  );
-
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      {/* Top AppBar */}
-      <AppBar
-        position="fixed"
-        elevation={0}
-        sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          borderBottom: `1px solid ${colors.divider}`,
-        }}
-      >
-        <Toolbar>
-          <IconButton
-            aria-label="open menu"
-            onClick={() => setMobileOpen(true)}
-            sx={{
-              display: { xs: "inline-flex", lg: "none" },
-              mr: 1,
-              bgcolor: "transparent",
-            }}
-          >
-            <Menu size={20} color={colors.text.secondary} />
-          </IconButton>
+    <div className="flex min-h-screen bg-background">
+      {/* Sidebar */}
+      <aside className="fixed left-0 top-0 h-screen w-[260px] flex flex-col z-50 bg-primary-container border-r border-outline-variant">
+        {/* Brand Header */}
+        <div className="px-6 py-8">
+          <h1 className="font-headline-md text-headline-md font-bold text-on-tertiary-container">Rewardoxy Admin</h1>
+          <p className="text-on-primary-container font-body-sm text-body-sm opacity-80 mt-1">Management Portal</p>
+        </div>
 
-          <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Icons.Logo href="/admin" />
-            <Box
-              sx={{
-                borderRadius: 1.5,
-                bgcolor: "rgba(239, 68, 68, 0.15)",
-                border: "1px solid rgba(239, 68, 68, 0.3)",
-                px: 1,
-                py: 0.25,
-                fontSize: "0.625rem",
-                fontWeight: 700,
-                color: "#f87171",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-              }}
+        {/* Navigation Links */}
+        <nav className="flex-1 px-2 space-y-1 custom-scrollbar overflow-y-auto">
+          {ADMIN_NAV_ITEMS.map(({ label, href, icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-3 px-4 py-3 transition-colors duration-200 ${
+                isSelected(href)
+                  ? "border-l-4 border-on-tertiary-container bg-surface-variant/10 text-on-tertiary-container font-semibold"
+                  : "text-on-primary-container hover:bg-surface-variant/5"
+              }`}
             >
-              Admin
-            </Box>
-          </Box>
-        </Toolbar>
-      </AppBar>
+              <span className="material-symbols-outlined">{icon}</span>
+              <span>{label}</span>
+            </Link>
+          ))}
+        </nav>
 
-      {/* Desktop permanent drawer */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
-            width: drawerWidth,
-            borderRight: `1px solid ${colors.divider}`,
-          },
-          display: { xs: "none", lg: "block" },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: "auto", flex: 1 }}>{navList()}</Box>
-        <Divider sx={{ borderColor: colors.divider }} />
-        {backToSite}
-        <Divider sx={{ borderColor: colors.divider }} />
-        {logoutButton}
-      </Drawer>
+        {/* Profile Footer */}
+        <div className="p-4 bg-black/20 mt-auto">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-surface-variant/20 flex items-center justify-center overflow-hidden border border-outline-variant/30">
+              <span className="material-symbols-outlined text-on-primary">person</span>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-on-primary font-semibold truncate text-body-sm">Admin User</p>
+              <p className="text-on-primary-container text-xs truncate">admin@rewardoxy.com</p>
+            </div>
+          </div>
+        </div>
+      </aside>
 
-      {/* Mobile drawer */}
-      <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={() => setMobileOpen(false)}
-        ModalProps={{ keepMounted: true }}
-        sx={{
-          display: { xs: "block", lg: "none" },
-          "& .MuiDrawer-paper": { width: 260 },
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            px: 2,
-            py: 1.5,
-            borderBottom: `1px solid ${colors.divider}`,
-          }}
-        >
-          <Icons.Logo href="/admin" />
-          <IconButton onClick={() => setMobileOpen(false)} sx={{ bgcolor: "transparent" }}>
-            <X size={20} color={colors.text.secondary} />
-          </IconButton>
-        </Box>
-        <Box sx={{ overflow: "auto", flex: 1 }}>{navList(() => setMobileOpen(false))}</Box>
-        <Divider sx={{ borderColor: colors.divider }} />
-        {backToSite}
-        <Divider sx={{ borderColor: colors.divider }} />
-        {logoutButton}
-      </Drawer>
+      {/* Main Content Area */}
+      <main className="ml-[260px] min-h-screen flex flex-col flex-1">
+        {/* Top Navigation Bar */}
+        <header className="flex justify-between items-center h-16 px-gutter w-full z-40 bg-surface border-b border-outline-variant sticky top-0">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="relative w-full max-w-md">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+              <input
+                className="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-on-tertiary-container/20 focus:border-on-tertiary-container outline-none transition-all"
+                placeholder="Search accounts, logs, or reports..."
+                type="text"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <button className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+              <span className="material-symbols-outlined">notifications</span>
+            </button>
+            <button className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+              <span className="material-symbols-outlined">help_outline</span>
+            </button>
+            <div className="h-8 w-[1px] bg-outline-variant mx-2"></div>
+            <div className="flex items-center gap-2">
+              <span className="font-title-sm text-title-sm text-on-surface">Rewardoxy</span>
+            </div>
+          </div>
+        </header>
 
-      {/* Main content area */}
-      <Box
-        sx={{
-          flexGrow: 1,
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          minWidth: 0,
-        }}
-      >
-        <Toolbar />
-        <Box
-          component="main"
-          sx={{ flex: 1, overflow: "auto", maxWidth: 1100, width: "100%", mx: "auto" }}
-        >
+        {/* Content Canvas */}
+        <div className="p-gutter flex-1 max-w-container-max w-full mx-auto">
           {children}
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </main>
+
+      {/* Mobile menu button */}
+      <button
+        className="fixed bottom-4 right-4 z-50 lg:hidden bg-on-tertiary-container text-white p-4 rounded-full shadow-lg"
+        onClick={() => setMobileOpen(!mobileOpen)}
+      >
+        <span className="material-symbols-outlined">menu</span>
+      </button>
+
+      {/* Mobile sidebar overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
+          <aside className="absolute left-0 top-0 h-screen w-[260px] bg-primary-container border-r border-outline-variant">
+            <div className="px-6 py-8">
+              <h1 className="font-headline-md text-headline-md font-bold text-on-tertiary-container">Rewardoxy Admin</h1>
+              <p className="text-on-primary-container font-body-sm text-body-sm opacity-80 mt-1">Management Portal</p>
+            </div>
+            <nav className="flex-1 px-2 space-y-1">
+              {ADMIN_NAV_ITEMS.map(({ label, href, icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 transition-colors duration-200 ${
+                    isSelected(href)
+                      ? "border-l-4 border-on-tertiary-container bg-surface-variant/10 text-on-tertiary-container font-semibold"
+                      : "text-on-primary-container hover:bg-surface-variant/5"
+                  }`}
+                >
+                  <span className="material-symbols-outlined">{icon}</span>
+                  <span>{label}</span>
+                </Link>
+              ))}
+            </nav>
+          </aside>
+        </div>
+      )}
+    </div>
   );
 }
