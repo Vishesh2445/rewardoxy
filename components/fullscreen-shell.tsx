@@ -275,7 +275,7 @@ export default function FullscreenShell({
                 slotProps={{
                   paper: {
                     sx: {
-                      bgcolor: "#1a1b2e",
+                      bgcolor: colors.bgSecondary,
                       border: `1px solid rgba(255, 255, 255, 0.1)`,
                       borderRadius: 2,
                       mt: 1,
@@ -419,7 +419,7 @@ export default function FullscreenShell({
           </List>
 
           {/* Logout Button */}
-          <Box sx={{ p: 2, borderTop: `1px solid rgba(255, 255, 255, 0.05)` }}>
+          <Box sx={{ p: 2, borderTop: `1px solid ${colors.glass.border}` }}>
             <ListItemButton
               onClick={() => {
                 setMobileOpen(false);
@@ -445,11 +445,12 @@ export default function FullscreenShell({
       {/* Main Content - Fullscreen */}
       <Box
         component="main"
+        className="glow-bg"
         sx={{
           flexGrow: 1,
           pt: { xs: 7, sm: 8 },
-          pb: { xs: 10, md: 0 }, // Add padding bottom for mobile bottom navbar
-          bgcolor: "#0a0b0f",
+          pb: { xs: 10, md: 0 },
+          bgcolor: colors.background.default,
           minHeight: "100vh",
         }}
       >
@@ -463,8 +464,8 @@ export default function FullscreenShell({
       <Box
         component="footer"
         sx={{
-          bgcolor: "#12131c",
-          borderTop: `1px solid rgba(255, 255, 255, 0.05)`,
+          bgcolor: colors.background.drawer,
+          borderTop: `1px solid ${colors.glass.border}`,
           mt: 4,
         }}
       >

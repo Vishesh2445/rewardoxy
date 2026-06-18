@@ -242,7 +242,7 @@ export default function DashboardClient({
           transition: "all 0.3s ease",
           "&:hover": {
             background: colors.background.glassHover,
-            boxShadow: `0 8px 32px rgba(99, 102, 241, 0.1)`,
+            boxShadow: `0 8px 32px rgba(16, 185, 129, 0.1)`,
           },
         }}
       >
@@ -256,7 +256,7 @@ export default function DashboardClient({
             width: 200,
             height: 200,
             borderRadius: "50%",
-            background: "rgba(99, 102, 241, 0.08)",
+            background: "rgba(16, 185, 129, 0.08)",
             filter: "blur(60px)",
           }}
         />
@@ -275,7 +275,7 @@ export default function DashboardClient({
               fontSize: "1.1rem",
               color: "#fff",
               flexShrink: 0,
-              boxShadow: "0 4px 16px rgba(99, 102, 241, 0.3)",
+              boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)",
             }}
           >
             {initials}
@@ -346,7 +346,7 @@ export default function DashboardClient({
                 p: { xs: 2, sm: 2.5 },
                 height: "100%",
                 transition: "all 0.3s ease",
-                "&:hover": { background: colors.background.glassHover, boxShadow: `0 8px 24px rgba(99, 102, 241, 0.1)` },
+                "&:hover": { background: colors.background.glassHover, boxShadow: `0 8px 24px rgba(16, 185, 129, 0.1)` },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
@@ -358,7 +358,7 @@ export default function DashboardClient({
                     width: 42,
                     height: 42,
                     borderRadius: 2,
-                    background: s.glow ? `rgba(99, 102, 241, 0.12)` : colors.background.secondary,
+                    background: s.glow ? `rgba(16, 185, 129, 0.12)` : colors.background.secondary,
                     flexShrink: 0,
                   }}
                 >
@@ -410,7 +410,7 @@ export default function DashboardClient({
           transition: "all 0.3s ease",
           position: "relative",
           overflow: "hidden",
-          "&:hover": { background: colors.background.glassHover, boxShadow: `0 8px 32px rgba(99, 102, 241, 0.15)` },
+          "&:hover": { background: colors.background.glassHover, boxShadow: `0 8px 32px rgba(16, 185, 129, 0.15)` },
         }}
       >
         <Box
@@ -421,7 +421,7 @@ export default function DashboardClient({
             width: 52,
             height: 52,
             borderRadius: 2,
-            background: `rgba(99, 102, 241, 0.15)`,
+            background: `rgba(16, 185, 129, 0.15)`,
             border: `1px solid ${colors.glass.borderHover}`,
             flexShrink: 0,
             animation: "pulse-glow 2.5s ease-in-out infinite",
@@ -481,7 +481,7 @@ export default function DashboardClient({
                 transition: "all 0.3s ease",
                 "&:hover": {
                   background: colors.background.glassHover,
-                  boxShadow: `0 8px 24px rgba(99, 102, 241, 0.12)`,
+                  boxShadow: `0 8px 24px rgba(16, 185, 129, 0.12)`,
                   transform: "translateY(-2px)",
                 },
               }}
@@ -494,7 +494,7 @@ export default function DashboardClient({
                   width: 48,
                   height: 48,
                   borderRadius: 2,
-                  background: a.primary ? `rgba(99, 102, 241, 0.15)` : colors.background.secondary,
+                  background: a.primary ? `rgba(16, 185, 129, 0.15)` : colors.background.secondary,
                   border: `1px solid ${a.primary ? colors.glass.borderHover : colors.glass.border}`,
                   flexShrink: 0,
                 }}

@@ -285,15 +285,15 @@ export default function CashoutClient({
           transition: "all 0.3s ease",
           "&:hover": {
             background: colors.background.glassHover,
-            boxShadow: `0 8px 32px rgba(99, 102, 241, 0.1)`,
+            boxShadow: `0 8px 32px rgba(16, 185, 129, 0.1)`,
           },
         }}
       >
-        <Box sx={{ pointerEvents: "none", position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(99, 102, 241, 0.08)", filter: "blur(50px)" }} />
+        <Box sx={{ pointerEvents: "none", position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(16, 185, 129, 0.08)", filter: "blur(50px)" }} />
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "auto auto 1fr" }, gap: 3, alignItems: "center" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 2, background: `rgba(99, 102, 241, 0.15)`, border: `1px solid ${colors.glass.borderHover}` }}>
-              <Coins size={26} color={colors.primary} />
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: 2, background: `rgba(191, 187, 187, 0.1)`, border: `1px solid ${colors.glass.borderHover}`, overflow: "hidden" }}>
+              <Box component="img" src="/litecoin-ltc-icon.png" sx={{ width: 28, height: 28, objectFit: "contain" }} />
             </Box>
             <Box>
               <Typography sx={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: colors.text.secondary }}>Available Balance</Typography>

@@ -175,7 +175,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
       </Drawer>
 
       {/* Main Content */}
-      <Box component="main" sx={{ flexGrow: 1, pt: { xs: 7, sm: 8 }, pb: { xs: 10, md: 0 }, bgcolor: colors.background.default, minHeight: "100vh" }}>
+      <Box component="main" className="glow-bg" sx={{ flexGrow: 1, pt: { xs: 7, sm: 8 }, pb: { xs: 10, md: 0 }, bgcolor: colors.background.default, minHeight: "100vh" }}>
         {children}
       </Box>
 

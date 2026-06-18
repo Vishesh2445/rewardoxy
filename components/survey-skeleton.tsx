@@ -1,11 +1,12 @@
 "use client";
 
 import { Box } from "@mui/material";
+import colors from "@/theme/colors";
 
 export function SurveySkeleton() {
   return (
     <Box sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 } }}>
-      <Box sx={{ bgcolor: "#151B26", p: { xs: 0.75, sm: 1.5 }, borderRadius: { xs: 1.5, sm: 2.5 } }}>
+      <Box sx={{ bgcolor: colors.bgSecondary, p: { xs: 0.75, sm: 1.5 }, borderRadius: { xs: 1.5, sm: 2.5 } }}>
         <Box sx={{
           width: "100%",
           aspectRatio: "1",

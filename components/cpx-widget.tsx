@@ -340,7 +340,7 @@ export default function CPXWidget({ userId, userName, userEmail, cpxHash }: {
                       aspectRatio: "1",
                       borderRadius: { xs: 1, sm: 1.5 },
                       overflow: "hidden",
-                      bgcolor: "#1a1b2e",
+                      bgcolor: colors.bgSecondary,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",

@@ -18,14 +18,14 @@ import Icons from "@/components/icons";
 import Typography from "@/components/ui/Typography";
 
 const colors = {
-  bgPage: "#141523",
-  bgCard: "#1d1e30",
+  bgPage: "#0D0E12",
+  bgCard: "#232645",
   green: "#10B981",
   greenDark: "#059669",
   textPrimary: "#ffffff",
   textSecondary: "#a9a9ca",
   divider: "#2a2b43",
-  greenTint: "#00e9411a",
+  greenTint: "rgba(16,185,129,0.1)",
   gradient: "linear-gradient(180deg, #10B981 0, #059669 100%)",
 };
 
@@ -59,7 +59,7 @@ export default function ContactPage() {
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
+    <Box className="glow-bg" sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
       {/* Nav */}
       <Box
         component="nav"

@@ -17,8 +17,8 @@ export const metadata: Metadata = {
 };
 
 const colors = {
-  bgPage: "#141523",
-  bgCard: "#1d1e30",
+  bgPage: "#0D0E12",
+  bgCard: "#232645",
   green: "#10B981",
   textPrimary: "#ffffff",
   textSecondary: "#a9a9ca",
@@ -91,7 +91,7 @@ const faqJsonLd = {
 
 export default function FAQPage() {
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
+    <Box className="glow-bg" sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}

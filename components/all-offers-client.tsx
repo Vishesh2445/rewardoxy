@@ -102,7 +102,7 @@ function OfferDetailsModal({
       scroll="body"
       PaperProps={{
         sx: {
-          bgcolor: "#1C213F",
+          bgcolor: colors.bgCard,
           borderRadius: 3,
           maxWidth: "650px",
           maxHeight: "90vh",
@@ -242,7 +242,7 @@ function OfferDetailsModal({
                         gap: 0.5,
                         px: 1,
                         py: 0.5,
-                        bgcolor: "#151B26",
+                        bgcolor: colors.bgSecondary,
                         borderRadius: 1,
                         color: colors.text.secondary,
                       }}
@@ -403,7 +403,7 @@ function OfferDetailsModal({
         <Box sx={{ px: { xs: 2, sm: 2.5 }, pb: 2, flexShrink: 0 }}>
           <Box 
             sx={{ 
-              bgcolor: "#151B26",
+              bgcolor: colors.bgSecondary,
               p: 2,
               borderRadius: 2,
             }}
@@ -479,12 +479,12 @@ function OfferDetailsModal({
                   alignItems: "center",
                   justifyContent: "space-between",
                   p: 1.5,
-                  bgcolor: "#151B26",
+                  bgcolor: colors.bgSecondary,
                   borderRadius: 2,
                   transition: "all 0.2s",
                   "&:hover": {
                     borderColor: "rgba(16, 185, 129, 0.3)",
-                    bgcolor: "#151B26",
+                    bgcolor: colors.bgSecondary,
                   },
                 }}
               >
@@ -626,7 +626,7 @@ function OfferDetailsModal({
 
         <Box
           sx={{
-            bgcolor: "#151B26",
+            bgcolor: colors.bgSecondary,
             p: 2,
             borderRadius: 2,
             wordBreak: "break-all",
@@ -639,7 +639,7 @@ function OfferDetailsModal({
             cursor: "pointer",
             transition: "all 0.2s",
             "&:hover": {
-              bgcolor: "#151B26",
+              bgcolor: colors.bgSecondary,
               borderColor: "rgba(16, 185, 129, 0.2)",
             },
           }}
@@ -878,7 +878,7 @@ export default function AllOffersClient({ userId }: { userId: string }) {
   }
 
   return (
-    <Box sx={{ bgcolor: "#141523", minHeight: "100vh", width: "100%", pb: 4 }}>
+    <Box sx={{ bgcolor: colors.bgPage, minHeight: "100vh", width: "100%", pb: 4 }}>
       {/* All Offers Grid */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
         {loading && displayedOffers.length === 0 ? (

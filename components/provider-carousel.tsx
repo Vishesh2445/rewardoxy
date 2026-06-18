@@ -1,6 +1,7 @@
 "use client";
 
 import { Box } from "@mui/material";
+import colors from "@/theme/colors";
 
 const LOGOS = [
   { src: "/mylead_logo.svg", alt: "MyLead" },
@@ -13,12 +14,6 @@ const LOGOS = [
   { src: "/klink-icon.png", alt: "Klink" },
   { src: "/theoremreach.svg", alt: "TheoremReach" },
 ];
-
-const colors = {
-  bgPage: "#141523",
-  bgCard: "#1d1e30",
-  divider: "#2a2b43",
-};
 
 export default function ProviderCarousel() {
   const items = [...LOGOS, ...LOGOS];

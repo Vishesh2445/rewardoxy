@@ -162,7 +162,7 @@ export default function MyOffersClient({ userId }: MyOffersClientProps) {
                 aspectRatio: "1",
                 borderRadius: { xs: 1, sm: 1.5 },
                 overflow: "hidden",
-                bgcolor: "#1a1b2e",
+                bgcolor: colors.bgSecondary,
                 backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
@@ -239,7 +239,7 @@ export default function MyOffersClient({ userId }: MyOffersClientProps) {
                 sx={{
                   width: "100%",
                   height: 4,
-                  bgcolor: "#1a1b2e",
+                  bgcolor: colors.bgSecondary,
                   borderRadius: 2,
                   overflow: "hidden",
                 }}
@@ -524,7 +524,7 @@ function OfferDetailsModal({
       scroll="body"
       PaperProps={{
         sx: {
-          bgcolor: "#1a1b2e",
+          bgcolor: colors.bgSecondary,
           borderRadius: 3,
           maxWidth: "650px",
           maxHeight: "90vh",
@@ -801,7 +801,7 @@ function OfferDetailsModal({
       fullWidth
       PaperProps={{
         sx: {
-          bgcolor: "#1a1b2e",
+          bgcolor: colors.bgSecondary,
           borderRadius: 3,
           boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
         },

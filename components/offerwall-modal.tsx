@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
+import colors from "@/theme/colors";
 import IconButton from "@mui/material/IconButton";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -26,7 +27,7 @@ export default function OfferwallModal() {
         onClick={() => setOpen(true)}
         elevation={0}
         sx={{
-          bgcolor: "#1d1e30",
+          bgcolor: colors.bgCard,
           border: "1px solid #2a2b43",
           borderRadius: 4,
           p: 5,
@@ -96,7 +97,7 @@ export default function OfferwallModal() {
         fullScreen={isMobile}
         PaperProps={{
           sx: {
-            bgcolor: "#141523",
+            bgcolor: colors.bgPage,
             border: "1px solid #2a2b43",
             borderRadius: 6,
             height: "90vh",
@@ -138,7 +139,7 @@ export default function OfferwallModal() {
             onClick={() => setOpen(false)}
             size="small"
             sx={{
-              bgcolor: "#1d1e30",
+              bgcolor: colors.bgCard,
               border: "1px solid #2a2b43",
               borderRadius: 2,
               color: "#a9a9ca",

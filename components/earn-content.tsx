@@ -122,7 +122,7 @@ function OfferDetailsModal({
       scroll="body"
       PaperProps={{
         sx: {
-          bgcolor: "#1C213F",
+          bgcolor: colors.background.primary,
           borderRadius: 3,
           maxWidth: "650px",
           maxHeight: "90vh",
@@ -219,7 +219,7 @@ function OfferDetailsModal({
               borderRadius: 2,
               overflow: "hidden",
               flexShrink: 0,
-              bgcolor: "#151B26",
+              bgcolor: colors.background.secondary,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -328,7 +328,7 @@ function OfferDetailsModal({
         <Box sx={{ px: { xs: 2, sm: 2.5 }, pb: 2, flexShrink: 0 }}>
           <Box 
             sx={{ 
-              bgcolor: "#151B26",
+              bgcolor: colors.background.secondary,
               p: 2,
               borderRadius: 2,
             }}
@@ -404,12 +404,12 @@ function OfferDetailsModal({
                   alignItems: "center",
                   justifyContent: "space-between",
                   p: 1.5,
-                  bgcolor: "#151B26",
+                  bgcolor: colors.background.secondary,
                   borderRadius: 2,
                   transition: "all 0.2s",
                   "&:hover": {
                     borderColor: "rgba(16, 185, 129, 0.3)",
-                  bgcolor: "#141523",
+                  bgcolor: colors.background.default,
                   },
                 }}
               >
@@ -551,7 +551,7 @@ function OfferDetailsModal({
 
         <Box
           sx={{
-            bgcolor: "#151B26",
+            bgcolor: colors.background.secondary,
             p: 2,
             borderRadius: 2,
             wordBreak: "break-all",
@@ -564,7 +564,7 @@ function OfferDetailsModal({
             cursor: "pointer",
             transition: "all 0.2s",
             "&:hover": {
-              bgcolor: "#151B26",
+              bgcolor: colors.background.secondary,
               borderColor: "rgba(16, 185, 129, 0.2)",
             },
           }}
@@ -848,17 +848,17 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
   // Skeleton loader with shimmer animation
   const SkeletonOffer = () => (
     <Box sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 }, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: "#232645", borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
+      <Box sx={{ bgcolor: colors.background.primary, borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
         <Box sx={{ 
-          width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, bgcolor: "#141523", mb: { xs: 0.75, sm: 1.5 },
+          width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, bgcolor: colors.background.default, mb: { xs: 0.75, sm: 1.5 },
           position: "relative", overflow: "hidden",
           animation: "pulse 2s ease-in-out infinite",
           "@keyframes pulse": { "0%,100%": { opacity: 0.6 }, "50%": { opacity: 1 } },
           "&::after": { content: '""', position: "absolute", top: 0, left: "-100%", width: "100%", height: "100%", background: "linear-gradient(90deg, transparent, rgba(16,185,129,0.04), transparent)", animation: "shimmer 1.4s ease-in-out infinite" },
         }} />
-        <Box sx={{ height: { xs: 14, sm: 20 }, bgcolor: "#141523", borderRadius: "4px", width: "85%", mb: { xs: 0.2, sm: 0.5 }, animation: "pulse 2s ease-in-out infinite 0.1s" }} />
-        <Box sx={{ height: { xs: 8, sm: 10 }, bgcolor: "#141523", borderRadius: "4px", width: "35%", mb: 0.2, animation: "pulse 2s ease-in-out infinite 0.2s" }} />
-        <Box sx={{ height: { xs: 12, sm: 16 }, bgcolor: "#141523", borderRadius: "4px", width: "45%", animation: "pulse 2s ease-in-out infinite 0.3s" }} />
+        <Box sx={{ height: { xs: 14, sm: 20 }, bgcolor: colors.background.default, borderRadius: "4px", width: "85%", mb: { xs: 0.2, sm: 0.5 }, animation: "pulse 2s ease-in-out infinite 0.1s" }} />
+        <Box sx={{ height: { xs: 8, sm: 10 }, bgcolor: colors.background.default, borderRadius: "4px", width: "35%", mb: 0.2, animation: "pulse 2s ease-in-out infinite 0.2s" }} />
+        <Box sx={{ height: { xs: 12, sm: 16 }, bgcolor: colors.background.default, borderRadius: "4px", width: "45%", animation: "pulse 2s ease-in-out infinite 0.3s" }} />
       </Box>
     </Box>
   );
@@ -866,7 +866,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
   return (
     <Box 
       sx={{ 
-        bgcolor: "#141523", 
+        bgcolor: colors.background.default, 
         borderRadius: 3, 
         overflow: "hidden",
       }}
@@ -903,7 +903,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
               sx={{
                 width: 32,
                 height: 32,
-                bgcolor: "#151B26",
+                bgcolor: colors.background.secondary,
                 borderRadius: 1.5,
                 color: "#10B981",
                 opacity: 0.4,
@@ -917,7 +917,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
               sx={{
                 width: 32,
                 height: 32,
-                bgcolor: "#151B26",
+                bgcolor: colors.background.secondary,
                 borderRadius: 1.5,
                 color: "#10B981",
                 "&:hover": { bgcolor: "rgba(16, 185, 129, 0.08)" },
@@ -970,7 +970,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
           >
             <Box
               sx={{
-                bgcolor: "#232645",
+                bgcolor: colors.background.primary,
                 border: "none",
                 borderRadius: { xs: "10px", sm: "16px" },
                 p: { xs: 1, sm: 2 },
@@ -992,7 +992,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
                   backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
-                  bgcolor: "#141523",
+                  bgcolor: colors.background.default,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1092,7 +1092,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   // Skeleton loader
   const SkeletonSurvey = () => (
     <Box sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 }, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: "#151B26", p: { xs: 0.75, sm: 1.5 }, borderRadius: { xs: 1.5, sm: 2.5 } }}>
+      <Box sx={{ bgcolor: colors.background.secondary, p: { xs: 0.75, sm: 1.5 }, borderRadius: { xs: 1.5, sm: 2.5 } }}>
         <Box sx={{ 
           width: "100%", 
           aspectRatio: "1", 
@@ -1125,7 +1125,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   return (
     <Box 
       sx={{ 
-        bgcolor: "#141523", 
+        bgcolor: colors.background.default, 
         borderRadius: 3, 
         overflow: "hidden",
       }}
@@ -1147,7 +1147,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             sx={{
               width: 32,
               height: 32,
-              bgcolor: "#151B26",
+              bgcolor: colors.background.secondary,
               borderRadius: 1.5,
               color: "#10B981",
               opacity: 0.4,
@@ -1161,7 +1161,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             sx={{
               width: 32,
               height: 32,
-              bgcolor: "#151B26",
+              bgcolor: colors.background.secondary,
               borderRadius: 1.5,
               color: "#10B981",
               "&:hover": { bgcolor: "rgba(16, 185, 129, 0.08)" },
@@ -1214,7 +1214,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             >
               <Box
                 sx={{
-                  bgcolor: "#1a1b2e",
+                  bgcolor: colors.background.secondary,
                   p: { xs: 0.75, sm: 1.5 },
                   borderRadius: { xs: 1.5, sm: 2.5 },
                   transition: "all 0.3s",
@@ -1411,7 +1411,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
   const iframeSrc = getIframeSrc();
 
   return (
-    <Box sx={{ bgcolor: "#141523", minHeight: "100vh", width: "100%", pb: 4 }}>
+    <Box sx={{ bgcolor: colors.background.default, minHeight: "100vh", width: "100%", pb: 4 }}>
       {/* Gaming Offers */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3 } }}>
         <GamingOffersSection userId={userId} deviceOS={selectedPlatforms} />

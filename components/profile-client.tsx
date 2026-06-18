@@ -52,7 +52,7 @@ interface ProfileClientProps {
 
 function stringAvatar(name: string, size: number = 100) {
   return {
-    sx: { bgcolor: colors.secondary, width: size, height: size, fontSize: size * 0.4, fontWeight: 700 },
+    sx: { bgcolor: colors.primary, width: size, height: size, fontSize: size * 0.4, fontWeight: 700 },
     children: (name || "U").charAt(0).toUpperCase(),
   };
 }
@@ -68,7 +68,7 @@ function timeSince(dateStr: string) {
 }
 
 const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
-  pending: { bg: "rgba(255, 107, 53, 0.1)", color: colors.secondary },
+  pending: { bg: "rgba(255, 107, 53, 0.1)", color: colors.primary },
   processing: { bg: "rgba(59,130,246,0.1)", color: "#3b82f6" },
   paid: { bg: "rgba(0, 208, 132, 0.1)", color: colors.primary },
   failed: { bg: "rgba(255, 68, 68, 0.1)", color: colors.status.error },
@@ -201,7 +201,7 @@ export default function ProfileClient({
       bgcolor: colors.background.ternary, borderRadius: 2, fontSize: "0.875rem", color: "#fff",
       "& fieldset": { borderColor: colors.divider },
       "&:hover fieldset": { borderColor: colors.divider },
-      "&.Mui-focused fieldset": { borderColor: colors.secondary, borderWidth: "1px" },
+      "&.Mui-focused fieldset": { borderColor: colors.primary, borderWidth: "1px" },
       "& input::placeholder": { color: `${colors.text.secondary}80`, opacity: 1 },
     },
   };
@@ -331,7 +331,7 @@ export default function ProfileClient({
                 Member since {new Date(memberSince).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
               </Box>
               {referredBy && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: "0.875rem", color: colors.secondary, mt: 0.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: "0.875rem", color: colors.primary, mt: 0.5 }}>
                   <User size={14} />
                   Referred by {referredBy.displayName || referredBy.email}
                 </Box>
@@ -377,7 +377,7 @@ export default function ProfileClient({
             sx={{
               borderRadius: 50, px: 2.5, py: 1, fontSize: "0.8rem", fontWeight: 600, textTransform: "none",
               ...(activeTab === i
-                ? { bgcolor: colors.secondary, color: "#000", "&:hover": { bgcolor: colors.secondary, filter: "brightness(1.1)" } }
+                ? { bgcolor: colors.primary, color: "#000", "&:hover": { bgcolor: colors.primary, filter: "brightness(1.1)" } }
                 : { bgcolor: colors.background.primary, color: colors.text.secondary, border: `1px solid ${colors.divider}`, "&:hover": { bgcolor: colors.background.ternary } }),
             }}
           >
@@ -388,7 +388,7 @@ export default function ProfileClient({
 
       {loadingWithdrawals && withdrawals.length === 0 ? (
         <Box sx={{ textAlign: "center", py: 6 }}>
-          <CircularProgress size={28} sx={{ color: colors.secondary }} />
+          <CircularProgress size={28} sx={{ color: colors.primary }} />
         </Box>
       ) : (
         <>

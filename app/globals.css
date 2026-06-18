@@ -41,6 +41,55 @@ body {
   50% { text-shadow: 0 0 16px rgba(245, 158, 11, 0.6); }
 }
 
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Green glow background — applied to all page containers */
+.glow-bg {
+  position: relative;
+  min-height: 100vh;
+}
+
+.glow-bg::before {
+  content: '';
+  position: fixed;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.10) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow-bg::after {
+  content: '';
+  position: fixed;
+  top: 280px;
+  left: -120px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: glow-breathe 6s ease-in-out infinite;
+}
+
+.glow-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
 /* Glassmorphic card */
 .glass-card {
   background: rgba(15, 18, 25, 0.85);
@@ -82,4 +131,29 @@ body {
 /* Streak fire glow */
 .streak-glow {
   text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+}
+
+/* Green accent bar for section headers */
+.green-bar {
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  background: #10B981;
+  display: inline-block;
+}
+
+/* Smooth page transitions */
+.page-enter {
+  animation: slide-in-up 0.4s ease-out;
+}
+
+/* Card hover glow */
+.card-glow:hover {
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+/* Navbar glow shadow */
+.navbar-glow {
+  box-shadow: 0 -4px 30px rgba(16, 185, 129, 0.06);
 }

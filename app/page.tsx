@@ -56,8 +56,8 @@ import { createClient } from "@/lib/supabase/client";
 import Turnstile from "@/components/turnstile";
 
 const colors = {
-  bgPage: "#141523",
-  bgCard: "#1d1e30",
+  bgPage: "#0D0E12",
+  bgCard: "#232645",
   bgInput: "#252539",
   bgButton: "#2F3043",
   green: "#10B981",
@@ -233,7 +233,7 @@ export default function Home() {
 
   return (
     isAuthenticated === null ? null : (
-    <Box sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
+    <Box className="glow-bg" sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
       {/* ===================== NAVBAR ===================== */}
       <Box
         component="nav"
@@ -467,7 +467,7 @@ export default function Home() {
                         elevation={0}
                         onClick={() => { setAuthModalMode("signup"); setAuthModalOpen(true); }}
                         sx={{
-                          bgcolor: "#232645",
+                          bgcolor: colors.bgCard,
                           border: "none",
                           borderRadius: { xs: "10px", sm: "16px" },
                           p: { xs: 1, sm: 2 },
@@ -529,7 +529,7 @@ export default function Home() {
                       <Box
                         onClick={() => { setAuthModalMode("signup"); setAuthModalOpen(true); }}
                         sx={{
-                          bgcolor: "#1a1b2e",
+                          bgcolor: colors.bgCard,
                           p: { xs: 0.75, sm: 1.5 },
                           borderRadius: { xs: 1.5, sm: 2.5 },
                           cursor: "pointer",
@@ -1335,7 +1335,7 @@ export default function Home() {
         onClose={() => setAuthModalOpen(false)}
         maxWidth="xs"
         fullWidth
-        PaperProps={{ sx: { bgcolor: "#141523", borderRadius: "16px", border: "none" } }}
+        PaperProps={{ sx: { bgcolor: colors.bgPage, borderRadius: "16px", border: "none" } }}
       >
         <Box sx={{ display: "flex", justifyContent: "flex-end", pt: 1, pr: 1 }}>
           <IconButton onClick={() => setAuthModalOpen(false)} sx={{ color: colors.textSecondary }}>
