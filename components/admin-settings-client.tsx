@@ -1,6 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {
+  Box,
+  Paper,
+  CircularProgress,
+  Alert,
+  Divider,
+  Switch,
+  FormControlLabel,
+} from "@mui/material";
+import Typography from "@/components/ui/Typography";
+import colors from "@/theme/colors";
 
 interface Setting {
   id: number;
@@ -72,116 +83,117 @@ export default function AdminSettingsClient() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <span className="material-symbols-outlined animate-spin text-on-tertiary-container text-[40px]">refresh</span>
-      </div>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px" }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
-  const getSettingIcon = (key: string) => {
-    if (key.includes("vpn")) return "vpn_lock";
-    if (key.includes("country") || key.includes("mismatch")) return "public";
-    return "settings";
-  };
-
   return (
-    <>
-      {/* Page Header */}
-      <header className="mb-section-gap">
-        <h2 className="font-headline-md text-headline-md text-on-surface mb-1">Application Settings</h2>
-        <p className="text-on-surface-variant text-body-sm">Configure global reward platform security and validation rules.</p>
-      </header>
+    <Box sx={{ maxWidth: 1400, mx: "auto", p: { xs: 2, sm: 3, md: 4 }, pb: { xs: 12, lg: 4 } }}>
+      <Typography variant="h4" isBold sx={{ mb: 3, color: "#10B981" }}>
+        Application Settings
+      </Typography>
 
-      {error && (
-        <div className="mb-4 p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-lg">
-          {error}
-        </div>
-      )}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      {/* Bento Grid Layout for Settings */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
-        {/* Security Column */}
-        <div className="md:col-span-8 space-y-gutter">
-          {settings.map((setting) => {
-            const isEnabled = setting.setting_value === "true";
-            const icon = getSettingIcon(setting.setting_key);
+      <Box sx={{ display: "grid", gap: 2 }}>
+        {settings.map((setting) => {
+          const isEnabled = setting.setting_value === "true";
 
-            return (
-              <div
-                key={setting.id}
-                className="bg-white p-card-padding border border-outline-variant rounded-xl flex items-center justify-between hover:bg-surface-container-lowest transition-colors group"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-surface-container rounded-lg group-hover:bg-on-tertiary-container/10 transition-colors">
-                    <span className="material-symbols-outlined text-on-tertiary-container">{icon}</span>
-                  </div>
-                  <div>
-                    <h3 className="font-title-sm text-title-sm text-on-surface">{setting.setting_key.replace(/_/g, " ")}</h3>
-                    <p className="text-on-surface-variant text-body-sm mt-1">{setting.description}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`text-body-sm font-semibold uppercase tracking-wider ${isEnabled ? "text-on-tertiary-container" : "text-on-surface-variant"}`}>
-                    {isEnabled ? "Enabled" : "Disabled"}
-                  </span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isEnabled}
-                      onChange={() => handleToggle(setting.setting_key, setting.setting_value)}
-                      disabled={saving === setting.setting_key}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-on-tertiary-container disabled:opacity-50"></div>
-                  </label>
-                </div>
-              </div>
-            );
-          })}
+          return (
+            <Paper
+              key={setting.id}
+              elevation={0}
+              sx={{
+                bgcolor: colors.background.secondary,
+                border: `1px solid ${colors.divider}`,
+                borderRadius: 2,
+                p: 3,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 2,
+                transition: "all 0.2s",
+                "&:hover": {
+                  borderColor: "rgba(16,185,129,0.3)",
+                  bgcolor: "rgba(16,185,129,0.02)",
+                },
+              }}
+            >
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  isBold
+                  sx={{
+                    fontSize: "1rem",
+                    color: colors.text.primary,
+                    mb: 0.5,
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {setting.setting_key.replace(/_/g, " ")}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: "0.875rem",
+                    color: colors.text.secondary,
+                  }}
+                >
+                  {setting.description}
+                </Typography>
+              </Box>
 
-          {/* Platform Status Card */}
-          <div className="relative h-64 overflow-hidden rounded-xl border border-outline-variant bg-primary-container">
-            <div className="relative z-10 p-gutter h-full flex flex-col justify-end bg-gradient-to-t from-primary-container to-transparent">
-              <p className="text-on-tertiary-container font-semibold uppercase tracking-widest text-[10px] mb-2">Platform Status</p>
-              <h4 className="text-white font-display-lg text-display-lg">
-                {settings.some(s => s.setting_value === "true")
-                  ? "Real-time validation is currently active."
-                  : "Real-time validation is currently inactive."}
-              </h4>
-            </div>
-          </div>
-        </div>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isEnabled}
+                    onChange={() => handleToggle(setting.setting_key, setting.setting_value)}
+                    disabled={saving === setting.setting_key}
+                    sx={{
+                      "& .MuiSwitch-switchBase.Mui-checked": {
+                        color: "#10B981",
+                      },
+                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                        backgroundColor: "#10B981",
+                      },
+                    }}
+                  />
+                }
+                label={isEnabled ? "Enabled" : "Disabled"}
+                sx={{
+                  ml: 2,
+                  color: isEnabled ? "#10B981" : colors.text.secondary,
+                  fontWeight: 600,
+                }}
+              />
+            </Paper>
+          );
+        })}
+      </Box>
 
-        {/* Info Box Column */}
-        <div className="md:col-span-4">
-          <div className="bg-surface-container-low border border-outline-variant rounded-xl p-card-padding h-full space-y-6">
-            <div className="flex items-center gap-3 border-b border-outline-variant pb-4">
-              <span className="material-symbols-outlined text-on-tertiary-container">info</span>
-              <h3 className="font-title-sm text-title-sm text-on-surface">Information</h3>
-            </div>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <p className="font-semibold text-on-surface text-body-md">VPN Detection:</p>
-                <p className="text-on-surface-variant text-body-sm leading-relaxed">
-                  When disabled, users can access and earn even with VPNs, which might increase the risk of fraudulent activities or multi-accounting from single locations.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <p className="font-semibold text-on-surface text-body-md">Country Mismatch:</p>
-                <p className="text-on-surface-variant text-body-sm leading-relaxed">
-                  When disabled, users can access from different countries without triggering security alerts.
-                </p>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-secondary-container/10 border border-secondary-container/20 rounded-lg">
-                <span className="material-symbols-outlined text-secondary">bolt</span>
-                <p className="text-secondary font-semibold text-body-sm">
-                  Changes apply immediately to new transactions.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+      <Divider sx={{ borderColor: colors.divider, my: 4 }} />
+
+      <Paper
+        elevation={0}
+        sx={{
+          bgcolor: "rgba(16,185,129,0.05)",
+          border: `1px solid rgba(16,185,129,0.2)`,
+          borderRadius: 2,
+          p: 3,
+        }}
+      >
+        <Typography isBold sx={{ color: "#10B981", mb: 1 }}>
+          ℹ️ Information
+        </Typography>
+        <Typography sx={{ fontSize: "0.875rem", color: colors.text.secondary, lineHeight: 1.7 }}>
+          • <strong>VPN Detection</strong>: When disabled, users can access and earn even with VPNs.
+          <br />
+          • <strong>Country Mismatch Detection</strong>: When disabled, users can access from different countries.
+          <br />
+          • Changes apply immediately to new transactions.
+        </Typography>
+      </Paper>
+    </Box>
   );
 }
