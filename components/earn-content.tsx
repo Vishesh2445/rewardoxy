@@ -122,7 +122,7 @@ function OfferDetailsModal({
       scroll="body"
       PaperProps={{
         sx: {
-          bgcolor: colors.background.primary,
+          bgcolor: "#232645",
           borderRadius: 3,
           maxWidth: "650px",
           maxHeight: "90vh",
@@ -219,7 +219,7 @@ function OfferDetailsModal({
               borderRadius: 2,
               overflow: "hidden",
               flexShrink: 0,
-              bgcolor: colors.background.secondary,
+              bgcolor: "#1A1B2E",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -328,7 +328,7 @@ function OfferDetailsModal({
         <Box sx={{ px: { xs: 2, sm: 2.5 }, pb: 2, flexShrink: 0 }}>
           <Box 
             sx={{ 
-              bgcolor: colors.background.secondary,
+              bgcolor: "#1A1B2E",
               p: 2,
               borderRadius: 2,
             }}
@@ -404,12 +404,12 @@ function OfferDetailsModal({
                   alignItems: "center",
                   justifyContent: "space-between",
                   p: 1.5,
-                  bgcolor: colors.background.secondary,
+                  bgcolor: "#1A1B2E",
                   borderRadius: 2,
                   transition: "all 0.2s",
                   "&:hover": {
                     borderColor: "rgba(16, 185, 129, 0.3)",
-                  bgcolor: colors.background.default,
+                  bgcolor: "#0D0E12",
                   },
                 }}
               >
@@ -551,7 +551,7 @@ function OfferDetailsModal({
 
         <Box
           sx={{
-            bgcolor: colors.background.secondary,
+            bgcolor: "#1A1B2E",
             p: 2,
             borderRadius: 2,
             wordBreak: "break-all",
@@ -564,7 +564,7 @@ function OfferDetailsModal({
             cursor: "pointer",
             transition: "all 0.2s",
             "&:hover": {
-              bgcolor: colors.background.secondary,
+              bgcolor: "#1A1B2E",
               borderColor: "rgba(16, 185, 129, 0.2)",
             },
           }}
@@ -848,17 +848,17 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
   // Skeleton loader with shimmer animation
   const SkeletonOffer = () => (
     <Box sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 }, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: colors.background.primary, borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
+      <Box sx={{ bgcolor: "#232645", borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
         <Box sx={{ 
-          width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, bgcolor: colors.background.default, mb: { xs: 0.75, sm: 1.5 },
+          width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, bgcolor: "#0D0E12", mb: { xs: 0.75, sm: 1.5 },
           position: "relative", overflow: "hidden",
           animation: "pulse 2s ease-in-out infinite",
           "@keyframes pulse": { "0%,100%": { opacity: 0.6 }, "50%": { opacity: 1 } },
           "&::after": { content: '""', position: "absolute", top: 0, left: "-100%", width: "100%", height: "100%", background: "linear-gradient(90deg, transparent, rgba(16,185,129,0.04), transparent)", animation: "shimmer 1.4s ease-in-out infinite" },
         }} />
-        <Box sx={{ height: { xs: 14, sm: 20 }, bgcolor: colors.background.default, borderRadius: "4px", width: "85%", mb: { xs: 0.2, sm: 0.5 }, animation: "pulse 2s ease-in-out infinite 0.1s" }} />
-        <Box sx={{ height: { xs: 8, sm: 10 }, bgcolor: colors.background.default, borderRadius: "4px", width: "35%", mb: 0.2, animation: "pulse 2s ease-in-out infinite 0.2s" }} />
-        <Box sx={{ height: { xs: 12, sm: 16 }, bgcolor: colors.background.default, borderRadius: "4px", width: "45%", animation: "pulse 2s ease-in-out infinite 0.3s" }} />
+        <Box sx={{ height: { xs: 14, sm: 20 }, bgcolor: "#0D0E12", borderRadius: "4px", width: "85%", mb: { xs: 0.2, sm: 0.5 }, animation: "pulse 2s ease-in-out infinite 0.1s" }} />
+        <Box sx={{ height: { xs: 8, sm: 10 }, bgcolor: "#0D0E12", borderRadius: "4px", width: "35%", mb: 0.2, animation: "pulse 2s ease-in-out infinite 0.2s" }} />
+        <Box sx={{ height: { xs: 12, sm: 16 }, bgcolor: "#0D0E12", borderRadius: "4px", width: "45%", animation: "pulse 2s ease-in-out infinite 0.3s" }} />
       </Box>
     </Box>
   );
@@ -866,7 +866,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
   return (
     <Box 
       sx={{ 
-        bgcolor: colors.background.default, 
+        bgcolor: "#0D0E12", 
         borderRadius: 3, 
         overflow: "hidden",
       }}
@@ -903,7 +903,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
               sx={{
                 width: 32,
                 height: 32,
-                bgcolor: colors.background.secondary,
+                bgcolor: "#1A1B2E",
                 borderRadius: 1.5,
                 color: "#10B981",
                 opacity: 0.4,
@@ -917,7 +917,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
               sx={{
                 width: 32,
                 height: 32,
-                bgcolor: colors.background.secondary,
+                bgcolor: "#1A1B2E",
                 borderRadius: 1.5,
                 color: "#10B981",
                 "&:hover": { bgcolor: "rgba(16, 185, 129, 0.08)" },
@@ -970,7 +970,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
           >
             <Box
               sx={{
-                bgcolor: colors.background.primary,
+                bgcolor: "#232645",
                 border: "none",
                 borderRadius: { xs: "10px", sm: "16px" },
                 p: { xs: 1, sm: 2 },
@@ -992,7 +992,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
                   backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
-                  bgcolor: colors.background.default,
+                  bgcolor: "#0D0E12",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1092,7 +1092,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   // Skeleton loader
   const SkeletonSurvey = () => (
     <Box sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 }, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: colors.background.secondary, p: { xs: 0.75, sm: 1.5 }, borderRadius: { xs: 1.5, sm: 2.5 } }}>
+      <Box sx={{ bgcolor: "#1A1B2E", p: { xs: 0.75, sm: 1.5 }, borderRadius: { xs: 1.5, sm: 2.5 } }}>
         <Box sx={{ 
           width: "100%", 
           aspectRatio: "1", 
@@ -1125,7 +1125,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   return (
     <Box 
       sx={{ 
-        bgcolor: colors.background.default, 
+        bgcolor: "#0D0E12", 
         borderRadius: 3, 
         overflow: "hidden",
       }}
@@ -1147,7 +1147,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             sx={{
               width: 32,
               height: 32,
-              bgcolor: colors.background.secondary,
+              bgcolor: "#1A1B2E",
               borderRadius: 1.5,
               color: "#10B981",
               opacity: 0.4,
@@ -1161,7 +1161,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             sx={{
               width: 32,
               height: 32,
-              bgcolor: colors.background.secondary,
+              bgcolor: "#1A1B2E",
               borderRadius: 1.5,
               color: "#10B981",
               "&:hover": { bgcolor: "rgba(16, 185, 129, 0.08)" },
@@ -1214,7 +1214,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             >
               <Box
                 sx={{
-                  bgcolor: colors.background.secondary,
+                  bgcolor: "#1A1B2E",
                   p: { xs: 0.75, sm: 1.5 },
                   borderRadius: { xs: 1.5, sm: 2.5 },
                   transition: "all 0.3s",
@@ -1411,7 +1411,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
   const iframeSrc = getIframeSrc();
 
   return (
-    <Box sx={{ bgcolor: colors.background.default, minHeight: "100vh", width: "100%", pb: 4 }}>
+    <Box sx={{ bgcolor: "#0D0E12", minHeight: "100vh", width: "100%", pb: 4 }}>
       {/* Gaming Offers */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3 } }}>
         <GamingOffersSection userId={userId} deviceOS={selectedPlatforms} />
@@ -1428,7 +1428,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
           <Box
             sx={{
               width: 28, height: 28, borderRadius: 1.5,
-              background: colors.background.glass,
+              background: "rgba(15,18,25,0.85)",
               backdropFilter: colors.glass.backdrop,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
@@ -1504,7 +1504,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             >
               <Box
                 sx={{
-                  backgroundColor: colors.background.secondary,
+                  backgroundColor: "#1A1B2E",
                   borderRadius: 10,
                   padding: 2,
                   display: "flex",
@@ -1740,7 +1740,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             >
               <Box
                 sx={{
-                  backgroundColor: colors.background.secondary,
+                  backgroundColor: "#1A1B2E",
                   borderRadius: 10,
                   padding: 2,
                   display: "flex",
@@ -1842,7 +1842,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             >
               <Box
                 sx={{
-                  backgroundColor: colors.background.secondary,
+                  backgroundColor: "#1A1B2E",
                   borderRadius: 10,
                   padding: 2,
                   display: "flex",
@@ -1945,7 +1945,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             >
               <Box
                 sx={{
-                  backgroundColor: colors.background.secondary,
+                  backgroundColor: "#1A1B2E",
                   borderRadius: 10,
                   padding: 2,
                   display: "flex",
@@ -2047,7 +2047,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             >
               <Box
                 sx={{
-                  backgroundColor: colors.background.secondary,
+                  backgroundColor: "#1A1B2E",
                   borderRadius: 10,
                   padding: 2,
                   display: "flex",
@@ -2149,7 +2149,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             >
               <Box
                 sx={{
-                  backgroundColor: colors.background.secondary,
+                  backgroundColor: "#1A1B2E",
                   borderRadius: 10,
                   padding: 2,
                   display: "flex",
@@ -2251,7 +2251,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             >
               <Box
                 sx={{
-                  backgroundColor: colors.background.secondary,
+                  backgroundColor: "#1A1B2E",
                   borderRadius: 10,
                   padding: 2,
                   display: "flex",
@@ -2311,7 +2311,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
           <Box
             sx={{
               width: 28, height: 28, borderRadius: 1.5,
-              background: colors.background.glass,
+              background: "rgba(15,18,25,0.85)",
               backdropFilter: colors.glass.backdrop,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
@@ -2387,7 +2387,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             >
               <Box
                 sx={{
-                  backgroundColor: colors.background.secondary,
+                  backgroundColor: "#1A1B2E",
                   borderRadius: 10,
                   padding: 2,
                   display: "flex",
@@ -2489,7 +2489,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             >
               <Box
                 sx={{
-                  backgroundColor: colors.background.secondary,
+                  backgroundColor: "#1A1B2E",
                   borderRadius: 10,
                   padding: 2,
                   display: "flex",
@@ -2591,7 +2591,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             >
               <Box
                 sx={{
-                  backgroundColor: colors.background.secondary,
+                  backgroundColor: "#1A1B2E",
                   borderRadius: 10,
                   padding: 2,
                   display: "flex",
@@ -2649,7 +2649,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
         <Paper sx={{ 
           borderRadius: 2, 
-          background: colors.background.glass,
+          background: "rgba(15,18,25,0.85)",
           backdropFilter: colors.glass.backdrop,
           p: 2.5, 
           mt: { xs: 2, sm: 3 }
@@ -2670,11 +2670,11 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
         slotProps={{
           paper: {
             sx: {
-              bgcolor: colors.background.default,
+              bgcolor: "#0D0E12",
               borderRadius: 2,
               height: "90vh", maxHeight: "90vh",
               display: "flex", flexDirection: "column", overflow: "hidden",
-              background: colors.background.glass,
+              background: "rgba(15,18,25,0.85)",
               backdropFilter: colors.glass.backdrop,
             },
           },
@@ -2685,7 +2685,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
           sx={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             borderBottom: `1px solid ${colors.glass.border}`, px: 2.5, py: 1.5,
-            bgcolor: colors.background.default
+            bgcolor: "#0D0E12"
           }}
         >
           <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#fff" }}>
@@ -2697,7 +2697,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               size="small"
               title="Open in new tab"
               sx={{
-                background: colors.background.glass,
+                background: "rgba(15,18,25,0.85)",
                 backdropFilter: colors.glass.backdrop,
                 borderRadius: 1, color: colors.text.secondary, width: 32, height: 32,
                 "&:hover": { borderColor: colors.glass.borderHover, color: colors.primary },
@@ -2709,7 +2709,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               onClick={() => setOpen(false)}
               size="small"
               sx={{
-                background: colors.background.glass,
+                background: "rgba(15,18,25,0.85)",
                 backdropFilter: colors.glass.backdrop,
                 borderRadius: 1, color: colors.text.secondary, width: 32, height: 32,
                 "&:hover": { borderColor: colors.glass.borderHover, color: colors.primary },
@@ -2719,7 +2719,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             </IconButton>
           </Box>
         </DialogTitle>
-        <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden", position: "relative", bgcolor: colors.background.default }}>
+        <DialogContent sx={{ p: 0, flex: 1, overflow: "hidden", position: "relative", bgcolor: "#0D0E12" }}>
           
           {/* Loading Animation */}
           {iframeLoading && !adBlockDetected && !iframeError && (
@@ -2727,7 +2727,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               sx={{
                 position: "absolute", inset: 0,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                zIndex: 2, bgcolor: colors.background.default
+                zIndex: 2, bgcolor: "#0D0E12"
               }}
             >
               <CircularProgress size={40} sx={{ color: colors.primary }} />
@@ -2740,7 +2740,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               sx={{
                 position: "absolute", inset: 0,
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                textAlign: "center", p: 3, zIndex: 3, bgcolor: colors.background.default,
+                textAlign: "center", p: 3, zIndex: 3, bgcolor: "#0D0E12",
                 borderRadius: 2, m: 2
               }}
             >
@@ -2759,7 +2759,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               sx={{
                 position: "absolute", inset: 0,
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                textAlign: "center", p: 3, zIndex: 3, bgcolor: colors.background.default,
+                textAlign: "center", p: 3, zIndex: 3, bgcolor: "#0D0E12",
                 borderRadius: 2, m: 2
               }}
             >
@@ -2808,7 +2808,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
               allow="clipboard-write"
               sx={{ 
                 width: "100%", height: "100%", border: "none", 
-                bgcolor: colors.background.default,
+                bgcolor: "#0D0E12",
                 display: (adBlockDetected || iframeError) ? "none" : "block" 
               }}
             />

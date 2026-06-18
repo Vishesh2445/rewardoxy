@@ -162,57 +162,57 @@ export default function DashboardClient({
 
   const stats = [
     {
-      icon: <Coins size={22} color={colors.primary} />,
+      icon: <Coins size={16} color={colors.primary} />,
       label: "Coin Balance",
       value: coins.toLocaleString(),
       sub: `≈ $${usdValue} USDT`,
       accent: true,
-      glow: true,
+      color: colors.primary,
     },
     {
-      icon: <TrendingUp size={22} color={colors.primary} />,
+      icon: <TrendingUp size={16} color={colors.primary} />,
       label: "Total Earned",
       value: totalEarned.toLocaleString(),
       sub: "lifetime coins",
       accent: false,
-      glow: false,
+      color: colors.primary,
     },
     {
-      icon: <Flame size={22} color={colors.status.warning} />,
+      icon: <Flame size={16} color={colors.status.warning} />,
       label: "Day Streak",
       value: String(streak),
-      sub: streak > 0 ? "🔥 Keep it up!" : "Start today!",
+      sub: streak > 0 ? "Keep it up!" : "Start today!",
       accent: false,
-      glow: false,
+      color: colors.status.warning,
     },
     {
-      icon: <CheckCircle size={22} color={colors.primary} />,
+      icon: <CheckCircle size={16} color={colors.primary} />,
       label: "Completions",
       value: String(completions.length),
       sub: "recent tasks",
       accent: false,
-      glow: false,
+      color: colors.primary,
     },
   ];
 
   const quickActions = [
     {
       href: "/earn",
-      icon: <Gift size={26} color={colors.primary} />,
+      icon: <Gift size={24} color={colors.primary} />,
       title: "Complete Offers",
       description: "Earn coins by completing tasks",
       primary: true,
     },
     {
       href: "/daily-bonus",
-      icon: <CalendarCheck size={26} color={colors.primary} />,
+      icon: <CalendarCheck size={24} color={colors.primary} />,
       title: "Daily Bonus",
       description: "Claim your daily streak reward",
       primary: false,
     },
     {
       href: "/cashout",
-      icon: <Wallet size={26} color={colors.primary} />,
+      icon: <Wallet size={24} color={colors.primary} />,
       title: "Cash Out",
       description: "Withdraw earnings as USDT",
       primary: false,
@@ -229,37 +229,17 @@ export default function DashboardClient({
     <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
 
       {/* ── HERO WELCOME BANNER ── */}
-      <Paper
-        elevation={0}
+      <Box
         sx={{
-          mb: 4,
-          borderRadius: 2,
-          background: colors.background.glass,
-          backdropFilter: colors.glass.backdrop,
-          p: { xs: 3, sm: 4 },
+          mb: 3,
+          borderRadius: "20px",
+          background: "linear-gradient(135deg, #232645 0%, #1A1B2E 100%)",
+          p: { xs: 2.5, sm: 3 },
           position: "relative",
           overflow: "hidden",
-          transition: "all 0.3s ease",
-          "&:hover": {
-            background: colors.background.glassHover,
-            boxShadow: `0 8px 32px rgba(16, 185, 129, 0.1)`,
-          },
+          boxShadow: "0 10px 30px rgba(16, 185, 129, 0.08)",
         }}
       >
-        {/* background glow */}
-        <Box
-          sx={{
-            pointerEvents: "none",
-            position: "absolute",
-            top: -60,
-            right: -60,
-            width: 200,
-            height: 200,
-            borderRadius: "50%",
-            background: "rgba(16, 185, 129, 0.08)",
-            filter: "blur(60px)",
-          }}
-        />
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
           {/* Avatar */}
           <Box
@@ -267,21 +247,21 @@ export default function DashboardClient({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              width: 52,
-              height: 52,
+              width: 48,
+              height: 48,
               borderRadius: "50%",
-              background: colors.background.gradient,
+              background: "linear-gradient(135deg, #10B981, #059669)",
               fontWeight: 700,
-              fontSize: "1.1rem",
+              fontSize: "1rem",
               color: "#fff",
               flexShrink: 0,
-              boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)",
+              boxShadow: "0 4px 16px rgba(16, 185, 129, 0.35)",
             }}
           >
             {initials}
           </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="h6" isBold>
+            <Typography variant="body1" isBold>
               Welcome back,{" "}
               <Box
                 component="span"
@@ -292,10 +272,9 @@ export default function DashboardClient({
                 }}
               >
                 {displayName}
-              </Box>{" "}
-              👋
+              </Box>
             </Typography>
-            <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 0.25 }}>
+            <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 0.25, fontSize: "0.8rem" }}>
               Here&apos;s your earnings overview
             </Typography>
           </Box>
@@ -311,10 +290,8 @@ export default function DashboardClient({
                   display: "flex",
                   alignItems: "center",
                   gap: 0.75,
-                  borderRadius: 50,
-                  border: `1px solid ${colors.glass.border}`,
-                  background: colors.background.glass,
-                  backdropFilter: colors.glass.backdrop,
+                  borderRadius: "20px",
+                  background: "#1A1B2E",
                   px: 1.5,
                   py: 0.75,
                   fontSize: "0.75rem",
@@ -322,7 +299,7 @@ export default function DashboardClient({
                   color: colors.text.secondary,
                   textDecoration: "none",
                   transition: "all 0.2s",
-                  "&:hover": { borderColor: colors.glass.borderHover, color: colors.primary, background: colors.background.glassHover },
+                  "&:hover": { color: colors.primary, background: "rgba(16,185,129,0.1)" },
                 }}
               >
                 {h.icon}
@@ -331,86 +308,76 @@ export default function DashboardClient({
             ))}
           </Box>
         </Box>
-      </Paper>
+      </Box>
 
       {/* ── STATS ROW ── */}
-      <Grid container spacing={2} sx={{ mb: 4 }}>
+      <Grid container spacing={1.25} sx={{ mb: 3 }}>
         {stats.map((s) => (
           <Grid size={{ xs: 6, lg: 3 }} key={s.label}>
-            <Paper
-              elevation={0}
+            <Box
               sx={{
-                borderRadius: 2,
-                background: colors.background.glass,
-                backdropFilter: colors.glass.backdrop,
-                p: { xs: 2, sm: 2.5 },
+                borderRadius: "14px",
+                background: "#232645",
+                p: { xs: 1.75, sm: 2 },
                 height: "100%",
-                transition: "all 0.3s ease",
-                "&:hover": { background: colors.background.glassHover, boxShadow: `0 8px 24px rgba(16, 185, 129, 0.1)` },
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: 42,
-                    height: 42,
-                    borderRadius: 2,
-                    background: s.glow ? `rgba(16, 185, 129, 0.12)` : colors.background.secondary,
-                    flexShrink: 0,
-                  }}
-                >
-                  {s.icon}
-                </Box>
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography sx={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: colors.text.secondary }}>
-                    {s.label}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: { xs: "1.1rem", sm: "1.35rem" },
-                      fontWeight: 800,
-                      background: s.accent ? colors.text.gradient : "none",
-                      WebkitBackgroundClip: s.accent ? "text" : "unset",
-                      WebkitTextFillColor: s.accent ? "transparent" : "unset",
-                      color: s.accent ? "unset" : "#fff",
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {s.value}
-                  </Typography>
-                  <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, mt: 0.25, opacity: 0.8 }}>
-                    {s.sub}
-                  </Typography>
-                </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 30,
+                  height: 30,
+                  borderRadius: "8px",
+                  background: `${s.color}1a`,
+                  mb: 1.5,
+                }}
+              >
+                {s.icon}
               </Box>
-            </Paper>
+              <Typography sx={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: colors.text.secondary }}>
+                {s.label}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: { xs: "1.1rem", sm: "1.25rem" },
+                  fontWeight: 800,
+                  background: s.accent ? colors.text.gradient : "none",
+                  WebkitBackgroundClip: s.accent ? "text" : "unset",
+                  WebkitTextFillColor: s.accent ? "transparent" : "unset",
+                  color: s.accent ? "unset" : "#fff",
+                  lineHeight: 1.2,
+                  mt: 0.25,
+                }}
+              >
+                {s.value}
+              </Typography>
+              <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, mt: 0.25, opacity: 0.8 }}>
+                {s.sub}
+              </Typography>
+            </Box>
           </Grid>
         ))}
       </Grid>
 
       {/* ─ DAILY BONUS CTA ─ */}
-      <Paper
-        elevation={0}
+      <Box
         component={Link}
         href="/daily-bonus"
         sx={{
           display: "flex",
           alignItems: "center",
           gap: 2,
-          mb: 4,
-          borderRadius: 2,
-          background: colors.background.glass,
-          backdropFilter: colors.glass.backdrop,
-          p: { xs: 2.5, sm: 3 },
+          mb: 3,
+          borderRadius: "14px",
+          background: "#232645",
+          p: { xs: 2, sm: 2.5 },
           textDecoration: "none",
           color: "inherit",
+          boxShadow: "0 8px 32px rgba(16, 185, 129, 0.08)",
           transition: "all 0.3s ease",
-          position: "relative",
-          overflow: "hidden",
-          "&:hover": { background: colors.background.glassHover, boxShadow: `0 8px 32px rgba(16, 185, 129, 0.15)` },
+          "&:hover": { boxShadow: "0 8px 32px rgba(16, 185, 129, 0.15)" },
         }}
       >
         <Box
@@ -418,22 +385,20 @@ export default function DashboardClient({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            width: 52,
-            height: 52,
-            borderRadius: 2,
-            background: `rgba(16, 185, 129, 0.15)`,
-            border: `1px solid ${colors.glass.borderHover}`,
+            width: 44,
+            height: 44,
+            borderRadius: "10px",
+            background: "rgba(16, 185, 129, 0.12)",
             flexShrink: 0,
-            animation: "pulse-glow 2.5s ease-in-out infinite",
           }}
         >
-          <CalendarCheck size={26} color={colors.primary} />
+          <CalendarCheck size={22} color={colors.primary} />
         </Box>
         <Box sx={{ flex: 1 }}>
-          <Typography variant="body1" isBold sx={{ background: colors.text.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            🔥 Day {streak} Streak — Claim Your Daily Bonus!
+          <Typography variant="body2" isBold sx={{ background: colors.text.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+            Day {streak} Streak — Claim Your Daily Bonus!
           </Typography>
-          <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 0.25 }}>
+          <Typography variant="body2" sx={{ color: colors.text.secondary, mt: 0.25, fontSize: "0.8rem" }}>
             Free coins every day. Come back tomorrow to maintain your streak.
           </Typography>
         </Box>
@@ -442,46 +407,44 @@ export default function DashboardClient({
             display: { xs: "none", sm: "flex" },
             alignItems: "center",
             gap: 0.5,
-            borderRadius: 2,
-            background: colors.background.gradient,
+            borderRadius: "10px",
+            background: "linear-gradient(180deg, #10B981, #059669)",
             color: "#fff",
-            px: 2.5,
-            py: 1,
+            px: 2,
+            py: 0.75,
             fontWeight: 700,
-            fontSize: "0.875rem",
+            fontSize: "0.8rem",
             flexShrink: 0,
+            boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)",
           }}
         >
           Claim
-          <ArrowRight size={16} />
+          <ArrowRight size={14} />
         </Box>
-      </Paper>
+      </Box>
 
       {/* ── QUICK ACTIONS ── */}
-      <Typography variant="subtitle1" isBold sx={{ mb: 2 }}>
+      <Typography variant="subtitle1" isBold sx={{ mb: 1.5 }}>
         Quick Actions
       </Typography>
-      <Grid container spacing={2}>
+      <Grid container spacing={1.25}>
         {quickActions.map((a) => (
           <Grid size={{ xs: 12, sm: 4 }} key={a.href}>
-            <Paper
+            <Box
               component={Link}
               href={a.href}
-              elevation={0}
               sx={{
                 display: "flex",
                 alignItems: "center",
                 gap: 2,
-                borderRadius: 2,
-                background: colors.background.glass,
-                backdropFilter: colors.glass.backdrop,
-                p: 2.5,
+                borderRadius: "14px",
+                background: a.primary ? "linear-gradient(135deg, #232645 0%, #1A1B2E 100%)" : "#1A1B2E",
+                p: 2,
                 textDecoration: "none",
                 color: "inherit",
                 transition: "all 0.3s ease",
                 "&:hover": {
-                  background: colors.background.glassHover,
-                  boxShadow: `0 8px 24px rgba(16, 185, 129, 0.12)`,
+                  boxShadow: a.primary ? "0 8px 24px rgba(16, 185, 129, 0.12)" : "none",
                   transform: "translateY(-2px)",
                 },
               }}
@@ -491,11 +454,10 @@ export default function DashboardClient({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 48,
-                  height: 48,
-                  borderRadius: 2,
-                  background: a.primary ? `rgba(16, 185, 129, 0.15)` : colors.background.secondary,
-                  border: `1px solid ${a.primary ? colors.glass.borderHover : colors.glass.border}`,
+                  width: 42,
+                  height: 42,
+                  borderRadius: "10px",
+                  background: a.primary ? "rgba(16, 185, 129, 0.12)" : "rgba(16, 185, 129, 0.08)",
                   flexShrink: 0,
                 }}
               >
@@ -510,7 +472,7 @@ export default function DashboardClient({
                 </Typography>
               </Box>
               <ArrowRight size={16} color={colors.text.secondary} />
-            </Paper>
+            </Box>
           </Grid>
         ))}
       </Grid>

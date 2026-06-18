@@ -97,13 +97,11 @@ export default function ProfileClient({
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
 
-  // Pagination states for Completions
   const [completions, setCompletions] = useState<Completion[]>([]);
   const [completionsPage, setCompletionsPage] = useState(1);
   const [hasMoreCompletions, setHasMoreCompletions] = useState(true);
   const [loadingCompletions, setLoadingCompletions] = useState(true);
 
-  // Pagination states for Withdrawals
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [withdrawalsPage, setWithdrawalsPage] = useState(1);
   const [hasMoreWithdrawals, setHasMoreWithdrawals] = useState(true);
@@ -113,26 +111,21 @@ export default function ProfileClient({
   const [resendingVerification, setResendingVerification] = useState(false);
   const [showVerificationToast, setShowVerificationToast] = useState(false);
 
-  // Initial Fetch
   useEffect(() => {
     async function fetchInitialData() {
       const supabase = createClient();
-      
       const compTarget = PAGE_SIZE - 1;
       const withTarget = PAGE_SIZE - 1;
-
       const [compRes, withRes] = await Promise.all([
         supabase.from("completions").select("id, program_id, coins_awarded, created_at, source")
           .eq("player_id", userId).order("created_at", { ascending: false }).range(0, compTarget),
         supabase.from("withdrawals").select("id, coins, amount_usd, status, tx_hash, requested_at")
           .eq("user_id", userId).order("requested_at", { ascending: false }).range(0, withTarget),
       ]);
-      
       const comps = compRes.data ?? [];
       setCompletions(comps);
       setHasMoreCompletions(comps.length === PAGE_SIZE);
       setLoadingCompletions(false);
-
       const withs = withRes.data ?? [];
       setWithdrawals(withs);
       setHasMoreWithdrawals(withs.length === PAGE_SIZE);
@@ -141,7 +134,6 @@ export default function ProfileClient({
     fetchInitialData();
   }, [userId]);
 
-  // Load More Completions
   async function loadMoreCompletions() {
     setLoadingCompletions(true);
     const supabase = createClient();
@@ -149,7 +141,6 @@ export default function ProfileClient({
     const to = from + PAGE_SIZE - 1;
     const { data } = await supabase.from("completions").select("id, program_id, coins_awarded, created_at, source")
       .eq("player_id", userId).order("created_at", { ascending: false }).range(from, to);
-    
     if (data && data.length > 0) {
       setCompletions(prev => [...prev, ...data]);
       setHasMoreCompletions(data.length === PAGE_SIZE);
@@ -160,7 +151,6 @@ export default function ProfileClient({
     setLoadingCompletions(false);
   }
 
-  // Load More Withdrawals
   async function loadMoreWithdrawals() {
     setLoadingWithdrawals(true);
     const supabase = createClient();
@@ -168,7 +158,6 @@ export default function ProfileClient({
     const to = from + PAGE_SIZE - 1;
     const { data } = await supabase.from("withdrawals").select("id, coins, amount_usd, status, tx_hash, requested_at")
       .eq("user_id", userId).order("requested_at", { ascending: false }).range(from, to);
-    
     if (data && data.length > 0) {
       setWithdrawals(prev => [...prev, ...data]);
       setHasMoreWithdrawals(data.length === PAGE_SIZE);
@@ -178,7 +167,6 @@ export default function ProfileClient({
     }
     setLoadingWithdrawals(false);
   }
-
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -198,10 +186,10 @@ export default function ProfileClient({
 
   const textFieldSx = {
     "& .MuiOutlinedInput-root": {
-      bgcolor: colors.background.ternary, borderRadius: 2, fontSize: "0.875rem", color: "#fff",
-      "& fieldset": { borderColor: colors.divider },
-      "&:hover fieldset": { borderColor: colors.divider },
-      "&.Mui-focused fieldset": { borderColor: colors.primary, borderWidth: "1px" },
+      bgcolor: "#252539", borderRadius: "12px", fontSize: "0.875rem", color: "#fff",
+      "& fieldset": { borderColor: "rgba(255,255,255,0.06)", borderWidth: "1px" },
+      "&:hover fieldset": { borderColor: "rgba(16,185,129,0.3)" },
+      "&.Mui-focused fieldset": { borderColor: "#10B981", borderWidth: "1.5px" },
       "& input::placeholder": { color: `${colors.text.secondary}80`, opacity: 1 },
     },
   };
@@ -209,109 +197,131 @@ export default function ProfileClient({
   const totalUsd = (totalEarned * 0.001).toFixed(2);
 
   const stats = [
-    { icon: <TrendingUp size={18} color={colors.primary} />, label: "Total Earned", value: `${totalEarned.toLocaleString()} coins` },
-    { icon: <Calendar size={18} color={colors.primary} />, label: "This Month", value: `${monthEarned.toLocaleString()} coins` },
-    { icon: <CheckCircle size={18} color={colors.primary} />, label: "Completed Offers", value: String(totalCompletions) },
-    { icon: <Wallet size={18} color={colors.primary} />, label: "Withdrawals", value: String(totalWithdrawals) },
-    { icon: <Flame size={18} color={colors.status.warning} />, label: "Streak", value: `${streakCount} days` },
+    { icon: <TrendingUp size={16} color={colors.primary} />, label: "Total Earned", value: `${totalEarned.toLocaleString()} coins`, color: colors.primary },
+    { icon: <Calendar size={16} color={colors.primary} />, label: "This Month", value: `${monthEarned.toLocaleString()} coins`, color: colors.primary },
+    { icon: <CheckCircle size={16} color={colors.primary} />, label: "Completed", value: String(totalCompletions), color: colors.primary },
+    { icon: <Wallet size={16} color={colors.primary} />, label: "Withdrawals", value: String(totalWithdrawals), color: colors.primary },
+    { icon: <Flame size={16} color={colors.status.warning} />, label: "Streak", value: `${streakCount} days`, color: colors.status.warning },
   ];
 
   const TABS = ["Withdrawals"] as const;
 
-  /* ── main profile view ─────── */
   return (
     <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
-      {/* header */}
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
+      {/* Header */}
+      <Box sx={{ mb: 3 }}>
         <Typography variant="h5" isBold>My Profile</Typography>
       </Box>
 
-      {/* top cards */}
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "300px 1fr" }, gap: 3, mb: 3 }}>
-        {/* avatar + info card */}
-        <Paper sx={{ borderRadius: 4, bgcolor: colors.background.secondary, p: 3, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <Avatar {...stringAvatar(initialName || email)} />
-          <Typography variant="h6" isBold sx={{ mt: 1.5 }}>{initialName || email.split("@")[0]}</Typography>
-          <Typography variant="caption" sx={{ color: colors.text.secondary }}>Joined {timeSince(memberSince)}</Typography>
-          <Typography variant="caption" sx={{ color: colors.text.secondary, mt: 0.5 }}>{email}</Typography>
-        </Paper>
-
-        {/* stats card */}
-        <Paper sx={{ borderRadius: 4, bgcolor: colors.background.secondary, p: 3 }}>
-          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(3, 1fr)", lg: "repeat(5, 1fr)" }, gap: 2 }}>
-            {stats.map((s) => (
-              <Box key={s.label} sx={{ display: "flex", flexDirection: "column", gap: 0.5, p: 1.5, borderRadius: 3, bgcolor: colors.background.default }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                  {s.icon}
-                </Box>
-                <Typography sx={{ fontSize: "1.125rem", fontWeight: 700 }}>{s.value}</Typography>
-                <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary }}>{s.label}</Typography>
-              </Box>
-            ))}
+      {/* Hero card */}
+      <Box
+        sx={{
+          mb: 3,
+          borderRadius: "20px",
+          background: "linear-gradient(135deg, #232645 0%, #1A1B2E 100%)",
+          p: { xs: 3, sm: 4 },
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: "center",
+          gap: 3,
+        }}
+      >
+        {/* Avatar */}
+        <Box sx={{ position: "relative" }}>
+          <Box
+            sx={{
+              width: 80, height: 80, borderRadius: "50%",
+              background: "linear-gradient(135deg, #10B981, #059669)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "1.75rem", fontWeight: 700, color: "#fff",
+              boxShadow: "0 4px 20px rgba(16, 185, 129, 0.35)",
+            }}
+          >
+            {(initialName || email).charAt(0).toUpperCase()}
           </Box>
-        </Paper>
+        </Box>
+
+        <Box sx={{ flex: 1, textAlign: { xs: "center", md: "left" } }}>
+          <Typography variant="h6" isBold>{initialName || email.split("@")[0]}</Typography>
+          <Typography sx={{ fontSize: "0.8rem", color: colors.text.secondary, mt: 0.25 }}>
+            {email}
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5, justifyContent: { xs: "center", md: "flex-start" } }}>
+            <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
+              Joined {timeSince(memberSince)}
+            </Typography>
+            {emailVerified && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: colors.primary }}>
+                <CheckCircle size={12} />
+                <Typography sx={{ fontSize: "0.7rem", fontWeight: 600, color: colors.primary }}>Verified</Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Stats grid */}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", lg: "repeat(5, 1fr)" }, gap: 1.25, mb: 3 }}>
+        {stats.map((s) => (
+          <Box key={s.label} sx={{ borderRadius: "14px", background: "#232645", p: 2 }}>
+            <Box sx={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 30, height: 30, borderRadius: "8px",
+              background: `${s.color}1a`, mb: 1.5,
+            }}>
+              {s.icon}
+            </Box>
+            <Typography sx={{ fontSize: "1rem", fontWeight: 800, lineHeight: 1.2 }}>{s.value}</Typography>
+            <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary, mt: 0.25 }}>{s.label}</Typography>
+          </Box>
+        ))}
       </Box>
 
       {/* Account Settings */}
-      <Box component="form" onSubmit={handleSave} sx={{ display: "flex", flexDirection: "column", gap: 3, mb: 3 }}>
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 3 }}>
-          <Paper sx={{ borderRadius: 4, bgcolor: colors.background.primary, p: 3 }}>
-            <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-              <User size={20} color={colors.primary} /> Account Info
+      <Box component="form" onSubmit={handleSave} sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 3 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2 }}>
+          {/* Account Info */}
+          <Box sx={{ borderRadius: "14px", bgcolor: "#232645", p: 2.5 }}>
+            <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1, fontSize: "0.95rem" }}>
+              <User size={18} color={colors.primary} /> Account Info
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Box>
-                <Typography variant="body2" sx={{ mb: 0.75, display: "flex", alignItems: "center", gap: 0.75, fontWeight: 500, color: colors.text.secondary }}>
+                <Typography variant="body2" sx={{ mb: 0.75, display: "flex", alignItems: "center", gap: 0.75, fontWeight: 600, color: colors.text.secondary, fontSize: "0.8rem" }}>
                   <Mail size={14} /> Email
                 </Typography>
                 <TextField fullWidth value={email} slotProps={{ input: { readOnly: true } }}
                   sx={{ ...textFieldSx, "& .MuiOutlinedInput-root": { ...textFieldSx["& .MuiOutlinedInput-root"], color: colors.text.secondary } }} />
-                {/* Email Verification Status */}
-                <Box sx={{ mt: 1.5, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box sx={{ mt: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   {emailVerified ? (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: colors.primary }}>
-                      <CheckCircle size={16} />
-                      <Typography variant="body2" sx={{ color: colors.primary, fontWeight: 600 }}>Email Verified</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: colors.primary }}>
+                      <CheckCircle size={14} />
+                      <Typography variant="body2" sx={{ color: colors.primary, fontWeight: 600, fontSize: "0.8rem" }}>Email Verified</Typography>
                     </Box>
                   ) : (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                      <AlertCircle size={16} color="#facc15" />
-                      <Typography variant="body2" sx={{ color: "#facc15", fontWeight: 600 }}>Email not verified</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <AlertCircle size={14} color="#facc15" />
+                      <Typography variant="body2" sx={{ color: "#facc15", fontWeight: 600, fontSize: "0.8rem" }}>Email not verified</Typography>
                     </Box>
                   )}
                   {!emailVerified && (
                     <Button
-                      size="small"
-                      variant="outlined"
+                      size="small" variant="outlined"
                       onClick={async () => {
                         setResendingVerification(true);
                         try {
                           const res = await fetch("/api/resend-verification", { method: "POST" });
-                          if (res.ok) {
-                            setShowVerificationToast(true);
-                          } else {
-                            const data = await res.json();
-                            setError(data.error || "Failed to send verification email");
-                          }
-                        } catch (err) {
-                          setError("Failed to send verification email");
-                        } finally {
-                          setResendingVerification(false);
-                        }
+                          if (res.ok) setShowVerificationToast(true);
+                          else { const data = await res.json(); setError(data.error || "Failed"); }
+                        } catch { setError("Failed to send verification email"); }
+                        finally { setResendingVerification(false); }
                       }}
                       disabled={resendingVerification}
-                      startIcon={<Send size={14} />}
+                      startIcon={<Send size={12} />}
                       sx={{
-                        borderColor: colors.primary,
-                        color: colors.primary,
-                        fontSize: "0.75rem",
-                        textTransform: "none",
-                        py: 0.5,
-                        px: 1.5,
-                        "&:hover": {
-                          borderColor: colors.primary,
-                          bgcolor: "rgba(0, 208, 132, 0.1)",
-                        },
+                        borderColor: colors.primary, color: colors.primary, fontSize: "0.7rem",
+                        textTransform: "none", py: 0.25, px: 1.5, borderRadius: "10px",
+                        "&:hover": { borderColor: colors.primary, bgcolor: "rgba(16,185,129,0.1)" },
                       }}
                     >
                       {resendingVerification ? "Sending..." : "Resend"}
@@ -320,65 +330,73 @@ export default function ProfileClient({
                 </Box>
               </Box>
               <Box>
-                <Typography variant="body2" sx={{ mb: 0.75, display: "flex", alignItems: "center", gap: 0.75, fontWeight: 500, color: colors.text.secondary }}>
-                  <User size={14} /> Display Name
+                <Typography variant="body2" sx={{ mb: 0.75, fontWeight: 600, color: colors.text.secondary, fontSize: "0.8rem" }}>
+                  Display Name
                 </Typography>
                 <TextField fullWidth value={name} onChange={(e) => setName(e.target.value)} placeholder="Your display name"
                   slotProps={{ input: { inputProps: { maxLength: 30 } } }} sx={textFieldSx} />
               </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: "0.875rem", color: colors.text.secondary }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: "0.8rem", color: colors.text.secondary }}>
                 <Calendar size={14} />
                 Member since {new Date(memberSince).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
               </Box>
               {referredBy && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: "0.875rem", color: colors.primary, mt: 0.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: "0.8rem", color: colors.primary }}>
                   <User size={14} />
                   Referred by {referredBy.displayName || referredBy.email}
                 </Box>
               )}
             </Box>
-          </Paper>
+          </Box>
 
-          <Paper sx={{ borderRadius: 4, bgcolor: colors.background.primary, p: 3 }}>
-            <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-              <Wallet size={20} color={colors.primary} /> Withdrawal Settings
+          {/* Withdrawal Settings */}
+          <Box sx={{ borderRadius: "14px", bgcolor: "#232645", p: 2.5 }}>
+            <Typography variant="subtitle1" isBold sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1, fontSize: "0.95rem" }}>
+              <Wallet size={18} color={colors.primary} /> Withdrawal Settings
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Box>
-                <Typography variant="body2" sx={{ mb: 0.75, fontWeight: 500, color: colors.text.secondary }}>
+                <Typography variant="body2" sx={{ mb: 0.75, fontWeight: 600, color: colors.text.secondary, fontSize: "0.8rem" }}>
                   LTC Address
                 </Typography>
-                <TextField fullWidth value={address} onChange={(e) => setAddress(e.target.value)} placeholder={`Your LTC address`} sx={textFieldSx} />
+                <TextField fullWidth value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Your LTC address" sx={textFieldSx} />
               </Box>
             </Box>
-          </Paper>
+          </Box>
         </Box>
 
-        {error && <Box sx={{ borderRadius: 2, bgcolor: "rgba(255, 68, 68, 0.1)", border: "1px solid rgba(255, 68, 68, 0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: colors.status.error }}>{error}</Box>}
+        {error && <Box sx={{ borderRadius: "10px", bgcolor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", px: 2, py: 1, fontSize: "0.8rem", color: colors.status.error }}>{error}</Box>}
         {saved && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, borderRadius: 2, bgcolor: colors.background.secondary, border: "1px solid rgba(0, 208, 132, 0.2)", px: 2, py: 1.25, fontSize: "0.875rem", color: colors.primary }}>
-            <CheckCircle size={16} /> Profile saved successfully
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, borderRadius: "10px", bgcolor: "#1A1B2E", border: "1px solid rgba(16,185,129,0.2)", px: 2, py: 1, fontSize: "0.8rem", color: colors.primary }}>
+            <CheckCircle size={14} /> Profile saved successfully
           </Box>
         )}
 
         <Button type="submit" variant="contained" disabled={saving}
           startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <Save size={16} />}
-          sx={{ alignSelf: "flex-start", background: colors.background.gradient, borderRadius: 2, px: 3, py: 1.5, fontWeight: 600, fontSize: "0.875rem", textTransform: "none", boxShadow: "0 4px 12px rgba(0, 208, 132, 0.2)", "&:hover": { filter: "brightness(1.1)" }, "&.Mui-disabled": { opacity: 0.5, color: "#fff" } }}>
+          sx={{
+            alignSelf: "flex-start",
+            background: "linear-gradient(180deg, #10B981, #059669)",
+            borderRadius: "14px", px: 3, py: 1.25, fontWeight: 600, fontSize: "0.85rem",
+            textTransform: "none", boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)",
+            "&:hover": { filter: "brightness(1.1)" },
+            "&.Mui-disabled": { opacity: 0.5, color: "#fff" },
+          }}>
           Save Changes
         </Button>
       </Box>
 
-      {/* tabs */}
-      <Box sx={{ display: "flex", gap: 1, mb: 3 }}>
+      {/* Tabs */}
+      <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
         {TABS.map((tab, i) => (
           <Button
             key={tab}
             onClick={() => setActiveTab(i)}
             sx={{
-              borderRadius: 50, px: 2.5, py: 1, fontSize: "0.8rem", fontWeight: 600, textTransform: "none",
+              borderRadius: "20px", px: 2.5, py: 0.75, fontSize: "0.8rem", fontWeight: 600, textTransform: "none",
               ...(activeTab === i
                 ? { bgcolor: colors.primary, color: "#000", "&:hover": { bgcolor: colors.primary, filter: "brightness(1.1)" } }
-                : { bgcolor: colors.background.primary, color: colors.text.secondary, border: `1px solid ${colors.divider}`, "&:hover": { bgcolor: colors.background.ternary } }),
+                : { bgcolor: "#1A1B2E", color: colors.text.secondary, border: "1px solid rgba(255,255,255,0.05)", "&:hover": { bgcolor: "#232645" } }),
             }}
           >
             {tab}
@@ -392,89 +410,92 @@ export default function ProfileClient({
         </Box>
       ) : (
         <>
-          {/* withdrawals tab */}
           {withdrawals.length === 0 ? (
-            <Paper sx={{ borderRadius: 3, bgcolor: colors.background.primary, p: 6, textAlign: "center" }}>
+            <Box sx={{ borderRadius: "14px", bgcolor: "#1A1B2E", p: 5, textAlign: "center" }}>
               <Typography sx={{ fontSize: "0.875rem", color: colors.text.secondary }}>No withdrawals yet</Typography>
-            </Paper>
+            </Box>
           ) : (
-              <>
-                {/* Mobile cards */}
-                <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1 }}>
-                  {withdrawals.map((w) => {
-                    const sc = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
-                    return (
-                      <Box key={w.id} sx={{ borderRadius: 3, bgcolor: colors.background.primary, px: 2, py: 1.5 }}>
-                        <Box sx={{ mb: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>
-                            {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                          </Typography>
-                          <Box sx={{ borderRadius: 50, bgcolor: sc.bg, px: 1.25, py: 0.25, fontSize: "10px", fontWeight: 600, color: sc.color, textTransform: "capitalize" }}>
-                            {w.status}
-                          </Box>
-                        </Box>
-                        <Box sx={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>{w.coins.toLocaleString()} coins</Typography>
-                            <Typography sx={{ fontSize: "0.75rem", color: colors.text.secondary }}>${w.amount_usd.toFixed(2)} via LTC</Typography>
-                          </Box>
+            <>
+              {/* Mobile cards */}
+              <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 1 }}>
+                {withdrawals.map((w) => {
+                  const sc = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
+                  return (
+                    <Box key={w.id} sx={{ borderRadius: "12px", bgcolor: "#1A1B2E", p: 2 }}>
+                      <Box sx={{ mb: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary }}>
+                          {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </Typography>
+                        <Box sx={{ borderRadius: "6px", bgcolor: sc.bg, px: 1, py: 0.25, fontSize: "10px", fontWeight: 600, color: sc.color, textTransform: "capitalize" }}>
+                          {w.status}
                         </Box>
                       </Box>
-                    );
-                  })}
-                </Box>
-                {/* Desktop table */}
-                <TableContainer component={Paper} sx={{ display: { xs: "none", sm: "block" }, borderRadius: 3, bgcolor: "transparent", mb: 2 }}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        {["Coins", "Amount", "Status", "Date"].map((h) => (
-                          <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", borderColor: colors.divider, bgcolor: colors.primary }}>
-                            {h}
+                      <Box sx={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{w.coins.toLocaleString()} coins</Typography>
+                          <Typography sx={{ fontSize: "0.7rem", color: colors.text.secondary }}>${w.amount_usd.toFixed(2)} via LTC</Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Box>
+              {/* Desktop table */}
+              <TableContainer sx={{ display: { xs: "none", sm: "block" }, borderRadius: "14px", border: "1px solid rgba(255,255,255,0.05)", bgcolor: "transparent", mb: 2, overflow: "hidden" }}>
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: "#1A1B2E" }}>
+                      {["Coins", "Amount", "Status", "Date"].map((h) => (
+                        <TableCell key={h} sx={{ color: colors.text.secondary, fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", borderColor: "rgba(255,255,255,0.05)" }}>
+                          {h}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {withdrawals.map((w) => {
+                      const sc = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
+                      return (
+                        <TableRow key={w.id} sx={{ "&:hover": { bgcolor: "rgba(26,27,46,0.5)" } }}>
+                          <TableCell sx={{ borderColor: "rgba(255,255,255,0.05)", color: "#fff", fontSize: "0.8rem" }}>{w.coins.toLocaleString()}</TableCell>
+                          <TableCell sx={{ borderColor: "rgba(255,255,255,0.05)", color: colors.primary, fontWeight: 600, fontSize: "0.8rem" }}>${w.amount_usd.toFixed(2)}</TableCell>
+                          <TableCell sx={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                            <Box sx={{ display: "inline-block", borderRadius: "6px", bgcolor: sc.bg, px: 1, py: 0.25, fontSize: "0.7rem", fontWeight: 600, color: sc.color, textTransform: "capitalize" }}>
+                              {w.status}
+                            </Box>
                           </TableCell>
-                        ))}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {withdrawals.map((w) => {
-                        const sc = STATUS_COLORS[w.status] ?? STATUS_COLORS.pending;
-                        return (
-                          <TableRow key={w.id} sx={{ "&:hover": { bgcolor: colors.background.ternary } }}>
-                            <TableCell sx={{ borderColor: colors.divider, color: "#fff", fontSize: "0.875rem" }}>{w.coins.toLocaleString()}</TableCell>
-                            <TableCell sx={{ borderColor: colors.divider, color: colors.primary, fontWeight: 600, fontSize: "0.875rem" }}>${w.amount_usd.toFixed(2)}</TableCell>
-                            <TableCell sx={{ borderColor: colors.divider }}>
-                              <Box sx={{ display: "inline-block", borderRadius: 50, bgcolor: sc.bg, px: 1.5, py: 0.25, fontSize: "0.75rem", fontWeight: 600, color: sc.color, textTransform: "capitalize" }}>
-                                {w.status}
-                              </Box>
-                            </TableCell>
-                            <TableCell sx={{ borderColor: colors.divider, color: colors.text.secondary, fontSize: "0.8rem", whiteSpace: "nowrap" }}>
-                              {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                          <TableCell sx={{ borderColor: "rgba(255,255,255,0.05)", color: colors.text.secondary, fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                            {new Date(w.requested_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
 
-                {hasMoreWithdrawals && (
-                  <Box sx={{ textAlign: "center", mt: 2 }}>
-                    <Button
-                      onClick={loadMoreWithdrawals}
-                      disabled={loadingWithdrawals}
-                      startIcon={loadingWithdrawals ? <CircularProgress size={16} color="inherit" /> : <Plus size={16} />}
-                      sx={{ textTransform: "none", color: colors.text.secondary, border: `1px solid ${colors.divider}`, borderRadius: 2, px: 3, "&:hover": { bgcolor: colors.background.ternary, color: "#fff" } }}
-                    >
-                      {loadingWithdrawals ? "Loading..." : "Load More"}
-                    </Button>
-                  </Box>
-                )}
-              </>
-            )}
+              {hasMoreWithdrawals && (
+                <Box sx={{ textAlign: "center", mt: 2 }}>
+                  <Button
+                    onClick={loadMoreWithdrawals}
+                    disabled={loadingWithdrawals}
+                    startIcon={loadingWithdrawals ? <CircularProgress size={16} color="inherit" /> : <Plus size={16} />}
+                    sx={{
+                      textTransform: "none", color: colors.text.secondary,
+                      border: "1px solid rgba(255,255,255,0.05)", borderRadius: "10px",
+                      px: 3, bgcolor: "#1A1B2E",
+                      "&:hover": { bgcolor: "#232645", color: "#fff" },
+                    }}
+                  >
+                    {loadingWithdrawals ? "Loading..." : "Load More"}
+                  </Button>
+                </Box>
+              )}
+            </>
+          )}
         </>
       )}
 
-      {/* Success toast for verification email sent */}
       <Snackbar
         open={showVerificationToast}
         autoHideDuration={4000}
@@ -485,8 +506,8 @@ export default function ProfileClient({
           onClose={() => setShowVerificationToast(false)}
           severity="success"
           sx={{
-            bgcolor: "rgba(0, 208, 132, 0.1)",
-            border: "1px solid rgba(0, 208, 132, 0.3)",
+            bgcolor: "rgba(16,185,129,0.1)",
+            border: "1px solid rgba(16,185,129,0.3)",
             color: colors.primary,
             "& .MuiAlert-icon": { color: colors.primary },
           }}
