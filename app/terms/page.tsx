@@ -64,9 +64,8 @@ export default function TermsPage() {
 
         <Section title="4. Coins & Withdrawals">
           Coins have no monetary value until a withdrawal is successfully processed. The
-          exchange rate is 1,000 coins = $1.00 USD. Withdrawals are available in USDT
-          (TRC-20, BEP-20) and SOL. Rewardoxy reserves the right to adjust the minimum
-          withdrawal amount and processing times at any time.
+          exchange rate is 1,000 coins = $1.00 USD. Withdrawals are available in Litecoin (LTC).
+          Rewardoxy reserves the right to adjust the minimum withdrawal amount and processing times at any time.
           Withdrawal requests are reviewed and typically processed within 24-72 hours.
         </Section>
 

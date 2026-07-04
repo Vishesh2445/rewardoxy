@@ -229,7 +229,7 @@ export default function ProfileContent({
       icon: <Coins size={22} color={colors.primary} />,
       label: "Coin Balance",
       value: coins.toLocaleString(),
-      sub: `≈ $${usdValue} USDT`,
+      sub: `≈ $${usdValue} LTC`,
       accent: true,
       glow: true,
     },
@@ -278,7 +278,7 @@ export default function ProfileContent({
       href: "/cashout",
       icon: <Wallet size={26} color={colors.primary} />,
       title: "Cash Out",
-      description: "Withdraw earnings as USDT",
+      description: "Withdraw earnings as LTC",
       primary: false,
     },
   ];

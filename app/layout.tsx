@@ -85,12 +85,7 @@ const websiteJsonLd = {
   name: "Rewardoxy",
   url: "https://www.rewardoxy.app",
   description:
-    "Earn real rewards by completing surveys, tasks, and offers. Cash out as crypto instantly.",
-  potentialAction: {
-    "@type": "SearchAction",
-    target: "https://www.rewardoxy.app/?q={search_term_string}",
-    "query-input": "required name=search_term_string",
-  },
+    "Earn real rewards by completing surveys, tasks, and offers. Cash out as Litecoin (LTC).",
 };
 
 export default function RootLayout({

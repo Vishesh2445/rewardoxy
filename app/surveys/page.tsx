@@ -2,12 +2,16 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Box, Container, Paper, Grid } from "@mui/material";
 import { ClipboardList, Clock, DollarSign, Globe, Shield, CheckCircle } from "lucide-react";
-import PublicFooter from "@/components/public-footer";
+import MarketingLayout from "@/components/marketing/marketing-layout";
+import JsonLd from "@/components/marketing/json-ld";
+import { HeroSection, PageContainer, SectionHeading, Prose, CtaBanner, RelatedLinks } from "@/components/marketing/seo-sections";
+import { buildStandardPageGraph } from "@/lib/content/schema";
+import colors from "@/theme/colors";
 
 export const metadata: Metadata = {
   title: "Paid Surveys — Earn Money Answering Questions",
   description:
-    "Get paid to share your opinion on Rewardoxy. Complete surveys from top research companies and earn coins you can withdraw as crypto. Available worldwide.",
+    "Get paid to share your opinion on Rewardoxy. Complete surveys from top research companies and earn coins you can withdraw as Litecoin (LTC). Available worldwide.",
   alternates: { canonical: "/surveys" },
   openGraph: {
     title: "Paid Surveys — Earn Money Answering Questions | Rewardoxy",
@@ -17,71 +21,47 @@ export const metadata: Metadata = {
   },
 };
 
-const colors = {
-  bgPage: "#0D0E12",
-  bgCard: "#232645",
-  green: "#10B981",
-  greenDark: "#059669",
-  textPrimary: "#ffffff",
-  textSecondary: "#a9a9ca",
-  divider: "#2a2b43",
-  greenTint: "rgba(16,185,129,0.1)",
-};
+const jsonLd = buildStandardPageGraph({
+  webPage: {
+    name: "Paid Surveys — Rewardoxy",
+    description: "Get paid to complete surveys and withdraw as LTC.",
+    path: "/surveys",
+  },
+  breadcrumbs: [
+    { name: "Home", path: "/" },
+    { name: "Surveys", path: "/surveys" },
+  ],
+});
 
 export default function SurveysPage() {
   return (
-    <Box className="glow-bg" sx={{ minHeight: "100vh", bgcolor: colors.bgPage, color: colors.textPrimary }}>
-      {/* Nav */}
-      <Box
-        component="nav"
-        sx={{
-          borderBottom: `1px solid ${colors.divider}`,
-          bgcolor: "rgba(20,21,35,0.8)",
-          backdropFilter: "blur(24px)",
-        }}
-      >
-        <Container maxWidth="md" sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
-          <Link href="/" style={{ textDecoration: "none", color: colors.green, fontWeight: 800, fontSize: "1.25rem" }}>
-            Rewardoxy
-          </Link>
-          <Box sx={{ display: "flex", gap: 3, fontSize: "0.875rem" }}>
-            <Link href="/about" style={{ color: colors.textSecondary, textDecoration: "none" }}>About</Link>
-            <Link href="/faq" style={{ color: colors.textSecondary, textDecoration: "none" }}>FAQ</Link>
-            <Link href="/rewards" style={{ color: colors.textSecondary, textDecoration: "none" }}>Rewards</Link>
-            <Link href="/contact" style={{ color: colors.textSecondary, textDecoration: "none" }}>Contact</Link>
-          </Box>
-        </Container>
-      </Box>
+    <MarketingLayout>
+      <JsonLd graph={jsonLd} />
+      <PageContainer>
+        <HeroSection
+          title="Get Paid for"
+          highlight="Surveys"
+          subtitle="Share your opinions with leading market research companies and earn coins for every survey you complete. No experience needed."
+        />
 
-      <Container maxWidth="md" sx={{ py: { xs: 6, sm: 10 } }}>
-        {/* Hero */}
-        <Box sx={{ textAlign: "center", mb: 8 }}>
-          <Box component="h1" sx={{ fontSize: { xs: "2rem", sm: "2.75rem" }, fontWeight: 800, m: 0, lineHeight: 1.2 }}>
-            Get Paid for <Box component="span" sx={{ color: colors.green }}>Surveys</Box>
-          </Box>
-          <Box component="p" sx={{ mt: 2, fontSize: "1.1rem", color: colors.textSecondary, maxWidth: 600, mx: "auto" }}>
-            Share your opinions with leading market research companies and earn coins for every survey you complete. No experience needed.
-          </Box>
-        </Box>
-
-        {/* How surveys work */}
-        <Box component="h2" sx={{ fontSize: "1.5rem", fontWeight: 700, mb: 3 }}>How Paid Surveys Work on Rewardoxy</Box>
-        <Box component="p" sx={{ color: colors.textSecondary, lineHeight: 1.8, mb: 4 }}>
+        <SectionHeading>How Paid Surveys Work on Rewardoxy</SectionHeading>
+        <Prose>
           Market research companies need real opinions from real people. They pay platforms like Rewardoxy to connect them with survey respondents. When you qualify for and complete a survey, the research company pays us and we credit coins to your account. Surveys typically take 5–20 minutes and pay between 20–200 coins depending on length and topic.
-        </Box>
+        </Prose>
 
-        {/* Survey providers */}
         <Paper elevation={0} sx={{ bgcolor: colors.bgCard, borderRadius: 4, p: { xs: 3, sm: 4 }, mb: 5 }}>
           <Box component="h2" sx={{ fontSize: "1.25rem", fontWeight: 700, mt: 0, mb: 2 }}>Our Survey Partners</Box>
           <Grid container spacing={3}>
             {[
-              { name: "CPX Research", desc: "One of the largest survey routers with thousands of daily surveys across all demographics and countries." },
-              { name: "TheoremReach", desc: "AI-powered survey matching that finds the best-paying surveys for your profile automatically." },
-              { name: "Revtoo", desc: "High-quality surveys focused on consumer products, media habits, and brand awareness." },
+              { name: "CPX Research", slug: "cpx-research", desc: "One of the largest survey routers with thousands of daily surveys across all demographics and countries." },
+              { name: "TheoremReach", slug: "theoremreach", desc: "AI-powered survey matching that finds the best-paying surveys for your profile automatically." },
+              { name: "Revtoo Surveys", slug: "revtoo-surveys", desc: "High-quality surveys focused on consumer products, media habits, and brand awareness." },
             ].map((partner) => (
               <Grid size={{ xs: 12, sm: 4 }} key={partner.name}>
                 <Box>
-                  <Box sx={{ fontWeight: 700, fontSize: "0.95rem", mb: 0.5, color: colors.green }}>{partner.name}</Box>
+                  <Link href={`/reviews/${partner.slug}`} style={{ textDecoration: "none" }}>
+                    <Box sx={{ fontWeight: 700, fontSize: "0.95rem", mb: 0.5, color: colors.green }}>{partner.name} →</Box>
+                  </Link>
                   <Box sx={{ color: colors.textSecondary, fontSize: "0.875rem", lineHeight: 1.7 }}>{partner.desc}</Box>
                 </Box>
               </Grid>
@@ -89,8 +69,7 @@ export default function SurveysPage() {
           </Grid>
         </Paper>
 
-        {/* Tips */}
-        <Box component="h2" sx={{ fontSize: "1.5rem", fontWeight: 700, mb: 3 }}>Tips to Earn More from Surveys</Box>
+        <SectionHeading>Tips to Earn More from Surveys</SectionHeading>
         <Grid container spacing={2} sx={{ mb: 6 }}>
           {[
             { icon: <CheckCircle size={20} />, title: "Complete your profile", desc: "Fill in demographic details so survey routers can match you with relevant surveys faster." },
@@ -112,45 +91,17 @@ export default function SurveysPage() {
           ))}
         </Grid>
 
-        {/* FAQ mini section */}
-        <Paper elevation={0} sx={{ bgcolor: colors.bgCard, borderRadius: 4, p: { xs: 3, sm: 4 }, mb: 5 }}>
-          <Box component="h2" sx={{ fontSize: "1.25rem", fontWeight: 700, mt: 0, mb: 3 }}>Survey FAQ</Box>
-          {[
-            { q: "Why do I get disqualified from surveys?", a: "Surveys target specific demographics. If your profile doesn't match what the researcher needs, you'll be screened out. This is normal — try the next survey." },
-            { q: "How long until survey coins appear?", a: "Most surveys credit within 5 minutes. Some may take up to 24 hours depending on the provider's verification process." },
-            { q: "Are surveys available in my country?", a: "Surveys are available worldwide, but volume and payout vary by region. Tier-1 countries (US, UK, CA, AU, DE) typically have the most options." },
-          ].map((faq, i) => (
-            <Box key={i} sx={{ mb: i < 2 ? 3 : 0 }}>
-              <Box sx={{ fontWeight: 700, fontSize: "0.95rem", mb: 0.5 }}>{faq.q}</Box>
-              <Box sx={{ color: colors.textSecondary, fontSize: "0.9rem", lineHeight: 1.7 }}>{faq.a}</Box>
-            </Box>
-          ))}
-        </Paper>
+        <RelatedLinks
+          links={[
+            { text: "All Offerwalls", href: "/offers" },
+            { text: "CPX Research Review", href: "/reviews/cpx-research" },
+            { text: "TheoremReach Review", href: "/reviews/theoremreach" },
+            { text: "Revtoo Surveys Review", href: "/reviews/revtoo-surveys" },
+          ]}
+        />
 
-        {/* CTA */}
-        <Box sx={{ textAlign: "center", mt: 8 }}>
-          <Box component="p" sx={{ color: colors.textSecondary, mb: 3, fontSize: "1.05rem" }}>
-            Ready to get paid for your opinions?
-          </Box>
-          <Link
-            href="/auth/signup"
-            style={{
-              display: "inline-block",
-              background: "linear-gradient(180deg, #10B981 0%, #059669 100%)",
-              color: "#fff",
-              fontWeight: 700,
-              padding: "14px 32px",
-              borderRadius: 12,
-              textDecoration: "none",
-              fontSize: "1rem",
-            }}
-          >
-            Start Taking Surveys
-          </Link>
-        </Box>
-      </Container>
-
-      <PublicFooter />
-    </Box>
+        <CtaBanner text="Ready to get paid for your opinions?" buttonText="Start Taking Surveys" />
+      </PageContainer>
+    </MarketingLayout>
   );
 }

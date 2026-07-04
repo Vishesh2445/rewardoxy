@@ -165,7 +165,7 @@ export default function DashboardClient({
       icon: <Coins size={16} color={colors.primary} />,
       label: "Coin Balance",
       value: coins.toLocaleString(),
-      sub: `≈ $${usdValue} USDT`,
+      sub: `≈ $${usdValue} LTC`,
       accent: true,
       color: colors.primary,
     },
@@ -214,7 +214,7 @@ export default function DashboardClient({
       href: "/cashout",
       icon: <Wallet size={24} color={colors.primary} />,
       title: "Cash Out",
-      description: "Withdraw earnings as USDT",
+      description: "Withdraw earnings as LTC",
       primary: false,
     },
   ];

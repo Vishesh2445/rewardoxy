@@ -104,10 +104,10 @@ export default function BallSortCashQuestPrivacyPage() {
           settings. To exercise these rights, contact us at{" "}
           <Box
             component="a"
-            href="mailto:privacy@ballsortcashquest.app"
+            href="mailto:support@rewardoxy.app"
             sx={{ color: colors.green, textDecoration: "none" }}
           >
-            privacy@ballsortcashquest.app
+            support@rewardoxy.app
           </Box>
           .
         </Section>
@@ -122,10 +122,10 @@ export default function BallSortCashQuestPrivacyPage() {
           If you have any questions about this Privacy Policy, contact us at{" "}
           <Box
             component="a"
-            href="mailto:privacy@ballsortcashquest.app"
+            href="mailto:support@rewardoxy.app"
             sx={{ color: colors.green, textDecoration: "none" }}
           >
-            privacy@ballsortcashquest.app
+            support@rewardoxy.app
           </Box>
           .
         </Section>

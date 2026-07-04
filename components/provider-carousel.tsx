@@ -1,18 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { Box } from "@mui/material";
 import colors from "@/theme/colors";
 
 const LOGOS = [
-  { src: "/mylead_logo.svg", alt: "MyLead" },
-  { src: "/cpx.png", alt: "CPX Research" },
-  { src: "/mobivortex-icon.png", alt: "Vortex" },
-  { src: "/taskwall.svg", alt: "Taskwall" },
-  { src: "/notik.webp", alt: "Notik" },
-  { src: "/gemiad-logo.png", alt: "Gemiad" },
-  { src: "/revtoo.svg", alt: "Revtoo" },
-  { src: "/klink-icon.png", alt: "Klink" },
-  { src: "/theoremreach.svg", alt: "TheoremReach" },
+  { src: "/mylead_logo.svg", alt: "MyLead", slug: "mylead" },
+  { src: "/cpx.png", alt: "CPX Research", slug: "cpx-research" },
+  { src: "/mobivortex-icon.png", alt: "Vortex", slug: "vortex" },
+  { src: "/taskwall.svg", alt: "Taskwall", slug: "taskwall" },
+  { src: "/notik.webp", alt: "Notik", slug: "notik" },
+  { src: "/gemiad-logo.png", alt: "Gemiad", slug: "gemiad" },
+  { src: "/revtoo.svg", alt: "Revtoo", slug: "revtoo" },
+  { src: "/klink-icon.png", alt: "Klink", slug: "klink" },
+  { src: "/theoremreach.svg", alt: "TheoremReach", slug: "theoremreach" },
 ];
 
 export default function ProviderCarousel() {
@@ -20,7 +21,6 @@ export default function ProviderCarousel() {
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden" }}>
-      {/* Left fade */}
       <Box
         sx={{
           position: "absolute",
@@ -33,7 +33,6 @@ export default function ProviderCarousel() {
           zIndex: 10,
         }}
       />
-      {/* Right fade */}
       <Box
         sx={{
           position: "absolute",
@@ -62,6 +61,8 @@ export default function ProviderCarousel() {
         {items.map((logo, idx) => (
           <Box
             key={idx}
+            component={Link}
+            href={`/reviews/${logo.slug}`}
             sx={{
               display: "flex",
               alignItems: "center",
@@ -73,6 +74,7 @@ export default function ProviderCarousel() {
               border: `1px solid ${colors.divider}`,
               bgcolor: colors.bgCard,
               flexShrink: 0,
+              textDecoration: "none",
               transition: "border-color 0.3s, background-color 0.3s",
               "&:hover": {
                 borderColor: "rgba(16,185,129,0.5)",
