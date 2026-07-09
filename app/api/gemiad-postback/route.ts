@@ -297,6 +297,19 @@ async function handleGemiadPostback(request: NextRequest) {
         log(`Transaction logged: txid=${txid}, offer=${offerName}`);
       }
 
+      supabase.from('completions').insert({
+        player_id: userId,
+        program_id: offerName || 'GemiAd Offer',
+        offer_name: offerName,
+        payout_decimal: payoutAmount,
+        coins_awarded: rewardAmount,
+        source: 'gemiad',
+        status: 'completed',
+        tx_id: txid
+      }).then(({ error: compError }) => {
+        if (compError) log(`Completions insert failed: ${compError.message}`);
+      });
+
       // Enqueue 10-level referral commissions (processed async)
       try {
         await supabase.rpc('enqueue_commissions', { p_earner_id: userId, p_amount: rewardAmount, p_source: 'gemiad' });
@@ -386,6 +399,19 @@ async function handleGemiadPostback(request: NextRequest) {
       } else {
         log(`Reversal logged: txid=${txid}`);
       }
+
+      supabase.from('completions').insert({
+        player_id: userId,
+        program_id: offerName || 'GemiAd Offer',
+        offer_name: offerName,
+        payout_decimal: -Math.abs(payoutAmount),
+        coins_awarded: -deductAmount,
+        source: 'gemiad',
+        status: 'rejected',
+        tx_id: txid
+      }).then(({ error: compError }) => {
+        if (compError) log(`Completions insert failed: ${compError.message}`);
+      });
 
       return ok('Approved');
 

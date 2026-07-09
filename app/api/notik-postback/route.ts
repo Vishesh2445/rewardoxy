@@ -329,6 +329,19 @@ async function handleNotikPostback(request: NextRequest) {
       return ok('insert_failed');
     }
 
+    supabase.from('completions').insert({
+      player_id: user_id,
+      program_id: event_name || offer_name || 'Notik Offer',
+      offer_name: offer_name,
+      payout_decimal: payoutNum,
+      coins_awarded: isChargeback ? -Math.abs(amountNum) : amountNum,
+      source: 'notik',
+      status: isChargeback ? 'reversed' : 'completed',
+      tx_id: txn_id
+    }).catch((err: any) => {
+      log(`Completions insert error: ${err.message}`);
+    });
+
     log(`Transaction logged: txn_id=${txn_id}`);
     return ok('OK');
 

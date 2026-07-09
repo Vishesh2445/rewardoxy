@@ -11,6 +11,9 @@ interface AdminDashboardClientProps {
   pendingWithdrawals: number;
   totalCompletions: number;
   bannedUsers: number;
+  totalChargebacks: number;
+  totalChargebackCoins: number;
+  netCoins: number;
 }
 
 const STAT_CARD_STYLE = {
@@ -28,12 +31,20 @@ export default function AdminDashboardClient({
   pendingWithdrawals,
   totalCompletions,
   bannedUsers,
+  totalChargebacks,
+  totalChargebackCoins,
+  netCoins,
 }: AdminDashboardClientProps) {
+  const netCompletions = totalCompletions - totalChargebacks;
+
   const stats = [
     { icon: <Users size={22} />, label: "Total Users", value: totalUsers.toLocaleString(), color: "#10B981" },
-    { icon: <Coins size={22} />, label: "Coins in Circulation", value: totalCoins.toLocaleString(), color: "#10B981" },
-    { icon: <Wallet size={22} />, label: "Pending Withdrawals", value: String(pendingWithdrawals), color: pendingWithdrawals > 0 ? "#facc15" : "#10B981" },
+    { icon: <Coins size={22} />, label: "Total Coins Earned", value: totalCoins.toLocaleString(), color: "#10B981" },
+    { icon: <Wallet size={22} />, label: "Coins After Chargebacks", value: netCoins.toLocaleString(), color: "#14b8a6", highlight: true },
     { icon: <CheckCircle size={22} />, label: "Total Completions", value: totalCompletions.toLocaleString(), color: "#10B981" },
+    { icon: <ShieldOff size={22} />, label: "Total Chargebacks", value: `${totalChargebacks.toLocaleString()} (${Math.round(totalChargebackCoins).toLocaleString()} coins)`, color: totalChargebacks > 0 ? "#f87171" : "#10B981" },
+    { icon: <CheckCircle size={22} />, label: "Net Completions", value: netCompletions.toLocaleString(), color: "#14b8a6" },
+    { icon: <Wallet size={22} />, label: "Pending Withdrawals", value: String(pendingWithdrawals), color: pendingWithdrawals > 0 ? "#facc15" : "#10B981" },
     { icon: <ShieldOff size={22} />, label: "Banned Users", value: String(bannedUsers), color: bannedUsers > 0 ? "#f87171" : "#10B981" },
   ];
 
@@ -50,8 +61,14 @@ export default function AdminDashboardClient({
 
       <Grid container spacing={2}>
         {stats.map((s) => (
-          <Grid size={{ xs: 6, sm: 4, lg: 2.4 }} key={s.label}>
-            <Paper sx={STAT_CARD_STYLE}>
+          <Grid size={{ xs: 6, sm: 4, md: 3 }} key={s.label}>
+            <Paper sx={{
+              ...STAT_CARD_STYLE,
+              ...(('highlight' in s && s.highlight) && {
+                border: `2px solid ${s.color}`,
+                boxShadow: `0 0 20px ${s.color}33`,
+              })
+            }}>
               <Box
                 sx={{
                   display: "flex",
@@ -75,12 +92,19 @@ export default function AdminDashboardClient({
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
                   color: colors.text.secondary,
+                  minHeight: "24px",
                 }}
               >
                 {s.label}
               </Typography>
               <Typography
-                sx={{ fontSize: "1.5rem", fontWeight: 700, color: s.color, mt: 0.25 }}
+                sx={{ 
+                  fontSize: { xs: "1.25rem", sm: "1.5rem" }, 
+                  fontWeight: 700, 
+                  color: s.color, 
+                  mt: 0.25,
+                  wordBreak: "break-word",
+                }}
               >
                 {s.value}
               </Typography>

@@ -269,6 +269,22 @@ async function handleTheoremReachPostback(request: NextRequest) {
         log(`Reversal transaction logged: tx_id=${tx_id}`);
       }
 
+      // Log reversal in completions table
+      const program_id_desc = isOffer ? 'TR offer' : isProfiler ? 'TR profiler' : isScreenout ? 'TR screenout' : 'TR survey';
+      supabase.from('completions').insert({
+        player_id: user_id,
+        program_id: program_id_desc,
+        offer_name: offer_name,
+        payout_decimal: -Math.abs(currencyAmount),
+        coins_awarded: -Math.abs(deductAmount),
+        source: 'theoremreach',
+        status: 'reversed',
+        tx_id: tx_id,
+        created_at: new Date().toISOString()
+      }).then().catch((e: any) => {
+        log(`Completions reversal insert error: ${e.message}`);
+      });
+
       return ok('Approved');
 
     } else {
@@ -347,6 +363,21 @@ async function handleTheoremReachPostback(request: NextRequest) {
       } else {
         log(`Transaction logged: tx_id=${tx_id}, type=${txType}`);
       }
+
+      // Log completion in completions table
+      supabase.from('completions').insert({
+        player_id: user_id,
+        program_id: txType === 'offer' ? 'TR offer' : txType === 'profiler' ? 'TR profiler' : txType === 'screenout' ? 'TR screenout' : 'TR survey',
+        offer_name: offer_name,
+        payout_decimal: currencyAmount,
+        coins_awarded: rewardAmount,
+        source: 'theoremreach',
+        status: 'completed',
+        tx_id: tx_id,
+        created_at: new Date().toISOString()
+      }).then().catch((e: any) => {
+        log(`Completions insert error: ${e.message}`);
+      });
 
       // Enqueue 10-level referral commissions (processed async)
       if (rewardAmount > 0) {

@@ -204,6 +204,17 @@ async function handleRevtooPostback(request: NextRequest) {
         log(`Transaction logged: transId=${transId}, offer=${offer_name}`);
       }
 
+      supabase.from('completions').insert({
+        player_id: subId,
+        program_id: offer_name || 'Revtoo Offer',
+        offer_name: offer_name,
+        payout_decimal: 0,
+        coins_awarded: rewardAmount,
+        source: 'revtoo',
+        status: 'completed',
+        tx_id: transId
+      }).catch((e: any) => log(`Completions insert failed: ${e.message}`));
+
       return ok('ok');
 
     } else if (statusInt === 2) {
@@ -280,6 +291,17 @@ async function handleRevtooPostback(request: NextRequest) {
       } else {
         log(`Reversal logged: transId=${transId}`);
       }
+
+      supabase.from('completions').insert({
+        player_id: subId,
+        program_id: offer_name || 'Revtoo Offer',
+        offer_name: offer_name,
+        payout_decimal: 0,
+        coins_awarded: -Math.abs(rewardAmount),
+        source: 'revtoo',
+        status: 'reversed',
+        tx_id: transId
+      }).catch((e: any) => log(`Completions insert failed: ${e.message}`));
 
       return ok('ok');
 

@@ -270,6 +270,20 @@ async function handleKlinkPostback(request: NextRequest) {
       log(`Transaction logged: conversionId=${conversionId}`);
     }
 
+    // Record in completions table for all transaction types
+    supabase.from('completions').insert({
+      player_id: userId,
+      program_id: offerName || 'Klink Offer',
+      offer_name: offerName,
+      payout_decimal: payoutAbs,
+      coins_awarded: isConversion ? coinsToCredit : -Math.abs(coinsToCredit),
+      source: 'klink',
+      status: isConversion ? 'completed' : 'reversed',
+      tx_id: conversionId,
+    }).catch((e: unknown) => {
+      log(`Completions insert error (post-transaction): ${e instanceof Error ? e.message : 'Unknown'}`);
+    });
+
     return ok('Approved');
 
   } catch (err: unknown) {

@@ -238,6 +238,19 @@ async function handleCpxPostback(request: NextRequest) {
         return ok('insert_failed');
       }
 
+      // Also record in completions table
+      const programName = type === 'complete' ? 'CPX Survey' : type === 'out' ? 'CPX Screen-out' : type === 'bonus' ? 'CPX Rating Bonus' : 'CPX Research';
+      await supabase.from('completions').insert({
+        player_id: userid,
+        program_id: programName,
+        offer_name: programName,
+        payout_decimal: amountUsd,
+        coins_awarded: amount,
+        source: 'cpx',
+        status: 'completed',
+        tx_id: transid,
+      }).then().catch(e => log(`Completions insert error: ${e.message}`));
+
       log(`Transaction logged: transid=${transid}, status=1`);
       return ok('OK');
     } else if (statusInt === 2) {
@@ -308,6 +321,19 @@ async function handleCpxPostback(request: NextRequest) {
         log(`Reversal transaction insert failed: ${insertError.message}`);
         return ok('insert_failed');
       }
+
+      // Also record reversal in completions
+      const programName = type === 'complete' ? 'CPX Survey' : type === 'out' ? 'CPX Screen-out' : type === 'bonus' ? 'CPX Rating Bonus' : 'CPX Research';
+      await supabase.from('completions').insert({
+        player_id: userid,
+        program_id: programName,
+        offer_name: programName,
+        payout_decimal: amountUsd,
+        coins_awarded: -Math.abs(amount),
+        source: 'cpx',
+        status: 'reversed',
+        tx_id: transid,
+      }).then().catch(e => log(`Completions reversal insert error: ${e.message}`));
 
       log(`REVERSAL PROCESSED: transid=${transid} logged with status=2`);
       return ok('OK');

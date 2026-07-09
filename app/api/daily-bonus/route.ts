@@ -55,80 +55,17 @@ export async function POST() {
     return NextResponse.json({ error: "Already claimed today" }, { status: 400 });
   }
 
-  // Check if user earned at least 1000 coins ($1) today (from ALL sources)
+  // Check if user earned at least 1000 coins ($1) today (from all completions)
   const { data: todayCompletions } = await supabase
     .from("completions")
     .select("coins_awarded")
     .eq("player_id", user.id)
     .gte("created_at", todayStart.toISOString());
 
-  // Check CPX earnings today
-  const { data: todayCpx } = await supabase
-    .from("cpx_transactions")
-    .select("amount_local, status")
-    .eq("userid", user.id)
-    .gte("created_at", todayStart.toISOString());
-
-  // Check Notik earnings today
-  const { data: todayNotik } = await supabase
-    .from("notik_transactions")
-    .select("amount")
-    .eq("user_id", user.id)
-    .gte("created_at", todayStart.toISOString());
-
-  // Check GemiAd earnings today
-  const { data: todayGemiad } = await supabase
-    .from("gemiad_transactions")
-    .select("reward, status")
-    .eq("user_id", user.id)
-    .gte("created_at", todayStart.toISOString());
-
-  // Check TheoremReach earnings today
-  const { data: todayTheoremreach } = await supabase
-    .from("theoremreach_transactions")
-    .select("reward, is_reversal")
-    .eq("user_id", user.id)
-    .gte("created_at", todayStart.toISOString());
-
-  const todayCoinsFromCompletions = todayCompletions?.reduce(
+  const todayCoinsEarned = todayCompletions?.reduce(
     (sum, c) => sum + (c.coins_awarded || 0),
     0
   ) || 0;
-
-  const todayCoinsFromCpx = todayCpx?.reduce((sum, c) => {
-    const amount = Math.round(Number(c.amount_local || 0));
-    return sum + (c.status === 2 ? -amount : amount); // Subtract reversals
-  }, 0) || 0;
-
-  const todayCoinsFromNotik = todayNotik?.reduce((sum, n) => {
-    const amount = Math.round(Number(n.amount || 0));
-    return sum + amount; // Notik amount can be negative for chargebacks
-  }, 0) || 0;
-
-  const todayCoinsFromGemiad = todayGemiad?.reduce((sum, g) => {
-    const amount = Math.round(Number(g.reward || 0));
-    return sum + amount; // GemiAd reward can be negative for reversals
-  }, 0) || 0;
-
-  const todayCoinsFromTheoremreach = todayTheoremreach?.reduce((sum, t) => {
-    const amount = Math.round(Number(t.reward || 0));
-    // Reversals are negative, completions are positive
-    return sum + (t.is_reversal ? -Math.abs(amount) : amount);
-  }, 0) || 0;
-
-  // Check Klink earnings today
-  const { data: todayKlink } = await supabase
-    .from("klink_transactions")
-    .select("coins_awarded, event_type")
-    .eq("user_id", user.id)
-    .gte("created_at", todayStart.toISOString());
-
-  const todayCoinsFromKlink = todayKlink?.reduce((sum, k) => {
-    const amount = Math.round(Number(k.coins_awarded || 0));
-    return sum + (k.event_type === 'chargeback' ? -Math.abs(amount) : amount);
-  }, 0) || 0;
-
-  const todayCoinsEarned = todayCoinsFromCompletions + todayCoinsFromCpx + todayCoinsFromNotik + todayCoinsFromGemiad + todayCoinsFromTheoremreach + todayCoinsFromKlink;
 
   if (todayCoinsEarned < 1000) {
     return NextResponse.json(

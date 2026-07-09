@@ -221,6 +221,23 @@ async function handleTaskwallPostback(request: NextRequest) {
       log(`Transaction logged: txn_key=${txn_key}`);
     }
 
+    // ── 9b. Insert into completions table ─────────────────────────────────
+    supabase.from('completions').insert({
+      player_id: userid,
+      program_id: offer_name || 'Taskwall Offer',
+      offer_name: offer_name,
+      payout_decimal: payoutNum || 0,
+      coins_awarded: amountNum,
+      source: 'taskwall',
+      status: 'completed',
+      tx_id: txn_key
+    }).then(({ error: compError }) => {
+      if (compError) log(`Completions insert failed: ${compError.message}`);
+      else log(`Completions record created: txn_key=${txn_key}`);
+    }).catch((e: any) => {
+      log(`Completions insert error: ${e.message}`);
+    });
+
     // ── 10. Enqueue 10-level referral commissions (processed async)
     try {
       await supabase.rpc('enqueue_commissions', { p_earner_id: userid, p_amount: amountNum, p_source: 'taskwall' });
