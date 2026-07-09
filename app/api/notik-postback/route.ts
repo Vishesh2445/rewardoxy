@@ -338,7 +338,7 @@ async function handleNotikPostback(request: NextRequest) {
       source: 'notik',
       status: isChargeback ? 'reversed' : 'completed',
       tx_id: txn_id
-    }).catch((err: any) => {
+    }).then(null, (err: any) => {
       log(`Completions insert error: ${err.message}`);
     });
 

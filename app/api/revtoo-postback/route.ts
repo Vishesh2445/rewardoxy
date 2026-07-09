@@ -213,7 +213,7 @@ async function handleRevtooPostback(request: NextRequest) {
         source: 'revtoo',
         status: 'completed',
         tx_id: transId
-      }).catch((e: any) => log(`Completions insert failed: ${e.message}`));
+      }).then(null, (e: any) => log(`Completions insert failed: ${e.message}`));
 
       return ok('ok');
 
@@ -301,7 +301,7 @@ async function handleRevtooPostback(request: NextRequest) {
         source: 'revtoo',
         status: 'reversed',
         tx_id: transId
-      }).catch((e: any) => log(`Completions insert failed: ${e.message}`));
+      }).then(null, (e: any) => log(`Completions insert failed: ${e.message}`));
 
       return ok('ok');
 

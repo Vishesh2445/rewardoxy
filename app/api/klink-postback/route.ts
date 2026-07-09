@@ -280,7 +280,7 @@ async function handleKlinkPostback(request: NextRequest) {
       source: 'klink',
       status: isConversion ? 'completed' : 'reversed',
       tx_id: conversionId,
-    }).catch((e: unknown) => {
+    }).then(null, (e: unknown) => {
       log(`Completions insert error (post-transaction): ${e instanceof Error ? e.message : 'Unknown'}`);
     });
 

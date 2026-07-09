@@ -249,7 +249,7 @@ async function handleCpxPostback(request: NextRequest) {
         source: 'cpx',
         status: 'completed',
         tx_id: transid,
-      }).then().catch(e => log(`Completions insert error: ${e.message}`));
+      }).then(null, e => log(`Completions insert error: ${e.message}`));
 
       log(`Transaction logged: transid=${transid}, status=1`);
       return ok('OK');
@@ -333,7 +333,7 @@ async function handleCpxPostback(request: NextRequest) {
         source: 'cpx',
         status: 'reversed',
         tx_id: transid,
-      }).then().catch(e => log(`Completions reversal insert error: ${e.message}`));
+      }).then(null, e => log(`Completions reversal insert error: ${e.message}`));
 
       log(`REVERSAL PROCESSED: transid=${transid} logged with status=2`);
       return ok('OK');

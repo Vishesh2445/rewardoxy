@@ -281,7 +281,7 @@ async function handleTheoremReachPostback(request: NextRequest) {
         status: 'reversed',
         tx_id: tx_id,
         created_at: new Date().toISOString()
-      }).then().catch((e: any) => {
+      }).then(null, (e: any) => {
         log(`Completions reversal insert error: ${e.message}`);
       });
 
@@ -375,7 +375,7 @@ async function handleTheoremReachPostback(request: NextRequest) {
         status: 'completed',
         tx_id: tx_id,
         created_at: new Date().toISOString()
-      }).then().catch((e: any) => {
+      }).then(null, (e: any) => {
         log(`Completions insert error: ${e.message}`);
       });
 

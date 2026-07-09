@@ -234,7 +234,7 @@ async function handleTaskwallPostback(request: NextRequest) {
     }).then(({ error: compError }) => {
       if (compError) log(`Completions insert failed: ${compError.message}`);
       else log(`Completions record created: txn_key=${txn_key}`);
-    }).catch((e: any) => {
+    }, (e: any) => {
       log(`Completions insert error: ${e.message}`);
     });
 
