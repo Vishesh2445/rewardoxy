@@ -145,9 +145,10 @@ async function handleGemiadPostback(request: NextRequest) {
       
       // Check for duplicate completion (same txid with status=completed)
       const { data: existing, error: checkError } = await supabase
-        .from('gemiad_transactions')
-        .select('id, reward')
-        .eq('txid', txid)
+        .from('completions')
+        .select('id')
+        .eq('tx_id', txid)
+        .eq('source', 'gemiad')
         .eq('status', 'completed')
         .limit(1);
 
@@ -273,30 +274,6 @@ async function handleGemiadPostback(request: NextRequest) {
         log(`Reward is 0, skipping credit`);
       }
 
-      // Log completion record
-      const { error: insertError } = await supabase.from('gemiad_transactions').insert({
-        txid: txid,
-        user_id: userId,
-        offer_id: offerId,
-        offer_name: offerName,
-        event_id: eventId,
-        event_name: eventName,
-        payout: payoutAmount,
-        reward: rewardAmount,
-        status: 'completed',
-        ip_address: ip,
-        sub1: sub1,
-        sub2: sub2,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
-
-      if (insertError) {
-        log(`Transaction insert failed: ${insertError.message}`);
-      } else {
-        log(`Transaction logged: txid=${txid}, offer=${offerName}`);
-      }
-
       supabase.from('completions').insert({
         player_id: userId,
         program_id: offerName || 'GemiAd Offer',
@@ -328,9 +305,10 @@ async function handleGemiadPostback(request: NextRequest) {
 
       // Check for duplicate reversal (same txid with status=rejected)
       const { data: existingReversal, error: checkError } = await supabase
-        .from('gemiad_transactions')
+        .from('completions')
         .select('id')
-        .eq('txid', txid)
+        .eq('tx_id', txid)
+        .eq('source', 'gemiad')
         .eq('status', 'rejected')
         .limit(1);
 
@@ -374,30 +352,6 @@ async function handleGemiadPostback(request: NextRequest) {
         log(`User balance AFTER reversal: ${updatedUser?.coins_balance || 0}`);
       } else {
         log(`NOT deducting: amount is 0`);
-      }
-
-      // Log reversal record (with negative reward)
-      const { error: insertError } = await supabase.from('gemiad_transactions').insert({
-        txid: txid,
-        user_id: userId,
-        offer_id: offerId,
-        offer_name: offerName,
-        event_id: eventId,
-        event_name: eventName,
-        payout: -Math.abs(payoutAmount),
-        reward: -deductAmount,
-        status: 'rejected',
-        ip_address: ip,
-        sub1: sub1,
-        sub2: sub2,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
-
-      if (insertError) {
-        log(`Reversal insert failed: ${insertError.message}`);
-      } else {
-        log(`Reversal logged: txid=${txid}`);
       }
 
       supabase.from('completions').insert({

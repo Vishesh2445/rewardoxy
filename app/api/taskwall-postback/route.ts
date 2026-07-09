@@ -144,9 +144,10 @@ async function handleTaskwallPostback(request: NextRequest) {
     // Create unique key from offer_id and userid
     const txn_key = `taskwall_${offer_id}_${userid}`;
     const { data: existing, error: checkError } = await supabase
-      .from('taskwall_transactions')
-      .select('id, amount')
-      .eq('txn_key', txn_key)
+      .from('completions')
+      .select('id')
+      .eq('tx_id', txn_key)
+      .eq('source', 'taskwall')
       .limit(1);
 
     if (checkError) {
@@ -189,39 +190,7 @@ async function handleTaskwallPostback(request: NextRequest) {
     const newTotal = creditResult?.[0]?.new_total ?? creditResult?.new_total ?? '?';
     log(`SUCCESS: Credited ${amountNum} to user ${userid}. New balance: ${newBalance}, New total: ${newTotal}`);
 
-    // ── 9. Log transaction ───────────────────────────────────────────────
-    // Parse completion_date safely - fallback to now if invalid
-    let completionDate: string;
-    try {
-      const parsed = new Date(date);
-      completionDate = isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
-    } catch {
-      completionDate = new Date().toISOString();
-    }
-
-    const { error: insertError } = await supabase.from('taskwall_transactions').insert({
-      txn_key: txn_key,
-      user_id: userid,
-      app_name: app_name || null,
-      offer_id: offer_id,
-      offer_name: offer_name || null,
-      amount: amountNum,
-      payout: payoutNum,
-      ip_address: ip_address || null,
-      currency_name: currency_name || null,
-      completion_date: completionDate,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    });
-
-    if (insertError) {
-      log(`Transaction log insert failed: ${insertError.message}`);
-      // Don't fail, user was already credited
-    } else {
-      log(`Transaction logged: txn_key=${txn_key}`);
-    }
-
-    // ── 9b. Insert into completions table ─────────────────────────────────
+    // ── 9. Insert into completions table ──────────────────────────────────
     supabase.from('completions').insert({
       player_id: userid,
       program_id: offer_name || 'Taskwall Offer',

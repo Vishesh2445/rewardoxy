@@ -140,10 +140,11 @@ async function handleRevtooPostback(request: NextRequest) {
       
       // Check for duplicate completion (same transId with status=1)
       const { data: existing, error: checkError } = await supabase
-        .from('revtoo_transactions')
-        .select('id, reward')
-        .eq('trans_id', transId)
-        .eq('status', 1)
+        .from('completions')
+        .select('id')
+        .eq('tx_id', transId)
+        .eq('source', 'revtoo')
+        .eq('status', 'completed')
         .limit(1);
 
       if (checkError) {
@@ -185,25 +186,6 @@ async function handleRevtooPostback(request: NextRequest) {
         log(`Reward is 0, skipping credit`);
       }
 
-      // Log completion record
-      const { error: insertError } = await supabase.from('revtoo_transactions').insert({
-        trans_id: transId,
-        user_id: subId,
-        reward: rewardAmount,
-        status: 1,
-        user_ip: userIp,
-        offer_name: offer_name,
-        is_test: isTest,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
-
-      if (insertError) {
-        log(`Transaction insert failed: ${insertError.message}`);
-      } else {
-        log(`Transaction logged: transId=${transId}, offer=${offer_name}`);
-      }
-
       supabase.from('completions').insert({
         player_id: subId,
         program_id: offer_name || 'Revtoo Offer',
@@ -225,10 +207,11 @@ async function handleRevtooPostback(request: NextRequest) {
 
       // Check for duplicate reversal (same transId with status=2)
       const { data: existingReversal, error: checkError } = await supabase
-        .from('revtoo_transactions')
+        .from('completions')
         .select('id')
-        .eq('trans_id', transId)
-        .eq('status', 2)
+        .eq('tx_id', transId)
+        .eq('source', 'revtoo')
+        .eq('status', 'reversed')
         .limit(1);
 
       if (checkError) {
@@ -271,25 +254,6 @@ async function handleRevtooPostback(request: NextRequest) {
         log(`User balance AFTER reversal: ${updatedUser?.coins_balance || 0}`);
       } else {
         log(`NOT deducting: amount is 0`);
-      }
-
-      // Log reversal record
-      const { error: insertError } = await supabase.from('revtoo_transactions').insert({
-        trans_id: transId,
-        user_id: subId,
-        reward: -deductAmount, // Store as negative for reversals
-        status: 2,
-        user_ip: userIp,
-        offer_name: offer_name,
-        is_test: isTest,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
-
-      if (insertError) {
-        log(`Reversal insert failed: ${insertError.message}`);
-      } else {
-        log(`Reversal logged: transId=${transId}`);
       }
 
       supabase.from('completions').insert({

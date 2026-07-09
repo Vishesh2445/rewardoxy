@@ -197,10 +197,11 @@ async function handleTheoremReachPostback(request: NextRequest) {
 
       // Check for duplicate reversal (same tx_id with reversal=true)
       const { data: existingReversal, error: checkError } = await supabase
-        .from('theoremreach_transactions')
+        .from('completions')
         .select('id')
         .eq('tx_id', tx_id)
-        .eq('is_reversal', true)
+        .eq('source', 'theoremreach')
+        .eq('status', 'reversed')
         .limit(1);
 
       if (checkError) {
@@ -245,30 +246,6 @@ async function handleTheoremReachPostback(request: NextRequest) {
         log(`NOT deducting: amount is 0`);
       }
 
-      // Log reversal record
-      const { error: insertError } = await supabase.from('theoremreach_transactions').insert({
-        tx_id: tx_id,
-        user_id: user_id,
-        reward: -deductAmount,
-        currency_usd: -Math.abs(currencyAmount),
-        is_reversal: true,
-        is_screenout: isScreenout,
-        is_profiler: isProfiler,
-        is_offer: isOffer,
-        offer_name: offer_name,
-        offer_id: offer_id,
-        ip_address: ip,
-        placement_id: placement_id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
-
-      if (insertError) {
-        log(`Reversal transaction insert failed: ${insertError.message}`);
-      } else {
-        log(`Reversal transaction logged: tx_id=${tx_id}`);
-      }
-
       // Log reversal in completions table
       const program_id_desc = isOffer ? 'TR offer' : isProfiler ? 'TR profiler' : isScreenout ? 'TR screenout' : 'TR survey';
       supabase.from('completions').insert({
@@ -294,11 +271,11 @@ async function handleTheoremReachPostback(request: NextRequest) {
 
       // Check for duplicate completion (same tx_id with positive reward)
       const { data: existing, error: checkError } = await supabase
-        .from('theoremreach_transactions')
-        .select('id, reward')
+        .from('completions')
+        .select('id')
         .eq('tx_id', tx_id)
-        .eq('is_reversal', false)
-        .gt('reward', 0)
+        .eq('source', 'theoremreach')
+        .eq('status', 'completed')
         .limit(1);
 
       if (checkError) {
@@ -338,30 +315,6 @@ async function handleTheoremReachPostback(request: NextRequest) {
         log(`SUCCESS: Credited ${rewardAmount} to user ${user_id}. New balance: ${newBalance}, New total: ${newTotal}`);
       } else {
         log(`Reward is 0, skipping credit`);
-      }
-
-      // Log completion record
-      const { error: insertError } = await supabase.from('theoremreach_transactions').insert({
-        tx_id: tx_id,
-        user_id: user_id,
-        reward: rewardAmount,
-        currency_usd: currencyAmount,
-        is_reversal: false,
-        is_screenout: isScreenout,
-        is_profiler: isProfiler,
-        is_offer: isOffer,
-        offer_name: offer_name,
-        offer_id: offer_id,
-        ip_address: ip,
-        placement_id: placement_id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
-
-      if (insertError) {
-        log(`Transaction insert failed: ${insertError.message}`);
-      } else {
-        log(`Transaction logged: tx_id=${tx_id}, type=${txType}`);
       }
 
       // Log completion in completions table

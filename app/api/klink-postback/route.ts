@@ -107,10 +107,10 @@ async function handleKlinkPostback(request: NextRequest) {
 
     // ── 7. Check for duplicate conversion ─────────────────────────────────
     const { data: existing, error: checkError } = await supabase
-      .from('klink_transactions')
-      .select('id, event_type')
-      .eq('conversion_id', conversionId)
-      .eq('event_type', eventType)
+      .from('completions')
+      .select('id')
+      .eq('tx_id', conversionId)
+      .eq('source', 'klink')
       .limit(1);
 
     if (checkError) {
@@ -243,31 +243,6 @@ async function handleKlinkPostback(request: NextRequest) {
       } else {
         log(`NOT deducting: amount is 0`);
       }
-    }
-
-    // ── 9. Log transaction ──────────────────────────────────────────────
-    const { error: insertError } = await supabase.from('klink_transactions').insert({
-      conversion_id: conversionId,
-      user_id: userId,
-      offer_id: offerId || null,
-      offer_name: offerName || null,
-      event_id: eventId || null,
-      event_name: eventName || null,
-      task_id: taskId || null,
-      event_type: eventType,
-      payout: payoutRaw,
-      status: status || (isConversion ? 'completed' : 'cancelled'),
-      reversed_conversion_id: reversedConversionId,
-      k1, k2, k3, k4, k5,
-      coins_awarded: isConversion ? coinsToCredit : -coinsToCredit,
-      source_ip: clientIp,
-      raw_payload: payload,
-    });
-
-    if (insertError) {
-      log(`Transaction insert failed: ${insertError.message}`);
-    } else {
-      log(`Transaction logged: conversionId=${conversionId}`);
     }
 
     // Record in completions table for all transaction types

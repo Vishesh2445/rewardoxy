@@ -138,10 +138,11 @@ async function handleCpxPostback(request: NextRequest) {
       // Note: We only check for status=1 duplicates here because status=2 
       // (reversals) should be handled by the reversal handler
       const { data: existing, error: checkError } = await supabase
-        .from('cpx_transactions')
-        .select('id, status')
-        .eq('transid', transid)
-        .eq('status', 1)  // Only check for existing completions
+        .from('completions')
+        .select('id')
+        .eq('tx_id', transid)
+        .eq('source', 'cpx')
+        .eq('status', 'completed')
         .limit(1);
 
       if (checkError) {
@@ -217,28 +218,7 @@ async function handleCpxPostback(request: NextRequest) {
         log(`Amount is 0, skipping credit (type=${type})`);
       }
 
-      // Log transaction
-      const { error: insertError } = await supabase.from('cpx_transactions').insert({
-        transid: transid,
-        userid: userid,
-        amount_local: amount,
-        amount_usd: amountUsd,
-        status: 1,
-        type,
-        subid1,
-        subid2,
-        offerid: offerid,
-        ipclick: ipclick,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
-
-      if (insertError) {
-        log(`Transaction log insert failed: ${insertError.message}`);
-        return ok('insert_failed');
-      }
-
-      // Also record in completions table
+      // Record in completions table
       const programName = type === 'complete' ? 'CPX Survey' : type === 'out' ? 'CPX Screen-out' : type === 'bonus' ? 'CPX Rating Bonus' : 'CPX Research';
       await supabase.from('completions').insert({
         player_id: userid,
@@ -301,28 +281,7 @@ async function handleCpxPostback(request: NextRequest) {
         log(`NOT deducting: amount is 0`);
       }
 
-      // INSERT new transaction with status=2 (CPX uses different transids for reversals)
-      const { error: insertError } = await supabase.from('cpx_transactions').insert({
-        transid: transid,
-        userid: userid,
-        amount_local: amount,
-        amount_usd: amountUsd,
-        status: 2,
-        type,
-        subid1,
-        subid2,
-        offerid: offerid,
-        ipclick: ipclick,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      });
-
-      if (insertError) {
-        log(`Reversal transaction insert failed: ${insertError.message}`);
-        return ok('insert_failed');
-      }
-
-      // Also record reversal in completions
+      // Record reversal in completions
       const programName = type === 'complete' ? 'CPX Survey' : type === 'out' ? 'CPX Screen-out' : type === 'bonus' ? 'CPX Rating Bonus' : 'CPX Research';
       await supabase.from('completions').insert({
         player_id: userid,

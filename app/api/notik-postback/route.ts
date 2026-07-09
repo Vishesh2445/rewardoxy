@@ -140,9 +140,10 @@ async function handleNotikPostback(request: NextRequest) {
 
     // ── 6. Check for duplicate transaction ───────────────────────────────
     const { data: existing, error: checkError } = await supabase
-      .from('notik_transactions')
-      .select('id, amount')
-      .eq('txn_id', txn_id)
+      .from('completions')
+      .select('id')
+      .eq('tx_id', txn_id)
+      .eq('source', 'notik')
       .limit(1);
 
     if (checkError) {
@@ -289,9 +290,6 @@ async function handleNotikPostback(request: NextRequest) {
         }
       }
 
-      // Note: We do NOT insert into completions table here because the history page
-      // queries notik_transactions directly. Inserting into both would cause duplicates.
-
       // Enqueue 10-level referral commissions (processed async)
       try {
         await supabase.rpc('enqueue_commissions', { p_earner_id: user_id, p_amount: amountNum, p_source: 'notik' });
@@ -301,32 +299,6 @@ async function handleNotikPostback(request: NextRequest) {
       }
     } else {
       log(`Amount is 0, skipping credit/debit`);
-    }
-
-    // ── 8. Log transaction ───────────────────────────────────────────────
-    const { error: insertError } = await supabase.from('notik_transactions').insert({
-      txn_id: txn_id,
-      user_id: user_id,
-      pub_id: pub_id,
-      app_id: app_id,
-      s1: s1,
-      amount: amountNum,
-      payout: payoutNum,
-      offer_id: offer_id,
-      offer_name: offer_name,
-      currency_name: currency_name,
-      timestamp: timestamp,
-      conversion_ip: conversion_ip,
-      rewarded_txn_id: rewarded_txn_id,
-      event_id: event_id,
-      event_name: event_name,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    });
-
-    if (insertError) {
-      log(`Transaction log insert failed: ${insertError.message}`);
-      return ok('insert_failed');
     }
 
     supabase.from('completions').insert({
