@@ -18,7 +18,7 @@ export default async function HistoryPage() {
     redirect("/auth/login");
   }
 
-  const [userResult, totalCountResult, initialCompletionsResult] = await Promise.all([
+  const [userResult, totalCountResult, initialCompletionsResult, allCompletionsResult] = await Promise.all([
     supabase
       .from("users")
       .select("coins_balance, display_name")
@@ -36,11 +36,25 @@ export default async function HistoryPage() {
       .eq("player_id", user.id)
       .order("created_at", { ascending: false })
       .limit(PAGE_SIZE),
+
+    supabase
+      .from("completions")
+      .select("coins_awarded")
+      .eq("player_id", user.id),
   ]);
 
   const coins = userResult.data?.coins_balance ?? 0;
   const totalCount = totalCountResult.count ?? 0;
   const initialCompletions = initialCompletionsResult.data ?? [];
+  
+  // Calculate totals from ALL transactions
+  const allCompletions = allCompletionsResult.data ?? [];
+  const totalEarned = allCompletions
+    .filter(c => c.coins_awarded > 0)
+    .reduce((sum, c) => sum + Number(c.coins_awarded), 0);
+  const totalDeducted = allCompletions
+    .filter(c => c.coins_awarded < 0)
+    .reduce((sum, c) => sum + Math.abs(Number(c.coins_awarded)), 0);
 
   return (
     <AppShell 
@@ -53,6 +67,8 @@ export default async function HistoryPage() {
         userId={user.id}
         initialCompletions={initialCompletions}
         initialTotal={totalCount}
+        totalEarned={totalEarned}
+        totalDeducted={totalDeducted}
       />
     </AppShell>
   );

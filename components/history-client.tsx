@@ -27,6 +27,8 @@ interface HistoryClientProps {
   userId: string;
   initialCompletions: Completion[];
   initialTotal: number;
+  totalEarned: number;
+  totalDeducted: number;
 }
 
 const OFFER_ICONS: Record<string, typeof Gamepad2> = {
@@ -62,10 +64,15 @@ export default function HistoryClient({
   userId,
   initialCompletions,
   initialTotal,
+  totalEarned: initialTotalEarned,
+  totalDeducted: initialTotalDeducted,
 }: HistoryClientProps) {
   const [completions, setCompletions] = useState<Completion[]>(initialCompletions);
   const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(0);
+  // Store totals in state to prevent recalculation on client
+  const [totalEarned] = useState(initialTotalEarned);
+  const [totalDeducted] = useState(initialTotalDeducted);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   async function fetchPage(newPage: number) {
@@ -98,9 +105,6 @@ export default function HistoryClient({
     setPage(newPage);
   }
 
-  const totalEarned = completions.filter(c => c.coins_awarded > 0).reduce((sum, c) => sum + c.coins_awarded, 0);
-  const totalDeducted = completions.filter(c => c.coins_awarded < 0).reduce((sum, c) => sum + Math.abs(c.coins_awarded), 0);
-
   return (
     <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, sm: 3, md: 4 }, py: 4, pb: { xs: 12, lg: 4 } }}>
       {/* Header */}
@@ -129,15 +133,17 @@ export default function HistoryClient({
         }}
       >
         {[
-          { icon: <TrendingUp size={14} color={colors.primary} />, label: "Earned", value: `+${totalEarned.toLocaleString()}`, color: colors.primary },
-          { icon: <TrendingDown size={14} color={colors.status.error} />, label: "Deducted", value: `-${totalDeducted.toLocaleString()}`, color: colors.status.error },
-          { icon: <CheckCircle size={14} color={colors.primary} />, label: "Total", value: total.toLocaleString(), color: "#fff" },
+          { icon: <TrendingUp size={16} color={colors.primary} />, label: "Earned", value: `+${totalEarned.toLocaleString()}`, color: colors.primary },
+          { icon: <TrendingDown size={16} color={colors.status.error} />, label: "Deducted", value: `-${totalDeducted.toLocaleString()}`, color: colors.status.error },
+          { icon: <CheckCircle size={16} color={colors.primary} />, label: "Total", value: total.toLocaleString(), color: "#fff" },
         ].map((s, i) => (
           <Box key={s.label} sx={{ display: "flex", alignItems: "center", gap: 1, px: 1 }}>
             {i > 0 && <Box sx={{ width: 1, height: 20, bgcolor: "rgba(255,255,255,0.06)", mx: 1 }} />}
-            {s.icon}
             <Box>
-              <Typography sx={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: colors.text.secondary }}>{s.label}</Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.25 }}>
+                {s.icon}
+                <Typography sx={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", color: colors.text.secondary }}>{s.label}</Typography>
+              </Box>
               <Typography sx={{ fontSize: "0.95rem", fontWeight: 800, color: s.color }}>{s.value}</Typography>
             </Box>
           </Box>
