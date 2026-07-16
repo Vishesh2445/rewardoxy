@@ -443,6 +443,45 @@ export const OFFERWALLS: Offerwall[] = [
     relatedSlugs: ["mylead", "timewall", "notik"],
   },
   {
+    slug: "adswedmedia",
+    name: "AdsWEDMedia",
+    type: "mixed",
+    logo: "/adswedmedia.png",
+    tagline: "Variety of offers and tasks with reliable payouts.",
+    description: [
+      "AdsWEDMedia is a versatile offerwall providing app installs, game offers, surveys, and sign-up tasks. On Rewardoxy, AdsWEDMedia offers a broad selection of earning opportunities through an embedded offerwall.",
+      "The platform supports multiple offer types and provides competitive payouts across different categories. It's a solid addition to your earning routine alongside other Rewardoxy walls.",
+    ],
+    payoutRange: "$0.20 – $70 per offer (20–7,000 coins)",
+    tips: [
+      "Check AdsWEDMedia daily for new offers and limited-time bonuses.",
+      "Complete offers with clear requirements first for reliable crediting.",
+      "Use AdsWEDMedia alongside other walls for maximum daily earnings.",
+    ],
+    pros: [
+      "Diverse offer categories (apps, games, surveys, sign-ups)",
+      "Embedded iframe wall on Rewardoxy",
+      "Competitive payouts across multiple verticals",
+    ],
+    cons: [
+      "Smaller catalog than major walls like Notik or GemiAd",
+      "Some offers have geographic restrictions",
+      "Crediting times vary by offer type",
+    ],
+    faqs: [
+      {
+        q: "How long do AdsWEDMedia credits take?",
+        a: "Most offers credit within 5–30 minutes. Some game milestone or sign-up offers may take up to 24 hours.",
+      },
+      {
+        q: "Can I use AdsWEDMedia with other offerwalls?",
+        a: "Absolutely. AdsWEDMedia runs alongside all other Rewardoxy offerwalls. Using multiple walls increases your total earning potential.",
+      },
+    ],
+    relatedVertical: "/offers",
+    relatedSlugs: ["gemiad", "taskwall", "mylead"],
+  },
+  {
     slug: "timewall",
     name: "TimeWall",
     type: "mixed",

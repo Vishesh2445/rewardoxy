@@ -14,6 +14,7 @@ const LOGOS = [
   { src: "/revtoo.svg", alt: "Revtoo", slug: "revtoo" },
   { src: "/klink-icon.png", alt: "Klink", slug: "klink" },
   { src: "/theoremreach.svg", alt: "TheoremReach", slug: "theoremreach" },
+  { src: "/adswedmedia.png", alt: "AdsWEDMedia", slug: "adswedmedia" },
 ];
 
 export default function ProviderCarousel() {

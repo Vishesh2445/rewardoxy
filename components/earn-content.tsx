@@ -20,7 +20,7 @@ type EarnContentProps = {
   userEmail: string;
 };
 
-type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd" | "TheoremReach" | "Revtoo" | "Klink" | "Revtoo Surveys" | "TimeWall";
+type WallType = "MyLead" | "CPX Research" | "Vortex" | "Notik" | "Taskwall" | "GemiAd" | "TheoremReach" | "Revtoo" | "Klink" | "Revtoo Surveys" | "TimeWall" | "AdsWEDMedia";
 type DeviceOS = "android" | "ios" | "windows";
 
 interface NotikOffer {
@@ -1405,6 +1405,10 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
       const placementId = process.env.NEXT_PUBLIC_TIMEWALL_PLACEMENT_ID || "";
       return `https://timewall.io/users/login?oid=${placementId}&uid=${userId}`;
     }
+    if (activeWall === "AdsWEDMedia") {
+      const base = "https://adswedmedia.com/offer/Rz7Ij6";
+      return `${base}/${userId}`;
+    }
     return "";
   };
 
@@ -2193,6 +2197,104 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
             <Rating
               className="wall-rating"
               defaultValue={3}
+              precision={0.5}
+              readOnly
+              emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
+              size="small"
+              sx={{ "& .MuiRating-iconFilled": { color: "#fbbf24" }, transition: "filter 0.2s ease" }}
+            />
+          </Paper>
+
+          {/* AdsWEDMedia card */}
+          <Paper
+            onClick={() => handleOpenWall("AdsWEDMedia")}
+            elevation={0}
+            sx={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderRadius: 2,
+              p: { xs: 1.5, sm: 2 },
+              cursor: "pointer",
+              background: "linear-gradient(180deg, rgba(59, 130, 246, 0.5) 0%, transparent 100%)",
+              transition: "all 0.2s ease",
+              minWidth: { xs: "auto", sm: 160 },
+              maxWidth: { xs: "none", sm: 160 },
+              width: { xs: "100%", sm: "auto" },
+              flexShrink: 0,
+              overflow: "hidden",
+              "&:hover": {
+                background: "linear-gradient(180deg, rgba(59, 130, 246, 0.65) 0%, transparent 100%)",
+                "& .wall-logo": {
+                  filter: "blur(8px)",
+                },
+                "& .wall-rating": {
+                  filter: "blur(8px)",
+                },
+                "& .hover-play-button": {
+                  opacity: 1,
+                },
+              },
+            }}
+          >
+            <Box
+              className="hover-play-button"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+                zIndex: 1000,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "opacity 0.2s ease",
+              }}
+            >
+              <Box
+                sx={{
+                  backgroundColor: "#1A1B2E",
+                  borderRadius: 10,
+                  padding: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                <Box
+                  component="img"
+                  src="https://freecash.com/public/img/play-offer.svg"
+                  alt="play-button"
+                  sx={{ objectFit: "contain", objectPosition: "center" }}
+                />
+              </Box>
+            </Box>
+
+            <Box
+              component="img"
+              src="/adswedmedia.png"
+              alt="AdsWEDMedia"
+              className="wall-logo"
+              sx={{
+                width: { xs: 70, sm: 100 },
+                height: { xs: 70, sm: 100 },
+                borderRadius: 1,
+                objectFit: "contain",
+                mb: { xs: 1, sm: 2 },
+                transition: "filter 0.2s ease",
+              }}
+            />
+
+            <Typography variant="subtitle2" isBold sx={{ color: "#fff", mb: { xs: 0.5, sm: 1 }, textAlign: "center" }}>
+              AdsWEDMedia
+            </Typography>
+
+            <Rating
+              className="wall-rating"
+              defaultValue={4}
               precision={0.5}
               readOnly
               emptyIcon={<StarIcon style={{ opacity: 0.5 }} fontSize="inherit" />}
