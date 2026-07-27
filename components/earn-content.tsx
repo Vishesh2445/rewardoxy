@@ -848,9 +848,9 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
   // Skeleton loader with shimmer animation
   const SkeletonOffer = () => (
     <Box sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 }, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: "#232645", borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
+      <Box sx={{ bgcolor: "rgba(35, 38, 69, 0.75)", borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
         <Box sx={{ 
-          width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, bgcolor: "#0D0E12", mb: { xs: 0.75, sm: 1.5 },
+          width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, mb: { xs: 0.75, sm: 1.5 },
           position: "relative", overflow: "hidden",
           animation: "pulse 2s ease-in-out infinite",
           "@keyframes pulse": { "0%,100%": { opacity: 0.6 }, "50%": { opacity: 1 } },
@@ -866,7 +866,6 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
   return (
     <Box 
       sx={{ 
-        bgcolor: "#0D0E12", 
         borderRadius: 3, 
         overflow: "hidden",
       }}
@@ -970,7 +969,7 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
           >
             <Box
               sx={{
-                bgcolor: "#232645",
+                bgcolor: "rgba(35, 38, 69, 0.75)",
                 border: "none",
                 borderRadius: { xs: "10px", sm: "16px" },
                 p: { xs: 1, sm: 2 },
@@ -992,7 +991,6 @@ function GamingOffersSection({ userId, deviceOS }: { userId: string; deviceOS: D
                   backgroundImage: offer.image_url ? `url(${offer.image_url})` : "none",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
-                  bgcolor: "#0D0E12",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1092,7 +1090,7 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   // Skeleton loader
   const SkeletonSurvey = () => (
     <Box sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 }, flexShrink: 0 }}>
-      <Box sx={{ bgcolor: "#1A1B2E", p: { xs: 0.75, sm: 1.5 }, borderRadius: { xs: 1.5, sm: 2.5 } }}>
+      <Box sx={{ bgcolor: "rgba(26, 27, 46, 0.75)", p: { xs: 0.75, sm: 1.5 }, borderRadius: { xs: 1.5, sm: 2.5 } }}>
         <Box sx={{ 
           width: "100%", 
           aspectRatio: "1", 
@@ -1125,7 +1123,6 @@ function CPXSurveysSection({ userId }: { userId: string }) {
   return (
     <Box 
       sx={{ 
-        bgcolor: "#0D0E12", 
         borderRadius: 3, 
         overflow: "hidden",
       }}
@@ -1214,12 +1211,12 @@ function CPXSurveysSection({ userId }: { userId: string }) {
             >
               <Box
                 sx={{
-                  bgcolor: "#1A1B2E",
+                  bgcolor: "rgba(26, 27, 46, 0.75)",
                   p: { xs: 0.75, sm: 1.5 },
                   borderRadius: { xs: 1.5, sm: 2.5 },
                   transition: "all 0.3s",
                   "&:hover": {
-                    bgcolor: "#2a2b4a",
+                    bgcolor: "rgba(42, 43, 74, 0.75)",
                     transform: "translateY(-4px)",
                     boxShadow: "0 12px 24px rgba(37, 100, 79, 0.15)",
                   },
@@ -1415,7 +1412,7 @@ export default function EarnContent({ userId, userName, userEmail }: EarnContent
   const iframeSrc = getIframeSrc();
 
   return (
-    <Box sx={{ bgcolor: "#0D0E12", minHeight: "100vh", width: "100%", pb: 4 }}>
+    <Box sx={{ minHeight: "100vh", width: "100%", pb: 4 }}>
       {/* Gaming Offers */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3 } }}>
         <GamingOffersSection userId={userId} deviceOS={selectedPlatforms} />

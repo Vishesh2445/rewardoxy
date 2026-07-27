@@ -878,15 +878,15 @@ export default function AllOffersClient({ userId }: { userId: string }) {
   }
 
   return (
-    <Box sx={{ bgcolor: colors.bgPage, minHeight: "100vh", width: "100%", pb: 4 }}>
+    <Box sx={{ minHeight: "100vh", width: "100%", pb: 4 }}>
       {/* All Offers Grid */}
       <Box sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
         {loading && displayedOffers.length === 0 ? (
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "repeat(3, 1fr)", sm: "repeat(4, 1fr)", md: "repeat(6, 1fr)", lg: "repeat(7, 1fr)", xl: "repeat(8, 1fr)" }, gap: { xs: 0.5, sm: 0.75, md: 0.75 }, columnGap: 0 }}>
             {Array.from({ length: 24 }).map((_, i) => (
               <Box key={i} sx={{ p: { xs: 0.5, sm: 1 } }}>
-                <Box sx={{ bgcolor: "#232645", borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
-                  <Box sx={{ width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, bgcolor: "#0F1219", mb: { xs: 0.75, sm: 1.5 }, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05}s`, "@keyframes pulse": { "0%,100%": { opacity: 0.5 }, "50%": { opacity: 1 } }, position: "relative", overflow: "hidden", "&::after": { content: '""', position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 0%, rgba(16,185,129,0.03) 50%, transparent 100%)", animation: "shimmer 1.5s ease-in-out infinite", animationDelay: `${i * 0.05}s` } }} />
+                  <Box sx={{ bgcolor: "rgba(35, 38, 69, 0.75)", borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
+                    <Box sx={{ width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, mb: { xs: 0.75, sm: 1.5 }, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05}s`, "@keyframes pulse": { "0%,100%": { opacity: 0.5 }, "50%": { opacity: 1 } }, position: "relative", overflow: "hidden", "&::after": { content: '""', position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 0%, rgba(16,185,129,0.03) 50%, transparent 100%)", animation: "shimmer 1.5s ease-in-out infinite", animationDelay: `${i * 0.05}s` } }} />
                   <Box sx={{ height: { xs: 14, sm: 20 }, bgcolor: "#0F1219", borderRadius: "4px", width: "85%", mb: { xs: 0.2, sm: 0.5 }, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.1}s` }} />
                   <Box sx={{ height: { xs: 8, sm: 10 }, bgcolor: "#0F1219", borderRadius: "4px", width: "35%", mb: 0.2, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.2}s` }} />
                   <Box sx={{ height: { xs: 12, sm: 16 }, bgcolor: "#0F1219", borderRadius: "4px", width: "45%", animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.3}s` }} />
@@ -930,20 +930,20 @@ export default function AllOffersClient({ userId }: { userId: string }) {
                   }}
                 >
                   <Box
-                    sx={{
-                      bgcolor: "#232645",
-                      border: "none",
-                      borderRadius: { xs: "10px", sm: "16px" },
-                      p: { xs: 1, sm: 2 },
-                      display: "flex",
-                      flexDirection: "column",
-                      height: "100%",
-                      transition: "all 0.3s",
-                      "&:hover": {
-                        transform: "translateY(-4px)",
-                        boxShadow: "0 12px 24px rgba(16,185,129,0.15)",
-                      },
-                    }}
+                sx={{
+                  bgcolor: "rgba(35, 38, 69, 0.75)",
+                  border: "none",
+                  borderRadius: { xs: "10px", sm: "16px" },
+                  p: { xs: 1, sm: 2 },
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  transition: "all 0.3s",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 12px 24px rgba(16,185,129,0.15)",
+                  },
+                }}
                   >
                     <Box
                       sx={{
@@ -991,8 +991,8 @@ export default function AllOffersClient({ userId }: { userId: string }) {
               ))}
               {loadingMore && Array.from({ length: 20 }).map((_, i) => (
                 <Box key={`skel-${i}`} sx={{ minWidth: { xs: 100, sm: 140 }, maxWidth: { xs: 100, sm: 140 } }}>
-                  <Box sx={{ bgcolor: "#232645", borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
-                    <Box sx={{ width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, bgcolor: "#0F1219", mb: { xs: 0.75, sm: 1.5 }, position: "relative", overflow: "hidden", animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05}s`, "@keyframes pulse": { "0%,100%": { opacity: 0.5 }, "50%": { opacity: 1 } }, "&::after": { content: '""', position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 0%, rgba(16,185,129,0.03) 50%, transparent 100%)", animation: "shimmer 1.5s ease-in-out infinite", animationDelay: `${i * 0.05}s` } }} />
+                  <Box sx={{ bgcolor: "rgba(35, 38, 69, 0.75)", borderRadius: { xs: "10px", sm: "16px" }, p: { xs: 1, sm: 2 } }}>
+                    <Box sx={{ width: "100%", aspectRatio: "1", borderRadius: { xs: "7px", sm: "10px" }, mb: { xs: 0.75, sm: 1.5 }, position: "relative", overflow: "hidden", animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05}s`, "@keyframes pulse": { "0%,100%": { opacity: 0.5 }, "50%": { opacity: 1 } }, "&::after": { content: '""', position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 0%, rgba(16,185,129,0.03) 50%, transparent 100%)", animation: "shimmer 1.5s ease-in-out infinite", animationDelay: `${i * 0.05}s` } }} />
                     <Box sx={{ height: { xs: 14, sm: 20 }, bgcolor: "#0F1219", borderRadius: "4px", width: "85%", mb: { xs: 0.2, sm: 0.5 }, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.1}s` }} />
                     <Box sx={{ height: { xs: 8, sm: 10 }, bgcolor: "#0F1219", borderRadius: "4px", width: "35%", mb: 0.2, animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.2}s` }} />
                     <Box sx={{ height: { xs: 12, sm: 16 }, bgcolor: "#0F1219", borderRadius: "4px", width: "45%", animation: "pulse 1.8s ease-in-out infinite", animationDelay: `${i * 0.05 + 0.3}s` }} />

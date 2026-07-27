@@ -183,7 +183,7 @@ export default function AppShell({ children, coins, userName = "User", userAvata
       <BottomNavbar />
 
       {/* Footer */}
-      <Box component="footer" sx={{ bgcolor: colors.background.drawer, borderTop: `1px solid ${colors.glass.border}`, mt: 4 }}>
+      <Box component="footer" sx={{ bgcolor: colors.background.drawer, borderTop: `1px solid ${colors.glass.border}`, mt: 4, pb: { xs: 10, md: 0 } }}>
         <Box sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 4, sm: 5, md: 6 }, display: "flex", flexDirection: { xs: "column", md: "row" }, justifyContent: "space-between", gap: { xs: 4, md: 8 } }}>
           <Box sx={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: 1.5 }}>
             <Icons.Logo href="/profile" />

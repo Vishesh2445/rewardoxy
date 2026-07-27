@@ -144,14 +144,15 @@ export default function FullscreenShell({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", bgcolor: "#0a0b0f" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", bgcolor: colors.background.default }}>
       {/* Top Navigation Bar */}
       <AppBar
         position="fixed"
         elevation={0}
         sx={{
-          bgcolor: "#12131c",
-          borderBottom: `1px solid rgba(255, 255, 255, 0.05)`,
+          bgcolor: "rgba(8,11,18,0.92)",
+          backdropFilter: "blur(20px)",
+          borderBottom: `1px solid ${colors.glass.border}`,
           zIndex: 1300,
         }}
       >
@@ -340,8 +341,8 @@ export default function FullscreenShell({
           display: { xs: "block", md: "none" },
           "& .MuiDrawer-paper": {
             width: 280,
-            bgcolor: "#12131c",
-            borderRight: `1px solid rgba(255, 255, 255, 0.05)`,
+            bgcolor: colors.background.drawer,
+            borderRight: `1px solid ${colors.glass.border}`,
           },
         }}
       >
@@ -450,7 +451,6 @@ export default function FullscreenShell({
           flexGrow: 1,
           pt: { xs: 7, sm: 8 },
           pb: { xs: 10, md: 0 },
-          bgcolor: colors.background.default,
           minHeight: "100vh",
         }}
       >
@@ -467,6 +467,7 @@ export default function FullscreenShell({
           bgcolor: colors.background.drawer,
           borderTop: `1px solid ${colors.glass.border}`,
           mt: 4,
+          pb: { xs: 10, md: 0 },
         }}
       >
         <Box
