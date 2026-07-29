@@ -190,19 +190,6 @@ async function handleKlinkPostback(request: NextRequest) {
           log(`Enqueue commissions error: ${e instanceof Error ? e.message : 'Unknown'}`);
         }
 
-        // Record in completions table for dashboard visibility
-        try {
-          await supabase.from('completions').insert({
-            player_id: userId,
-            program_id: offerName || 'Klink Offer',
-            payout_decimal: payoutAbs,
-            coins_awarded: coinsToCredit,
-            source: 'klink',
-          });
-          log('Completion recorded in completions table');
-        } catch (e: unknown) {
-          log(`Completions insert error: ${e instanceof Error ? e.message : 'Unknown'}`);
-        }
       } else {
         log(`Coins to credit is 0, skipping credit`);
       }
@@ -245,19 +232,22 @@ async function handleKlinkPostback(request: NextRequest) {
       }
     }
 
-    // Record in completions table for all transaction types
-    supabase.from('completions').insert({
-      player_id: userId,
-      program_id: offerName || 'Klink Offer',
-      offer_name: offerName,
-      payout_decimal: payoutAbs,
-      coins_awarded: isConversion ? coinsToCredit : -Math.abs(coinsToCredit),
-      source: 'klink',
-      status: isConversion ? 'completed' : 'reversed',
-      tx_id: conversionId,
-    }).then(null, (e: unknown) => {
-      log(`Completions insert error (post-transaction): ${e instanceof Error ? e.message : 'Unknown'}`);
-    });
+    // Record in completions table
+    try {
+      await supabase.from('completions').insert({
+        player_id: userId,
+        program_id: offerName || 'Klink Offer',
+        offer_name: offerName,
+        payout_decimal: payoutAbs,
+        coins_awarded: isConversion ? coinsToCredit : -Math.abs(coinsToCredit),
+        source: 'klink',
+        status: isConversion ? 'completed' : 'reversed',
+        tx_id: conversionId,
+      });
+      log('Completion recorded in completions table');
+    } catch (e: unknown) {
+      log(`Completions insert error: ${e instanceof Error ? e.message : 'Unknown'}`);
+    }
 
     return ok('Approved');
 

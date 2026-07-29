@@ -14,6 +14,7 @@ export default async function AdminDashboardPage() {
     coinsDataResult,
     chargebackResult,
     bannedResult,
+    recentResult,
   ] = await Promise.all([
     adminSupabase.from("users").select("id", { count: "exact", head: true }),
     adminSupabase
@@ -35,6 +36,11 @@ export default async function AdminDashboardPage() {
       .from("users")
       .select("id", { count: "exact", head: true })
       .eq("is_banned", true),
+    adminSupabase
+      .from("completions")
+      .select("id, player_id, program_id, offer_name, payout_decimal, coins_awarded, source, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(5),
   ]);
 
   const totalUsers = usersResult.count ?? 0;
@@ -59,6 +65,19 @@ export default async function AdminDashboardPage() {
     0
   );
 
+  const recentCompletions = recentResult.data ?? [];
+  const userIds = [...new Set(recentCompletions.map(c => c.player_id))];
+  const userMap: Record<string, { email: string; display_name: string | null }> = {};
+  if (userIds.length > 0) {
+    const { data: usersData } = await adminSupabase
+      .from("users")
+      .select("id, email, display_name")
+      .in("id", userIds);
+    for (const u of (usersData ?? [])) {
+      userMap[u.id] = { email: u.email, display_name: u.display_name };
+    }
+  }
+
   return (
     <AdminShell>
       <AdminDashboardClient
@@ -70,6 +89,8 @@ export default async function AdminDashboardPage() {
         totalChargebacks={totalChargebacks}
         totalChargebackCoins={totalChargebackCoins}
         netCoins={netCoins}
+        recentCompletions={recentCompletions}
+        userMap={userMap}
       />
     </AdminShell>
   );
