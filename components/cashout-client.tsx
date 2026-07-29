@@ -36,7 +36,6 @@ import {
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
 
-const MIN_COINS = 2000;
 const COINS_PER_USD = 1000;
 const PAGE_SIZE = 5;
 
@@ -68,6 +67,7 @@ interface CashoutClientProps {
   fraudStatus?: string;
   fraudNotification?: { id: string; message: string } | null;
   savedCryptoAddress?: string;
+  minCoins?: number;
 }
 
 export default function CashoutClient({
@@ -80,11 +80,12 @@ export default function CashoutClient({
   fraudStatus = "clean",
   fraudNotification = null,
   savedCryptoAddress = "",
+  minCoins = 2000,
 }: CashoutClientProps) {
   const router = useRouter();
   const [coins, setCoins] = useState(initialCoins);
   const [address, setAddress] = useState(savedCryptoAddress);
-  const [amountCoins, setAmountCoins] = useState<number | "">(initialCoins >= MIN_COINS ? initialCoins : "");
+  const [amountCoins, setAmountCoins] = useState<number | "">(initialCoins >= minCoins ? initialCoins : "");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -139,8 +140,8 @@ export default function CashoutClient({
     setError(null);
     setSuccess(null);
 
-    if (typeof amountCoins !== "number" || amountCoins < MIN_COINS) {
-      setError(`Minimum withdrawal is ${MIN_COINS.toLocaleString()} coins`);
+    if (typeof amountCoins !== "number" || amountCoins < minCoins) {
+      setError(`Minimum withdrawal is ${minCoins.toLocaleString()} coins`);
       return;
     }
     if (amountCoins > coins) {
@@ -309,7 +310,7 @@ export default function CashoutClient({
 
           <Box sx={{ ml: { sm: "auto" }, display: "flex", flexDirection: "column", gap: 0.75, pl: { sm: 3 }, borderLeft: { sm: "1px solid rgba(255,255,255,0.08)" } }}>
             {[
-              { label: "Minimum", value: `${MIN_COINS.toLocaleString()} coins` },
+              { label: "Minimum", value: `${minCoins.toLocaleString()} coins` },
               { label: "Rate", value: "1,000 = $1 USD" },
             ].map((row) => (
               <Box key={row.label} sx={{ display: "flex", gap: 1, fontSize: "0.75rem" }}>
@@ -379,7 +380,7 @@ export default function CashoutClient({
                       const num = parseInt(val, 10);
                       if (!isNaN(num) && num >= 0) setAmountCoins(num);
                     }}
-                    placeholder={`Min. ${MIN_COINS.toLocaleString()}`}
+                    placeholder={`Min. ${minCoins.toLocaleString()}`}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -454,9 +455,9 @@ export default function CashoutClient({
                     <Typography sx={{ fontSize: "0.75rem", fontWeight: 700, color: row.accent ? colors.primary : "#fff" }}>{row.value}</Typography>
                   </Box>
                 ))}
-                {coins < MIN_COINS && (
+                {coins < minCoins && (
                   <Box sx={{ mt: 1.5, borderRadius: "8px", bgcolor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", px: 1.5, py: 0.75, fontSize: "0.7rem", color: "#f87171" }}>
-                    You need at least {MIN_COINS.toLocaleString()} coins (${(MIN_COINS / COINS_PER_USD).toFixed(2)}) to withdraw
+                    You need at least {minCoins.toLocaleString()} coins (${(minCoins / COINS_PER_USD).toFixed(2)}) to withdraw
                   </Box>
                 )}
               </Box>
@@ -476,7 +477,7 @@ export default function CashoutClient({
                 type="submit"
                 variant="contained"
                 fullWidth
-                disabled={loading || coins < MIN_COINS || (typeof amountCoins !== "number") || (amountCoins > coins) || (amountCoins < MIN_COINS)}
+                disabled={loading || coins < minCoins || (typeof amountCoins !== "number") || (amountCoins > coins) || (amountCoins < minCoins)}
                 endIcon={!loading ? <ArrowRight size={16} /> : undefined}
                 sx={{
                   py: 1.25,
@@ -490,7 +491,7 @@ export default function CashoutClient({
                   "&.Mui-disabled": { opacity: 0.4, color: "#fff" },
                 }}
               >
-                {loading ? <CircularProgress size={20} color="inherit" /> : `Withdraw ${typeof amountCoins === "number" && amountCoins >= MIN_COINS ? `$${withdrawUsd.toFixed(2)}` : "Now"}`}
+                {loading ? <CircularProgress size={20} color="inherit" /> : `Withdraw ${typeof amountCoins === "number" && amountCoins >= minCoins ? `$${withdrawUsd.toFixed(2)}` : "Now"}`}
               </Button>
             </Box>
           </Box>

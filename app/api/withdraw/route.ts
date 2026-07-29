@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getMinWithdrawalCoins } from "@/lib/get-min-withdrawal";
 
-const MIN_COINS = 2000;
 const COINS_PER_USD = 1000;
 
 async function sendTelegramNotification(details: {
@@ -51,6 +51,8 @@ export async function POST(request: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const MIN_COINS = await getMinWithdrawalCoins();
 
   const body = await request.json();
   const { amount_coins, address } = body as { amount_coins?: number; address?: string };

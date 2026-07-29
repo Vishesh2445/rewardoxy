@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getMinWithdrawalCoins } from "@/lib/get-min-withdrawal";
 import AppShell from "@/components/app-shell";
 import CashoutClient from "@/components/cashout-client";
 
@@ -55,6 +56,7 @@ export default async function CashoutPage() {
   const cryptoAddress = userResult.data?.crypto_address ?? "";
   const withdrawals = withdrawalsResult.data ?? [];
   const total = withdrawalsResult.count ?? 0;
+  const minCoins = await getMinWithdrawalCoins();
 
   // Get fraud notification if exists
   const fraudNotification = fraudNotifResult.data?.[0] ?? null;
@@ -76,6 +78,7 @@ export default async function CashoutPage() {
         fraudStatus={fraudStatus}
         fraudNotification={fraudNotification}
         savedCryptoAddress={cryptoAddress}
+        minCoins={minCoins}
       />
     </AppShell>
   );

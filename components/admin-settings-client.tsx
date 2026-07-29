@@ -9,6 +9,8 @@ import {
   Divider,
   Switch,
   FormControlLabel,
+  Button,
+  TextField,
 } from "@mui/material";
 import Typography from "@/components/ui/Typography";
 import colors from "@/theme/colors";
@@ -25,6 +27,7 @@ export default function AdminSettingsClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchSettings();
@@ -41,6 +44,11 @@ export default function AdminSettingsClient() {
       }
 
       setSettings(data.settings);
+      const vals: Record<string, string> = {};
+      for (const s of data.settings) {
+        vals[s.setting_key] = s.setting_value;
+      }
+      setEditValues(vals);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -48,11 +56,14 @@ export default function AdminSettingsClient() {
     }
   }
 
-  async function handleToggle(settingKey: string, currentValue: string) {
+  function isBoolSetting(key: string) {
+    return key.endsWith("_enabled");
+  }
+
+  async function handleSave(settingKey: string, newValue: string) {
     try {
       setSaving(settingKey);
       setError(null);
-      const newValue = currentValue === "true" ? "false" : "true";
 
       const response = await fetch("/api/admin/settings", {
         method: "POST",
@@ -99,6 +110,7 @@ export default function AdminSettingsClient() {
 
       <Box sx={{ display: "grid", gap: 2 }}>
         {settings.map((setting) => {
+          const isBool = isBoolSetting(setting.setting_key);
           const isEnabled = setting.setting_value === "true";
 
           return (
@@ -144,29 +156,71 @@ export default function AdminSettingsClient() {
                 </Typography>
               </Box>
 
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={isEnabled}
-                    onChange={() => handleToggle(setting.setting_key, setting.setting_value)}
+              {isBool ? (
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={isEnabled}
+                      onChange={() => handleSave(setting.setting_key, isEnabled ? "false" : "true")}
+                      disabled={saving === setting.setting_key}
+                      sx={{
+                        "& .MuiSwitch-switchBase.Mui-checked": {
+                          color: "#10B981",
+                        },
+                        "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                          backgroundColor: "#10B981",
+                        },
+                      }}
+                    />
+                  }
+                  label={isEnabled ? "Enabled" : "Disabled"}
+                  sx={{
+                    ml: 2,
+                    color: isEnabled ? "#10B981" : colors.text.secondary,
+                    fontWeight: 600,
+                  }}
+                />
+              ) : (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <TextField
+                    type="number"
+                    size="small"
+                    value={editValues[setting.setting_key] ?? setting.setting_value}
+                    onChange={(e) =>
+                      setEditValues((prev) => ({ ...prev, [setting.setting_key]: e.target.value }))
+                    }
                     disabled={saving === setting.setting_key}
                     sx={{
-                      "& .MuiSwitch-switchBase.Mui-checked": {
-                        color: "#10B981",
+                      width: 120,
+                      "& .MuiOutlinedInput-root": {
+                        bgcolor: "#252539",
+                        borderRadius: "10px",
+                        fontSize: "0.875rem",
+                        color: "#fff",
+                        "& fieldset": { borderColor: "rgba(255,255,255,0.06)" },
+                        "&:hover fieldset": { borderColor: "rgba(16,185,129,0.3)" },
+                        "&.Mui-focused fieldset": { borderColor: "#10B981" },
                       },
-                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                        backgroundColor: "#10B981",
-                      },
+                      "& input": { textAlign: "center" },
                     }}
                   />
-                }
-                label={isEnabled ? "Enabled" : "Disabled"}
-                sx={{
-                  ml: 2,
-                  color: isEnabled ? "#10B981" : colors.text.secondary,
-                  fontWeight: 600,
-                }}
-              />
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleSave(setting.setting_key, editValues[setting.setting_key] ?? setting.setting_value)}
+                    disabled={saving === setting.setting_key || editValues[setting.setting_key] === setting.setting_value}
+                    sx={{
+                      textTransform: "none",
+                      borderRadius: "10px",
+                      bgcolor: "#10B981",
+                      "&:hover": { bgcolor: "#059669" },
+                      "&.Mui-disabled": { opacity: 0.4 },
+                    }}
+                  >
+                    Save
+                  </Button>
+                </Box>
+              )}
             </Paper>
           );
         })}
