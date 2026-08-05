@@ -168,7 +168,10 @@ export async function POST(request: NextRequest) {
   // VPN/Proxy/Tor check at signup (only if VPN detection is enabled)
   const clientIp = getRealIP(request);
   console.log("Client IP:", clientIp);
-  
+
+  // Country from Cloudflare/Vercel headers first (free & reliable), fall back to IP APIs
+  const headerCountry = request.headers.get("cf-ipcountry") || request.headers.get("x-vercel-ip-country") || null;
+
   const admin = createAdminClient();
   
   // Check if VPN detection is enabled in admin settings
@@ -203,8 +206,8 @@ export async function POST(request: NextRequest) {
   const referral_code = randomBytes(4).toString("hex"); // 8-char alphanumeric
   console.log("Generated referral code:", referral_code);
 
-  // Country from the VPN check we already did
-  let country = ipInfo.country;
+  // Country from the VPN check we already did (header country takes priority)
+  let country = headerCountry || ipInfo.country;
 
   // If country detection failed, try the fallback get-country API
   if (!country && clientIp !== "127.0.0.1") {

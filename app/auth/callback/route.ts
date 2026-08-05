@@ -34,6 +34,9 @@ export async function GET(request: NextRequest) {
         if (!existing) {
           // VPN/Proxy/Tor check for new OAuth users (only if VPN detection is enabled)
           const clientIp = getRealIP(request);
+
+          // Country from Cloudflare/Vercel headers first (free & reliable), fall back to IP APIs
+          const headerCountry = request.headers.get("cf-ipcountry") || request.headers.get("x-vercel-ip-country") || null;
           
           // Check if VPN detection is enabled in admin settings
           const { data: vpnSetting } = await admin
@@ -80,8 +83,8 @@ export async function GET(request: NextRequest) {
             email_verified: true,
             accepted_terms: termsAccepted,
             accepted_at: termsAccepted ? new Date().toISOString() : null,
-            country: ipInfo.country || null,
-            signup_country: ipInfo.country || null,
+            country: headerCountry || ipInfo.country || null,
+            signup_country: headerCountry || ipInfo.country || null,
             signup_ip: clientIp,
           });
 
