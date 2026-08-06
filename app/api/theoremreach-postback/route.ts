@@ -59,13 +59,15 @@ function ok(message: string) {
 }
 
 /**
- * Reconstructs the base URL from the incoming request for hash verification.
- * TheoremReach hashes the full callback URL without the hash parameter.
- * We must use the exact URL as TheoremReach constructed it (preserving order and encoding).
+ * Reconstructs the base URL for hash verification.
+ * TheoremReach signs the callback URL up to (not including) "&hash="
+ * (their docs: hmac-sha1 of "url_before_hash"). Slice the raw URL string
+ * so the exact encoding they sent is preserved (e.g. %7B...%7D vs {literal}).
  */
 function reconstructBaseUrlForHash(requestUrl: string): string {
+  const hashIdx = requestUrl.indexOf('&hash=');
+  if (hashIdx !== -1) return requestUrl.slice(0, hashIdx);
   const urlObj = new URL(requestUrl);
-  // Remove the hash parameter — TheoremReach hashes the URL without it
   urlObj.searchParams.delete('hash');
   return urlObj.toString();
 }
@@ -104,6 +106,14 @@ function verifyTheoremReachHash(baseUrl: string, providedHash: string): boolean 
   }
 }
 
+function verifyCompute(requestUrl: string): string {
+  const secret = process.env.THEOREMREACH_SECRET_KEY;
+  if (!secret) return 'no-secret';
+  const beforeHash = requestUrl.includes('&hash=') ? requestUrl.slice(0, requestUrl.indexOf('&hash=')) : requestUrl;
+  return crypto.createHmac('sha1', secret).update(beforeHash)
+    .digest('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
 async function handleTheoremReachPostback(request: NextRequest) {
   const logs: string[] = [];
   const log = (msg: string) => { logs.push(msg); console.log('[theoremreach-postback]', msg); };
@@ -120,6 +130,7 @@ async function handleTheoremReachPostback(request: NextRequest) {
     url.searchParams.forEach((value, key) => {
       allParams[key] = value;
     });
+    log(`Raw URL: ${request.url}`);
     log(`Params: ${JSON.stringify(allParams)}`);
 
     // ── 1. Extract TheoremReach parameters ───────────────────────────────
@@ -156,8 +167,12 @@ async function handleTheoremReachPostback(request: NextRequest) {
     const baseUrlForHash = reconstructBaseUrlForHash(request.url);
     log(`Base URL for hash: ${baseUrlForHash}`);
 
+    // Diagnostic: what the "before &hash=" form computes to (for support debugging)
+    const beforeHash = request.url.includes('&hash=') ? request.url.slice(0, request.url.indexOf('&hash=')) : request.url;
+    log(`Before-hash URL: ${beforeHash}`);
+
     if (!verifyTheoremReachHash(baseUrlForHash, hash)) {
-      log(`HASH VERIFICATION FAILED: received="${hash}"`);
+      log(`HASH VERIFICATION FAILED: received="${hash}" computed="${verifyCompute(request.url)}"`);
       return ok('Rejected');
     }
     log('Hash verification PASSED');
