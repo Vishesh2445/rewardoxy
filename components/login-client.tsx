@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Mail, Lock, ArrowRight } from "lucide-react";
@@ -19,9 +19,11 @@ import Turnstile from "@/components/turnstile";
 
 export default function LoginClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(searchParams.get("registered") ? "You're already registered. Please log in to continue." : null);
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const supabase = createClient();
@@ -121,6 +123,7 @@ export default function LoginClient() {
             </Box>
 
             {error && <Alert severity="error" sx={{ bgcolor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "10px", color: "#f87171", "& .MuiAlert-icon": { color: "#f87171" } }}>{error}</Alert>}
+            {info && <Alert severity="info" sx={{ bgcolor: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "10px", color: "#10B981", "& .MuiAlert-icon": { color: "#10B981" } }}>{info}</Alert>}
 
             <Turnstile onVerify={(token) => setTurnstileToken(token)} onError={() => { setError("Verification failed. Please try again."); setTurnstileToken(null); }} onExpire={() => { setError("Verification expired. Please verify again."); setTurnstileToken(null); }} />
 

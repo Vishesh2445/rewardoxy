@@ -280,12 +280,11 @@ export async function POST(request: NextRequest) {
       });
 
       if (error?.code === "23505") {
-        // Duplicate email — users_email_key index rejected it. No retry: clean up the orphan auth user.
-        console.error("Email already registered, cleaning up duplicate auth user");
-        await admin.auth.admin.deleteUser(user_id).catch((e) => console.error("Failed to cleanup duplicate auth user:", e));
+        // Duplicate email — users_email_key index rejected it. Already registered.
+        console.error("Email already registered");
         return NextResponse.json(
-          { error: "An account with this email already exists. Please log in." },
-          { status: 409 }
+          { success: true, existing: true },
+          { status: 200 }
         );
       }
 

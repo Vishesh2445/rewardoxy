@@ -89,11 +89,8 @@ export async function GET(request: NextRequest) {
           });
 
           if (insertError?.code === "23505") {
-            // Duplicate email — users_email_key index rejected it. Clean up the orphan auth user.
-            await admin.auth.admin.deleteUser(user.id).catch((e) => console.error("Failed to cleanup duplicate auth user:", e));
-            return NextResponse.redirect(
-              `${origin}/auth/signup?error=${encodeURIComponent("An account with this email already exists. Please log in.")}`
-            );
+            // Duplicate email — already registered via another auth identity. Keep session, go to /earn.
+            return NextResponse.redirect(`${origin}/earn`);
           }
 
           // Create referral record if user was referred

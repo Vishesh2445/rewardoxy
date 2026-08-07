@@ -71,6 +71,7 @@ export default function SignupClient() {
         });
         const body = await res.json();
         if (!res.ok) { setError(body.error || "Failed to create user profile."); setLoading(false); await supabase.auth.signOut(); return; }
+        if (body.existing) { setLoading(false); await supabase.auth.signOut(); router.push("/auth/login?registered=1"); return; }
         router.push("/earn");
       } catch {
         setError("Network error during registration. Please try again.");
