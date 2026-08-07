@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
       console.error(`Attempt ${attempt} - Auth user not found:`, lastError);
     } else {
       console.log(`Attempt ${attempt} - Auth user found, inserting into users table...`);
-      
+
       const { error } = await admin.from("users").insert({
         id: user_id,
         email,
@@ -278,6 +278,16 @@ export async function POST(request: NextRequest) {
         signup_ip: clientIp,
         signup_source: source || 'web',
       });
+
+      if (error?.code === "23505") {
+        // Duplicate email — users_email_key index rejected it. No retry: clean up the orphan auth user.
+        console.error("Email already registered, cleaning up duplicate auth user");
+        await admin.auth.admin.deleteUser(user_id).catch((e) => console.error("Failed to cleanup duplicate auth user:", e));
+        return NextResponse.json(
+          { error: "An account with this email already exists. Please log in." },
+          { status: 409 }
+        );
+      }
 
       if (!error) {
         console.log("User profile created successfully");

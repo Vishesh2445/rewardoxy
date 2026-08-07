@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
             }
           }
 
-          await admin.from("users").insert({
+          const { error: insertError } = await admin.from("users").insert({
             id: user.id,
             email: user.email,
             referral_code: randomBytes(4).toString("hex"),
@@ -87,6 +87,14 @@ export async function GET(request: NextRequest) {
             signup_country: headerCountry || ipInfo.country || null,
             signup_ip: clientIp,
           });
+
+          if (insertError?.code === "23505") {
+            // Duplicate email — users_email_key index rejected it. Clean up the orphan auth user.
+            await admin.auth.admin.deleteUser(user.id).catch((e) => console.error("Failed to cleanup duplicate auth user:", e));
+            return NextResponse.redirect(
+              `${origin}/auth/signup?error=${encodeURIComponent("An account with this email already exists. Please log in.")}`
+            );
+          }
 
           // Create referral record if user was referred
           if (referred_by_id) {
